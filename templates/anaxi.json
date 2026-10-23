@@ -1,0 +1,8 @@
+{
+  "profile": "default",
+  "stage": "shaping",
+  "docs": ["docs/**/*.md"],
+  "shared": "docs/shared",
+  "questions": "docs/anaxi-questions.md",
+  "index": "docs/INDEX.md"
+}

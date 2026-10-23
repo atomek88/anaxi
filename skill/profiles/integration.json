@@ -1,0 +1,6 @@
+{
+  "profile": "integration",
+  "description": "Third-party integrations.",
+  "rubric": { "floors": { "novelty": 1 } },
+  "suggest": ["Third-party integrations", "Queues, jobs, events, schedules"]
+}

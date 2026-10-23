@@ -1,0 +1,5 @@
+{
+  "profile": "mobile",
+  "description": "App features. Old app versions stay in the field, so anything the app calls is a public contract.",
+  "suggest": ["Mobile apps", "UI", "APIs (anything other code calls)"]
+}

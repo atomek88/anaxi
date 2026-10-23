@@ -1,0 +1,6 @@
+#!/bin/sh
+# Anaxi pre-commit hook: on commits that touch markdown, check the docs and regenerate INDEX.md.
+# Install: cp tools/anaxi/tools/hooks/pre-commit .git/hooks/  (or point core.hooksPath at a folder holding it)
+git diff --cached --name-only | grep -q '\.md$' || exit 0
+root="$(git rev-parse --show-toplevel)"
+exec "${ANAXI_HOME:-$root/tools/anaxi}/tools/anaxi-ci.sh" --fix --dir "$root"

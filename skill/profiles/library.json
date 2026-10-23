@@ -1,0 +1,6 @@
+{
+  "profile": "library",
+  "description": "Libraries, SDKs and frameworks other teams consume.",
+  "targets": { "min": "D3" },
+  "suggest": ["Libraries and SDKs", "APIs (anything other code calls)"]
+}

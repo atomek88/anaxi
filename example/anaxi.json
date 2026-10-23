@@ -1,0 +1,8 @@
+{
+  "profile": "mobile",
+  "stage": "pre-build",
+  "docs": ["features/**/*.md", "shared/**/*.md"],
+  "shared": "shared",
+  "questions": "anaxi-questions.md",
+  "index": "INDEX.md"
+}

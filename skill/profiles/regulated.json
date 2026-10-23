@@ -1,0 +1,6 @@
+{
+  "profile": "regulated",
+  "description": "PII, payments, health.",
+  "targets": { "rules": [{ "about": "security", "min": "D3" }, { "about": "data", "min": "D3" }] },
+  "suggest": ["Security and privacy", "Data and storage"]
+}

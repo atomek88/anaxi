@@ -1,0 +1,18 @@
+{
+  "profile": "service",
+  "description": "Backend services and APIs.",
+  "targets": {
+    "rules": [
+      {
+        "about": "api",
+        "min": "D3"
+      }
+    ]
+  },
+  "suggest": [
+    "APIs (anything other code calls)",
+    "Queues, jobs, events, schedules",
+    "Infrastructure and operations",
+    "Core extras"
+  ]
+}

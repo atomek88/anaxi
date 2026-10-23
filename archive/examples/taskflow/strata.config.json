@@ -1,0 +1,9 @@
+{
+  "system": "TF",
+  "vendorTerms": [
+    "AWS", "Amazon", "Lambda", "SQS", "SNS", "S3", "DynamoDB", "Cognito", "Transcribe", "EventBridge",
+    "API Gateway", "CDK", "CloudWatch", "Swift", "SwiftUI", "SwiftData", "iOS", "Xcode", "APNs",
+    "Google", "Apple", "iCloud", "Twilio", "Firebase", "Postgres", "Kafka", "Kinesis",
+    "TypeScript", "Node.js", "zod", "chrono"
+  ]
+}

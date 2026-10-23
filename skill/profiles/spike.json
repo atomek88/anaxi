@@ -1,0 +1,8 @@
+{
+  "profile": "spike",
+  "description": "Prototypes and investigations: answer one question, cheaply.",
+  "core": { "reword": { "D0.why": "What question does this spike answer, and what result would change our plan?" } },
+  "targets": { "max": "D2" },
+  "nudges": { "severity": { "N07": "block", "N08": "block" } },
+  "suggest": ["Spikes and prototypes"]
+}

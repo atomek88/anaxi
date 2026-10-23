@@ -1,0 +1,6 @@
+{
+  "profile": "data",
+  "description": "Pipelines and analytics.",
+  "targets": { "rules": [{ "about": "data", "min": "D3" }] },
+  "suggest": ["Data pipelines and analytics", "Data and storage"]
+}
