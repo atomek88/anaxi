@@ -18,24 +18,37 @@ and **how deep it needs to go**. Tools and agents read the marks and tell you: g
 These levels, the risk rubric and the questions are **defaults**. Rename, drop or add levels, change the risk
 factors, or skip scoring and write the target yourself: [METHOD.md §0](METHOD.md#0-defaults-not-rules).
 
-## 1. Set up (once, one command)
+## 1. Set up (once)
+
+**With Claude Code (recommended):** install the plugin once per machine, then run `/anaxi:init` in any project.
+
+```bash
+claude plugin marketplace add <anaxi repo: a git URL or a local path>
+claude plugin install anaxi@anaxi
+```
+
+In the project, `/anaxi:init` (or `/anaxi:init --profile service --stage shaping`) writes `anaxi.json` and
+`docs/anaxi-questions.md` (leave it nearly empty for now), starts `docs/shared/stack.md` and installs a pre-commit
+hook that keeps `docs/INDEX.md` fresh. Nothing is copied into the project: the plugin brings the skill, the
+checker and the commands (`/anaxi:status`, `/anaxi:assess`, `/anaxi:gate`). Updating: [TOOLING.md §5](TOOLING.md#5-installing).
+
+**Without Claude Code** (other agents, or CI): one script copies the method into the project.
 
 ```bash
 path/to/anaxi/tools/anaxi-init.sh my-project --profile service --stage shaping
 ```
 
 A new folder or an existing repo; it never overwrites anything. It copies the method into `tools/anaxi/`,
-writes `anaxi.json` and `docs/anaxi-questions.md` (leave it nearly empty for now), starts `docs/shared/stack.md`,
-links the agent skill and installs a pre-commit hook that keeps `docs/INDEX.md` fresh. Docs elsewhere? Add
-`--docs path`.
+writes the same files, links the agent skill and installs the hook. Docs elsewhere? Add `--docs path`.
 
 Profiles: `default`, `service`, `mobile`, `data`, `integration`, `library`, `spike`, `regulated`.
 Stages: `discovery`, `shaping`, `pre-build`, `building`, `change`.
 
 ## 2. Mark an item (a minute)
 
-Start a new TDD with `node tools/anaxi/tools/anaxi-check.mjs new my-feature --title "My feature"`. Or keep
-your usual TDD template and add front matter:
+Start a new TDD by asking Claude ("start a TDD for my feature with anaxi") or with
+`node tools/anaxi/tools/anaxi-check.mjs new my-feature --title "My feature"`. Or keep your usual TDD template and
+add front matter:
 
 ```markdown
 ---
@@ -55,8 +68,9 @@ Move deep detail to an `APPENDIX.md` section marked `> part-of: @recurring`; it 
 
 ## 3. Write until it says stop
 
-```bash
-node tools/anaxi/tools/anaxi-check.mjs nudges @recurring     # what's missing, or "enough"
+```text
+/anaxi:assess @recurring                                     # in Claude Code: what's missing, or "enough"
+node tools/anaxi/tools/anaxi-check.mjs nudges @recurring     # the same structural part, from the script
 node tools/anaxi/tools/anaxi-check.mjs questions @recurring  # the questions for each level
 ```
 
@@ -72,7 +86,7 @@ At the target, write `depth: D3 🎯` (or `D3 enough`) and stop.
 |---|---|
 | refinement | score risk, set the target |
 | planning | read `docs/INDEX.md`: what's ready, blocked, or still a gap |
-| before building | `anaxi-check gate @id`: ready only at the full target with nothing open (your Definition of Ready) |
+| before building | `/anaxi:gate @id` (or `anaxi-check gate @id`): ready only at the full target with nothing open (your Definition of Ready) |
 | review | the reviewer checks the claimed depth against the "done when" above |
 
 Tickets, estimates and "done" stay in your tracker.

@@ -12,6 +12,9 @@ method for reading them ([TOOLING.md](TOOLING.md)).
 
 **New here? Start with the one-page [QUICKSTART.md](QUICKSTART.md).** Evaluating it for a team? Read [OVERVIEW.md](OVERVIEW.md).
 
+**Using Claude Code?** This repo is a plugin: `claude plugin marketplace add <this repo>`, then
+`claude plugin install anaxi@anaxi`, then `/anaxi:init` in any project ([TOOLING.md §5](TOOLING.md#5-installing)).
+
 ## The whole method in one screen
 
 1. **Depth is one thing:** which questions about an item have been answered. Five levels by default, D0–D4
@@ -88,11 +91,12 @@ method for reading them ([TOOLING.md](TOOLING.md)).
 | [TOOLING.md](TOOLING.md) | the three layers (method, project docs, output), the scripts, the index, rendering, installing | setting up; building the tools |
 | [tools/SPEC.md](tools/SPEC.md) | the scripts: commands, parsing, rules, JSON, exit codes | building or calling the scripts |
 | [skills/anaxi/SKILL.md](skills/anaxi/SKILL.md) | the agent skill | installing for Claude or another agent |
+| [.claude-plugin/](.claude-plugin/), [skills/](skills/), [hooks/](hooks/) | the Claude Code plugin: manifest and marketplace, the skill and `/anaxi:*` commands, session and edit hooks | installing or changing the plugin |
 | [skills/anaxi/references/question-library.md](skills/anaxi/references/question-library.md) | questions to borrow, by concern and kind of project | writing questions |
 | [profiles/](profiles/) | the built-in profiles | choosing a profile |
 | [example/](example/) | a small project using every form of markup, with its index and nudges | learning by example |
 | [PILOT.md](PILOT.md) | a two-sprint trial with a calibration sheet and retro questions | trying it with a team |
-| [ROADMAP.md](ROADMAP.md) | where it could go: an npm package, a Claude Code plugin, a live viewer (`anaxi watch`), an MCP server for agents | deciding what to build next |
+| [ROADMAP.md](ROADMAP.md) | where it could go: an npm package, a live viewer (`anaxi watch`), an MCP server for agents | deciding what to build next |
 | [CHANGELOG.md](CHANGELOG.md) | how the method has changed, and why | proposing a change |
 
 ## What it deliberately does not do

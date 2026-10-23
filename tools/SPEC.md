@@ -1,7 +1,7 @@
 # Anaxi scripts: specification
 
-> **Status:** `anaxi-check.mjs`, `anaxi-ci.sh`, `anaxi-init.sh` and `lib/` are built (`node tools/selftest.mjs`
-> checks them). `anaxi-render.mjs` is not. Not implemented yet in `anaxi-check`: N11 (needs git history
+> **Status:** `anaxi-check.mjs`, `anaxi-ci.sh`, `anaxi-init.sh`, `release.sh`, `lib/` and the plugin hooks
+> (`../hooks/`) are built (`node tools/selftest.mjs` checks the scripts). `anaxi-render.mjs` is not. Not implemented yet in `anaxi-check`: N11 (needs git history
 > per item), folder-level `anaxi.json` files, and `uses --json`. [TOOLING.md](../TOOLING.md) explains what each
 > script is for.
 
@@ -10,6 +10,8 @@ settings. They never judge content: the semantic checks (N05, N07, N08, N12, N16
 
 Every command finds `anaxi.json` by searching upward from the working directory (defaults apply if there is
 none), then layers profile → `anaxi.json` → folder files → item marks ([PROFILES.md §1](../PROFILES.md#1-where-settings-come-from)).
+The docs are the markdown files matching `docs`, minus `ignore`, the questions file, the index, the output
+folder, `node_modules`, `.git`, `.claude`, and any folder holding its own `anaxi.json` (a separate project).
 
 ## 1. `anaxi-check.mjs`
 
@@ -180,3 +182,18 @@ The format is versioned. Add fields; don't rename them.
 | 0 | clean, or ready (`gate`) | rendered |
 | 1 | blocked (`gate`), or `block` nudges (`nudges`) | — |
 | 2 | syntax, settings or reference errors | unknown root, or a parse error |
+
+## 7. Plugin hooks
+
+`hooks/hooks.json` wires two Node scripts. Both read Claude Code's hook JSON on stdin, import `tools/lib/`
+directly, and exit 0 whatever happens: a hook never fails a session or an edit.
+
+| Hook | Script | Does |
+|---|---|---|
+| `SessionStart` | `hooks/session-start.mjs` | when `anaxi.json` is found upward from `cwd` and `hooks.sessionStart` isn't `false`: prints the status table (no colour, at most 40 lines) and the commands; stdout becomes session context. Also writes the plugin's folder to `~/.anaxi/home` for the git hook |
+| `PostToolUse` (`Edit\|Write\|MultiEdit`) | `hooks/after-edit.mjs` | when `hooks.afterEdit` is `true` and the edited file is markdown in the project: the errors for that file and the nudges (except N04) of the items it holds or is a part of, returned as `additionalContext` |
+
+`anaxi-init.sh --plugin` (run by `/anaxi:init`) is `--no-vendor --no-skill` with plugin wording.
+`release.sh VERSION [--push]` refuses a dirty tree or a version with no CHANGELOG entry, runs the self-test, the
+example's CI and `claude plugin validate --strict`, writes the version to `.claude-plugin/plugin.json`, commits,
+and runs `claude plugin tag`.

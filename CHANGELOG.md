@@ -3,10 +3,24 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
+## 0.8 · 2026-10-23
+
+- tooling · **Claude Code plugin.** The repo is the plugin and its own marketplace: the skill, the checker,
+  `/anaxi:status`, `/anaxi:assess`, `/anaxi:gate`, `/anaxi:init`, a session-start hook (status table) and an opt-in
+  after-edit hook (that file's nudges) · one install per machine instead of a copy per repo (TOOLING.md §5).
+- tooling · `anaxi-init.sh --plugin` (what `/anaxi:init` runs): nothing vendored, no skill link. The git pre-commit
+  hook now finds the checker through `$ANAXI_HOME`, a vendored copy or the plugin, and skips instead of failing.
+- tooling · `tools/release.sh VERSION`: checks, sets the plugin version, commits and tags; developing stays live
+  through the `~/.claude/skills/anaxi` link.
+- settings · `ignore` globs, and a folder with its own `anaxi.json` is a separate project (the repo root no longer
+  reads `templates/` or `example/` as its own items); `hooks.sessionStart` / `hooks.afterEdit`.
+- repo · Own repo, `~/Professional/anaxi` (was `doc-layers/anaxi`). The skill moved to `skills/anaxi/`, profiles to
+  `profiles/`. The archive keeps only the Strata review (§1–5) and its viewer; the rest is in git history.
+- roadmap · Plugin marked built; step 3 is now the zoomable map (2D graph, 3D layer stack, city, house) and step 5
+  references and attribution (`refs:`, `owner:`, last changed).
+
 ## 0.7 · 2026-10-21
 
-- repo · **Anaxi has its own repo folder**, `~/Professional/anaxi` (was `doc-layers/anaxi`); the Strata archive moved to
-  `archive/` inside it · plugin plan: `gedanken`, `prototype` and `prototype-harvest` stay separate skills.
 - method · **The levels, rubric and questions are defaults, not rules** (METHOD.md §0). Only three ideas stay
   fixed: depth means answered questions, levels are cumulative, markdown is the source of truth · retrofitting
   ideas into a fixed ladder and rubric limited them.

@@ -68,6 +68,7 @@ Every key is optional. A project with no `anaxi.json` gets the defaults.
 | `profile` | the profile to start from (default `default`) |
 | `stage` | `discovery` · `shaping` · `pre-build` · `building` · `change`; caps targets for now ([METHOD §3.1](METHOD.md#31-effective-target-what-is-needed-now)) |
 | `docs` / `shared` | where tagged docs live, and where shared items usually live |
+| `ignore` | globs to leave out, e.g. `["templates/**"]`. A folder with its own `anaxi.json` is always left out: it's a separate project |
 | `questions` | path of the project questions file (default `anaxi-questions.md` at the docs root) |
 | `index` / `out` | where the generated index goes, and where rendered documents go |
 | `sections` | extra heading names that map to a level, or to the canvas ([FORMAT.md §4](FORMAT.md#4-what-level-a-piece-of-content-is-at)), to match your TDD template |
@@ -79,6 +80,7 @@ Every key is optional. A project with no `anaxi.json` gets the defaults.
 | `targets.min` / `max` / `rules` | a floor and ceiling for every item, or for items with a given `about:` topic |
 | `caps.focus` / `caps.stage` | change the default caps; `null` means no cap |
 | `nudges.off` / `severity` | switch nudges off, or change their severity. N09 (gate) can't be switched off |
+| `hooks.sessionStart` / `hooks.afterEdit` | the Claude Code plugin's hooks: the status table at session start (default on), the nudges after Claude edits a doc (default off) |
 
 ## 3. Built-in profiles
 

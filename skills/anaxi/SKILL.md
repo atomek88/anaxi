@@ -26,7 +26,9 @@ Read only what the current procedure needs. Paths are relative to the method fol
 | `TOOLING.md`, `tools/SPEC.md` | the scripts, the index, rendering |
 
 **Finding the method folder**, first match wins: `$ANAXI_HOME`; the `method` key in the project's
-`anaxi.json`; the parent folder of this skill.
+`anaxi.json`; a vendored `tools/anaxi/` in the project; when loaded from the Claude Code plugin,
+`${CLAUDE_PLUGIN_ROOT}` (if that reads as a literal variable, you weren't loaded from the plugin); otherwise two
+folders above this skill (`skills/anaxi/` → the method root).
 
 Then load the project's `anaxi.json` and `anaxi-questions.md`, if they exist, and apply them over the
 profile (`PROFILES.md §1`). Item fields (`profile:`, `target:`, `skip:`, `focus:`) win over everything.

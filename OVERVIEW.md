@@ -185,16 +185,21 @@ No new ceremonies, and the tracker is untouched.
 
 ## Adopting it
 
-One command adds Anaxi to a new or existing repo, and never overwrites a file:
+With Claude Code, Anaxi is a plugin: install it once per machine, then run `/anaxi:init` in any repo.
 
 ```bash
-anaxi/tools/anaxi-init.sh my-project --profile service --stage shaping
-node tools/anaxi/tools/anaxi-check.mjs new my-feature --title "My feature"
+claude plugin marketplace add <anaxi repo>
+claude plugin install anaxi@anaxi
 ```
 
-It copies the method into `tools/anaxi/`, writes `anaxi.json` (settings) and `docs/anaxi-questions.md` (the
-project's own questions), starts a shared `@stack` item, links the agent skill for Claude Code, installs a
-pre-commit hook and builds the first index. Requirements: Node 18 or newer; no packages.
+`/anaxi:init` writes `anaxi.json` (settings) and `docs/anaxi-questions.md` (the project's own questions), starts a
+shared `@stack` item, installs a pre-commit hook and builds the first index. It never overwrites a file and copies
+nothing into the repo. Then `/anaxi:status`, `/anaxi:assess <doc>` and `/anaxi:gate @id`, and Claude sees the
+status table at the start of every session in the repo.
+
+Without Claude Code (other agents, CI), one script copies the method into `tools/anaxi/` instead:
+`anaxi/tools/anaxi-init.sh my-project --profile service --stage shaping`. Requirements: Node 18 or newer; no
+packages.
 
 | Changes | Stays the same |
 | --- | --- |
@@ -208,9 +213,9 @@ regulated.
 
 ## Status, limits and roadmap
 
-**Today (v0.7):** the method, the checker (`status`, `nudges`, `gate`, `questions`, `uses`, `index`, `check`,
-`new`), CI and pre-commit support, an install script and the agent skill are built and self-tested on an example
-project. Projects can change the ladder and the rubric.
+**Today (v0.8):** the method, the checker (`status`, `nudges`, `gate`, `questions`, `uses`, `index`, `check`,
+`new`), CI and pre-commit support, an install script, the agent skill and a Claude Code plugin are built and
+self-tested on an example project. Projects can change the ladder and the rubric.
 
 **Known limits:**
 
@@ -223,12 +228,15 @@ project. Projects can change the ladder and the rubric.
 
 **Roadmap,** ordered by what the pilot shows ([ROADMAP.md](ROADMAP.md)):
 
-1. **Package it:** `npx anaxi init | check | gate` instead of copying a folder (published on npm as `anaxi`).
-2. **Claude Code plugin:** skill, hook and slash commands in one install.
-3. **`anaxi watch`:** a local live viewer: index, dependency graph coloured by status, read any item at a
-   chosen depth.
+1. **Package it:** `npx anaxi init | check | gate` for teams without Claude Code (published on npm as `anaxi`).
+2. **Claude Code plugin:** built in 0.8.
+3. **See the design:** `anaxi watch`, a live local map where zoom is depth: project → topic → item → level →
+   section. Candidate pictures to compare: a 2D graph with depth bars, a 3D layer stack, a city (items as
+   buildings, levels as floors, `uses:` as roads).
 4. **MCP server:** the same engine as agent tools; `anaxi_context(@id, at: D3)` returns an item plus the
    contracts it depends on, at exactly the depth needed.
+5. **References and attribution:** `refs:` to tickets, designs, ADRs, data and prototype evidence, checked by
+   the checker; `owner:`; last changed, from git.
 
 **To do:**
 

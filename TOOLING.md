@@ -42,6 +42,8 @@ Zero-dependency Node (≥ 18) and bash. The skill also works without them (by ha
 | `tools/hooks/pre-commit` | runs `anaxi-ci.sh --fix` on commits that touch markdown | built |
 | `tools/selftest.mjs` | checks the example's statuses and that a broken project trips every structural check | built |
 | `tools/anaxi-init.sh` | adds Anaxi to a new or existing project: vendors the method into `tools/anaxi`, writes `anaxi.json`, `anaxi-questions.md` and `@stack`, links the skill, installs the hook, builds the first index. Never overwrites | built |
+| `tools/release.sh` | releases a plugin version: checks, sets the version, commits, tags (§5.1) | built |
+| `hooks/` | the plugin's session-start and after-edit hooks ([tools/SPEC.md §7](tools/SPEC.md#7-plugin-hooks)) | built |
 | `tools/anaxi-render.mjs` | optional: composes several items into one document | not built: links and the index cover most needs |
 
 Full command reference, grammar, rules and JSON: [tools/SPEC.md](tools/SPEC.md).
@@ -156,6 +158,43 @@ self-contained page with a depth slider; the [Strata viewer](archive/strata-view
 
 ## 5. Installing
 
+### 5.1 The Claude Code plugin (recommended)
+
+This repo is a Claude Code plugin and its own marketplace (`.claude-plugin/plugin.json`, `marketplace.json`).
+
+```bash
+claude plugin marketplace add <anaxi repo: a git URL or a local path>
+claude plugin install anaxi@anaxi
+```
+
+Then, in any project, `/anaxi:init [--profile P] [--stage S] [--docs DIR]`. The plugin provides:
+
+| Part | What |
+|---|---|
+| skill `anaxi` | the agent skill ([skills/anaxi/SKILL.md](skills/anaxi/SKILL.md)); Claude uses it on its own for marked docs |
+| `/anaxi:status` | the status table |
+| `/anaxi:assess <file or @id>` | checker nudges plus the skill's read of the content: what's missing, or "enough" |
+| `/anaxi:gate @id` | ready to build or not, and why |
+| `/anaxi:init` | `anaxi-init.sh --plugin`: settings, questions, `@stack`, the git hook; nothing vendored |
+| hook: session start | in a project with `anaxi.json`, gives Claude the status table. Off: `"hooks": {"sessionStart": false}` |
+| hook: after an edit | opt-in, `"hooks": {"afterEdit": true}`: after Claude edits a markdown doc, it sees that file's nudges. Never blocks |
+
+The git pre-commit hook finds the checker at `$ANAXI_HOME`, then a vendored `tools/anaxi`, then the plugin
+(its location is kept in `~/.anaxi/home`, refreshed each session). If none is found it skips, never blocking a
+commit. CI has no plugin: set `ANAXI_HOME` to a checkout of this repo, or vendor it (§5.2).
+
+**Updating.** Installed plugins are copies, pinned to `version` in `plugin.json`:
+
+| You are | How updates reach you |
+|---|---|
+| **using** Anaxi | `claude plugin marketplace update anaxi && claude plugin update anaxi@anaxi`, then restart Claude Code |
+| **developing** Anaxi | link the repo once: `ln -s ~/Professional/anaxi ~/.claude/skills/anaxi`. It loads as `anaxi@skills-dir`, straight from the working copy: every edit applies in the next session, no reinstall, no version bump. (Don't also install `anaxi@anaxi`, or there are two.) For one session only: `claude --plugin-dir ~/Professional/anaxi` |
+| **releasing** | `tools/release.sh 0.9.0 [--push]`: needs a CHANGELOG entry; runs the self-test, the example's CI and plugin validation, sets the version, commits and tags `anaxi--v0.9.0` |
+
+Project docs never need migrating: the plugin only reads them, and new marks and settings are always optional.
+
+### 5.2 Vendored, without the plugin
+
 ```bash
 path/to/anaxi/tools/anaxi-init.sh my-project --profile service --stage shaping
 ```
@@ -163,9 +202,8 @@ path/to/anaxi/tools/anaxi-init.sh my-project --profile service --stage shaping
 That vendors the method into `my-project/tools/anaxi/`, writes `anaxi.json`, `docs/anaxi-questions.md` and
 `docs/shared/stack.md`, links the skill into `.claude/skills/`, installs the pre-commit hook (in a git repo) and
 builds the first index. It works on an existing project and never overwrites a file; `--docs DIR` points it at
-where your docs already are, `--no-vendor` uses `$ANAXI_HOME` instead of a copy. Add CI yourself (§4.2).
+where your docs already are, `--no-vendor` uses `$ANAXI_HOME` instead of a copy. Add CI yourself (§4.2). A
+vendored copy wins over the plugin for the git hook, so CI, the hook and Claude agree.
 
-Packaging as an npm package and a Claude Code plugin is on the [roadmap](ROADMAP.md).
-
-Upgrading the method means replacing the vendored folder (or bumping the submodule) and reading
-[CHANGELOG.md](CHANGELOG.md). Project docs don't need to change: new marks and settings are always optional.
+Upgrading means replacing the vendored folder (or bumping the submodule) and reading [CHANGELOG.md](CHANGELOG.md).
+An npm package is on the [roadmap](ROADMAP.md).

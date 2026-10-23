@@ -12,6 +12,7 @@ Three parts, all working without the others:
 | **The convention** | marks in ordinary markdown: front matter, tag lines, badges ([FORMAT.md](FORMAT.md)) plus the method docs | people writing and reviewing TDDs |
 | **The checker** | `anaxi-check` and `anaxi-ci`: zero-dependency Node scripts that read the marks and compute targets, nudges, gates and `INDEX.md` | CI, pre-commit hooks, people at the terminal |
 | **The skill** | instructions that teach an agent the method, including the checks that need reading (N05, N07, N08…) | Claude Code and other agents |
+| **The plugin** | the skill, the checker, `/anaxi:*` commands and hooks in one Claude Code install | Claude Code users |
 
 ```
    markdown docs (the source of truth)
@@ -20,9 +21,8 @@ Three parts, all working without the others:
         └──► agent + skill ──► assess · deepen · write questions      (semantic; calls anaxi-check)
 ```
 
-It's installed by copying the method into the repo (`tools/anaxi-init.sh`). That's fine for a pilot. It isn't
-fine for twenty repos, and it means the agent skill exists only in repos that ran the install. The plugin (step 2)
-fixes both.
+With Claude Code it installs once per machine as a plugin (step 2), and `/anaxi:init` sets up a project without
+copying anything into it. Without Claude Code, `tools/anaxi-init.sh` copies the method into the repo.
 
 ## Rules for everything below
 
@@ -44,73 +44,64 @@ fixes both.
 - [ ] **To do: reserve `anaxi` on npm** with a placeholder 0.0.x package, before someone else takes it. Needs an
   npm login and a go-ahead, since it publishes to the public registry.
 
-### 2. A Claude Code plugin
+### 2. A Claude Code plugin · built in 0.8
 
-One install that gives every session the same Anaxi: the skills, the scripts, commands and hooks. Planned in
-detail because it's the next thing to build; it can come before the npm package, since a plugin carries its own
-copy of the scripts.
+This repo is the plugin and its own marketplace. One install per machine gives every session the skill, the
+checker, `/anaxi:status`, `/anaxi:assess`, `/anaxi:gate`, `/anaxi:init`, a session-start hook (the status
+table) and an opt-in after-edit hook (the nudges for the doc Claude just edited). Install, update, develop and
+release: [TOOLING.md §5](TOOLING.md#5-installing).
 
-**What's in it**
+Decided along the way:
 
-| Part | What | Notes |
+- **`gedanken`, `prototype` and `prototype-harvest` are not in it.** They stay separate skills while they're
+  refined, and may become their own plugin later. They call `anaxi-check` when it's there.
+- **The after-edit hook is opt-in** per project (`"hooks": {"afterEdit": true}`), until a pilot shows it helps
+  more than it distracts.
+- **Developing is live:** `~/.claude/skills/anaxi` links to the working copy, so edits apply next session.
+  Users get a release (`tools/release.sh`) with `claude plugin update`.
+
+Still to do:
+
+- **Pin a version per project:** an optional `"requires": ">=0.8"` in `anaxi.json`; the checker warns when the
+  plugin is a major version off.
+- **Publish the repo** (GitHub) so `claude plugin marketplace add <owner>/anaxi` works for a team.
+- **The MCP server (step 4)** goes in the same plugin as a `.mcp.json` entry.
+
+### 3. Seeing the design: `anaxi watch` and a zoomable map
+
+A small local server that watches the docs, re-evaluates on every save, and serves a read-only page. Started
+from Claude Code with `/anaxi:watch` (it prints the URL), or from a terminal. It edits nothing: writing still
+happens in your editor, and an agent writes through files as now.
+
+**What it must answer, at a glance:** what's ready to build, what's blocked and by what, what's still a gap,
+and what's over-designed. Everything else is secondary.
+
+**The one idea behind every view: zoom is depth.** Zooming out shows less depth; zooming in reads deeper, down to
+the text of one level of one item. The data is already in `anaxi-check status --json`: each item's depth and
+target, its status, `uses:` links, parts, `about:` topics and every section's level.
+
+| Zoom | You see | Opens |
 |---|---|---|
-| skills | `anaxi` | `gedanken`, `prototype` and `prototype-harvest` stay separate global skills while they're refined. They call `anaxi-check` when it's there, so with the plugin installed their Anaxi steps work in every repo |
-| scripts | `tools/` and the method docs, run from the plugin's folder (`${CLAUDE_PLUGIN_ROOT}`) | projects stop vendoring `tools/anaxi` |
-| commands | `/anaxi status`, `/anaxi assess @id`, `/anaxi gate @id`, `/anaxi init` | `init` writes only `anaxi.json`, `anaxi-questions.md`, the `@stack` seed and the git hook |
-| hook: session start | if the repo has a `anaxi.json`, print the status table (a few lines) | silent everywhere else |
-| hook: after an edit | when Claude edits a markdown doc, run `nudges` for the items in that file and show them | ~0.1 s per run; never blocks the edit |
-| hook: before commit | unchanged: the git pre-commit hook keeps `INDEX.md` fresh | a git hook, not a Claude hook, so it also runs for people |
-| MCP server | later: step 4 adds a `.mcp.json` entry, same plugin | |
+| the project | every item, its depth against its target, the `uses:` links | |
+| a topic, epic or folder | its items and what they depend on outside it | |
+| an item | its levels stacked D0 up to its depth, faint up to its target; its parts beside it | the item's nudges |
+| a level of an item | the sections at that level, the open questions for it | the text, as written |
 
-**Layout:** the plugin is this repo itself, plus `.claude-plugin/plugin.json`, `commands/` and
-`hooks/hooks.json`. No second copy of anything. A `.claude-plugin/marketplace.json` in the same repo lists it for installing.
+**Candidate pictures** (compare them on the example project's real data before choosing one):
 
-**Two ways to load it**
+| Picture | How depth shows | Good at | Risk |
+|---|---|---|---|
+| **2D graph with depth bars** | each item a node with a D0–D4 bar, filled to its depth, outlined to its target; edges are `uses:` | blocked chains, fast reading, works on any screen | flat; "how much is designed" reads less physically |
+| **3D layer stack** | D0–D4 are stacked planes; each item a column rising to its depth, ghosted to its target; `uses:` edges between columns; a slider cuts the stack at a level ("the project as designed to D2") | seeing the whole design's depth at once | 3D is slower to read and harder to click; needs WebGL |
+| **City** | items are buildings: floors are levels (D0 foundation … D4 finishing), built floors solid, target floors scaffolding; districts are topics or folders; roads are `uses:` links, red where blocked; a 🎯 flag on the roof when enough; floors above the target marked for trimming | a metaphor people get instantly; zooming city → district → building → floor → room maps exactly onto project → topic → item → level → section | the metaphor can mislead (tall isn't better); cost of building it |
+| **House, for one feature** | the same metaphor for one TDD: D0 foundation (why), D1 floor plan (what), D2 frame (shape), D3 utilities and connections to the neighbours (contracts), D4 fit-out (build steps) | reviewing one TDD with its team | doesn't scale to a project |
 
-| Mode | How | When Anaxi changes |
-|---|---|---|
-| **Developing Anaxi** (you, now) | link the folder as a skills-dir plugin: `ln -s ~/Professional/anaxi ~/.claude/skills/anaxi` (loads as `anaxi@skills-dir`), or `claude --plugin-dir ~/Professional/anaxi` for one session | live: edits apply in the next session, no reinstall |
-| **Using Anaxi** (a team) | `claude plugin marketplace add <repo>`, then `claude plugin install anaxi@<marketplace>` | installed copies are cached by version: bump `version` in `plugin.json`, then `claude plugin update anaxi` and restart. Unchanged version, no update |
+The likely answer is two views over one model: a 2D graph for daily use, and the city (or the 3D stack) as the
+zoomable overview, both driven by the same JSON and the same depth slider. The prototype decides.
 
-**Keeping versions straight as it evolves**
-
-- **The docs never need migrating.** Markdown is the source of truth, and the plugin only reads it. A plugin
-  update changes the checker, never the files. Mark changes go in the changelog and `check` warns about old forms
-  for a release before they stop working.
-- **Projects can pin.** `anaxi.json` gets an optional `"requires": ">=0.8"`; the checker warns when the plugin
-  is older or newer by a major version.
-- **A vendored copy still wins.** If a repo has `tools/anaxi`, the hooks and commands use it, so CI, the git
-  hook and Claude agree. Remove it to follow the plugin.
-- **One skill per name.** When the plugin is installed, remove any project `.claude/skills/anaxi` link, or there are two.
-- **JSON output is versioned** (`anaxi/1`). Anything built on it (the viewer, the MCP server, CI) checks the
-  version.
-
-**How later steps fit**
-
-- **`anaxi watch` (step 3)** is a long-running process, so it isn't a hook: `/anaxi watch` starts it in the
-  background and prints the URL. It lives in the same plugin and uses the same engine, so an update brings it
-  along.
-- **The MCP server (step 4)** is declared in the plugin's `.mcp.json`. Claude Code starts it per session, so an
-  update and a restart are enough. `anaxi watch` and the MCP server can share one process later.
-- **Questions, levels and rubric stay per project** (`anaxi.json`, `anaxi-questions.md`). The plugin ships only
-  defaults, so a project's choices survive every update.
-
-**Open before building:** whether the after-edit hook is on by default or opt-in per project.
-
-**Decided:** `gedanken`, `prototype` and `prototype-harvest` are not in the plugin; they stay separate skills while
-they're refined, and may become their own plugin later.
-
-### 3. `anaxi watch`: a live local viewer
-
-A small local server that watches the docs, re-evaluates on every save, and serves a read-only page:
-
-- the index, live, with filters (focus, topic, status);
-- a dependency graph of `uses:`, coloured by status, so blocked chains are obvious;
-- any item read "at a depth": a slider showing D0 only, up to D1, and so on (the archived
-  [Strata viewer](archive/strata-viewer.html) is a starting point);
-- the nudges for whatever file you just saved.
-
-It edits nothing. Writing still happens in your editor, and an agent writes through files as now.
+**Needed from the checker first:** `anaxi-check context @id --at D2` (an item's text up to a level, plus the
+contracts of what it uses: the same thing the MCP server's `anaxi_context` returns), and a stable section id in
+the JSON so a view can link to and open a section.
 
 ### 4. An MCP server: Anaxi as tools for agents
 
@@ -127,7 +118,18 @@ The same engine, exposed so any agent can query the design instead of grepping i
 `anaxi_context` is the important one. It turns "read the design docs" into one bounded, depth-aware call, and
 it could run in the same process as `anaxi watch`.
 
-### 5. Smaller things
+### 5. References and attribution
+
+So a reader (or an agent) can see where a design came from and check it against the source:
+
+- **`refs:`** on an item or section: tickets, Figma frames, ADRs, PRs, dashboards, data sources, a prototype's
+  evidence pack. The checker verifies what it can (a local path exists, a URL is well formed) and lists them in
+  `INDEX.md`, the viewer and `anaxi_context`.
+- **`owner:`**, optional: who to ask. Not a sign-off.
+- **Last changed, and by whom**, from git per item, which is also what N11 (recheck after a shared item changes)
+  needs.
+
+### 6. Smaller things
 
 - `anaxi render`: one combined document for people who want a single file ([TOOLING.md §4.3](TOOLING.md#43-a-rendered-document-anaxi-render-optional-not-built-yet)).
 - N11, recheck after a shared item changes, from git history.
@@ -140,5 +142,6 @@ it could run in the same process as `anaxi watch`.
 After the pilot, ask:
 
 - Did people use the CLI, or only the agent? If only the agent, build the MCP server before the viewer.
-- Did anyone want to *see* the whole design? If yes, `anaxi watch`.
+- Did anyone want to *see* the whole design? If yes, `anaxi watch` and the map (step 3).
+- Did reviewers ask "where did this come from?" If yes, `refs:` (step 5).
 - Is a second team asking to use it? Then package it (step 1) before anything else.
