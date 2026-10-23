@@ -9,19 +9,26 @@
 //   anaxi-check index     [--out FILE] [--check | --path]          --check: exit 1 if stale · --path: print where it goes
 //   anaxi-check check                                              exit 2 on errors
 //   anaxi-check new       NAME [--title T] [--small] [--in DIR]    a new TDD from the template, filled in
+//   anaxi-check supersede @old --by @new [--why W]                 mark both sides
+//   anaxi-check retire    @id --why W [--date YYYY-MM-DD]          dropped, nothing replaces it
+//   anaxi-check archive   @id [--why W]                            move a whole-file item to the archive, fix links
+//   anaxi-check restore   @id                                      back to current (and out of the archive)
+//   anaxi-check delete    @id [--force]                            remove an archived file; RETIRED.md keeps its id
+//   (the five lifecycle commands take --dry-run)
 //
 // Every command takes --dir DIR (default: the current folder); anaxi.json is found by searching upward.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { loadConfig, globRe, LV, lv, top as topLevel, METHOD_DIR } from './lib/config.mjs';
-import { evaluate, gate, dependents, icon, targetText, renderIndex } from './lib/engine.mjs';
+import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText } from './lib/engine.mjs';
+import { transition } from './lib/lifecycle.mjs';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0] && !argv[0].startsWith('--') ? argv.shift() : 'status';
 const flag = (n) => argv.includes(`--${n}`);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--json', '--all', '--check', '--path', '--repeated', '--skips', '--small'].includes(argv[i - 1])));
+const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--json', '--all', '--check', '--path', '--repeated', '--skips', '--small', '--force', '--dry-run'].includes(argv[i - 1])));
 
 function die(msg, code = 2) { console.error(`anaxi-check: ${msg}`); process.exit(code); }
 
@@ -35,8 +42,8 @@ const name = (it) => it.id || `"${it.title}"`;
 const find = (q) => {
   if (!q) die(`${cmd} needs an item: @id, a title, or a file`);
   const it = model.byId.get(q.startsWith('@') ? q : `@${q}`)
-    || model.items.find((x) => x.title.toLowerCase() === q.toLowerCase())
-    || model.items.find((x) => x.file === q && !x.parent);
+    || model.all.find((x) => x.title.toLowerCase() === q.toLowerCase())
+    || model.all.find((x) => x.file === q && !x.parent);
   if (!it) die(`no item "${q}"`);
   return it;
 };
@@ -48,7 +55,8 @@ const itemJson = (it) => ({
   risk: it.risk, about: it.about, focus: it.focus || 'now', parts: it.parts || [],
   uses: it.uses.map((u) => ({ id: u.item ? u.item.key : null, raw: u.raw, path: u.item?.file || u.path, required: u.level || LV(u.item?.targetN), actual: u.item?.depth || null })),
   open: it.openList, caveats: it.caveats, later: it.later.map((l) => ({ text: l.text, trigger: l.trigger ? { id: l.trigger.id, level: l.trigger.level } : null })),
-  skip: it.skip, sections: it.sections,
+  skip: it.skip, sections: it.sections, lifecycle: it.lifecycle,
+  supersededBy: it.supersededBy, supersedes: it.supersedes, retired: it.retired, successor: it.successor?.key || null,
 });
 const header = () => `${cfg.profile} profile · stage: ${cfg.stage} · ${model.items.length} items · ${cfg.file ? path.relative(process.cwd(), cfg.file) || 'anaxi.json' : 'no anaxi.json (defaults)'}`;
 
@@ -95,7 +103,7 @@ function printNudges(list) {
     if (g && g.key === n.item) g.list.push(n); else groups.push({ key: n.item, list: [n] });
   }
   for (const g of groups) {
-    const it = model.items.find((x) => x.key === g.key);
+    const it = model.all.find((x) => x.key === g.key);
     if (it) {
       console.log(`\n${icon(it.status)}  ${bold(name(it))}  ${it.title}`);
       console.log(dim(`    ${it.file}:${it.line} · depth ${it.depth} · target ${targetText(it)}${it.risk ? ` · risk ${it.risk.join('·')}` : ''}${it.parts ? ` · parts in ${[...new Set(it.parts.map((p) => p.file))].join(', ')}` : ''}`));
@@ -128,13 +136,22 @@ switch (cmd) {
     let items = model.items;
     if (opt('focus')) items = items.filter((it) => (it.focus || 'now') === opt('focus'));
     if (opt('about')) items = items.filter((it) => it.about.includes(opt('about')));
-    if (flag('json')) { json({ format: 'anaxi/1', settings: { profile: cfg.profile, stage: cfg.stage }, items: items.map(itemJson), nudges: model.nudges }); break; }
+    if (flag('json')) {
+      json({ format: 'anaxi/1', settings: { profile: cfg.profile, stage: cfg.stage }, items: items.map(itemJson), nudges: model.nudges,
+        inactive: model.inactive.map(itemJson), deleted: [...model.retired].map(([id, r]) => ({ id, ...r })) });
+      break;
+    }
     console.log(header());
     console.log(`\n   ${pad('Item', 34)} ${pad('Depth', 6)} ${pad('Target', 12)} ${pad('Open', 5)} Uses`);
     for (const it of items) {
       const title = `${it.parent ? '↳ ' : ''}${it.id ? it.id + ' ' : ''}${it.title}`;
       console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(it.depth || '—', 6)} ${pad(targetText(it), 12)} ${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}`);
     }
+    const past = model.inactive.filter((it) => !it.parent || it.parent.lifecycle === 'current');
+    if (past.length && flag('all')) {
+      console.log('');
+      for (const it of past) console.log(`${pad(icon(it.lifecycle), 3)}${pad(`${it.id ? it.id + ' ' : ''}${it.title}`.slice(0, 33), 34)} ${lifeText(it)}${it.successor ? ` → ${name(it.successor)}` : ''}`);
+    } else if (past.length) console.log(dim(`\n${past.length} superseded, retired or archived (not counted): ${past.map(name).join(', ')} · --all lists them`));
     const skipped = model.questions.list.filter((q) => q.skippedAll);
     for (const q of skipped) console.log(`\nskip-all ${q.id}: ${q.skippedAll}`);
     if (model.errors.length) console.log(`\n${model.errors.length} error(s): run \`anaxi-check check\``);
@@ -256,6 +273,16 @@ switch (cmd) {
     break;
   }
 
+  case 'supersede': case 'retire': case 'archive': case 'restore': case 'delete': {
+    try {
+      const r = transition(model, cmd, { item: find(positional[0]), by: opt('by') && find(opt('by')), why: opt('why'),
+        date: opt('date'), force: flag('force'), dryRun: flag('dry-run') });
+      for (const line of r.log) console.log(line);
+      if (!flag('dry-run')) console.log(dim('\nRegenerate the index: anaxi-check index (the pre-commit hook does it too)'));
+    } catch (e) { die(e.message); }
+    break;
+  }
+
   default:
-    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new`);
+    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new, supersede, retire, archive, restore, delete`);
 }

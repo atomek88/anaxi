@@ -23,6 +23,7 @@ export const DEFAULTS = {
   shared: 'shared',
   questions: 'anaxi-questions.md',
   index: 'INDEX.md',
+  archive: 'archive', // superseded and retired docs moved out of the way; RETIRED.md in it lists deleted ids
   out: '_anaxi',
   sections: {},
   levels: {
@@ -141,7 +142,8 @@ export function docFiles(cfg) {
   const list = (v) => (Array.isArray(v) ? v : v ? [v] : []);
   const res = list(cfg.docs).map(globRe);
   const ign = list(cfg.ignore).map(globRe);
-  const exclude = new Set([cfg.questions, cfg.index].filter(Boolean).map((p) => path.normalize(p)));
+  const exclude = new Set([cfg.questions, cfg.index, retiredFile(cfg)].filter(Boolean).map((p) => path.normalize(p)));
+  const inArchive = (r) => cfg.archive && (r + '/').startsWith(`${path.normalize(cfg.archive)}/`);
   const out = [];
   const walk = (rel) => {
     for (const e of fs.readdirSync(path.join(cfg.root, rel), { withFileTypes: true })) {
@@ -150,9 +152,12 @@ export function docFiles(cfg) {
         if (SKIP_DIRS.has(e.name) || path.normalize(r) === path.normalize(cfg.out) || ign.some((x) => x.test(r) || x.test(`${r}/`))) continue;
         if (fs.existsSync(path.join(cfg.root, r, 'anaxi.json'))) continue;
         walk(r);
-      } else if (r.endsWith('.md') && !exclude.has(path.normalize(r)) && res.some((x) => x.test(r)) && !ign.some((x) => x.test(r))) out.push(r);
+      } else if (r.endsWith('.md') && !exclude.has(path.normalize(r)) && (res.some((x) => x.test(r)) || inArchive(r)) && !ign.some((x) => x.test(r))) out.push(r);
     }
   };
   walk('');
   return out.sort();
 }
+
+/** The archive's list of deleted ids (ROADMAP step 6): `<archive>/RETIRED.md`. */
+export const retiredFile = (cfg) => (cfg.archive ? path.posix.join(cfg.archive, 'RETIRED.md') : null);

@@ -68,7 +68,8 @@ put anaxi.json <<EOF
   "docs": ["$DOCS/**/*.md"],
   "shared": "$DOCS/shared",
   "questions": "$DOCS/anaxi-questions.md",
-  "index": "$DOCS/INDEX.md"
+  "index": "$DOCS/INDEX.md",
+  "archive": "$DOCS/archive"
 }
 EOF
 put "$DOCS/anaxi-questions.md" <"$METHOD/templates/anaxi-questions.md"

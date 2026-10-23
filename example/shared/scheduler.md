@@ -1,7 +1,7 @@
 # Shared: Scheduler
 
 ## Scheduler
-> @scheduler · depth: D2 → D3 · risk: 2·1·1·1 · about: async, integration · uses: [@task-api](task-api.md)
+> @scheduler · depth: D2 → D3 · risk: 2·1·1·1 · about: async, integration · uses: [@task-api](task-api.md) · supersedes: @polling-sync
 > open: what the planner does with a task whose deadline has already passed
 
 **Why.** Users want tasks in their calendar without picking the times themselves. Success: 80 % of submitted

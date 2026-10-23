@@ -27,4 +27,9 @@
 - **Recurring tasks**: custom recurrence rules (when 10% of active users use recurrence)
 - **Task API**: v2 batch endpoint (when bulk import is planned)
 
-<sub>🎯 enough · ⬇️ go deeper · ⛔ blocked · ❓ open · ✂️ over-documented · ⏸️ later. Structural nudges only; the skill and reviewers add the ones that need reading (N05, N07, N08, N12, N16, N17).</sub>
+## Superseded and retired
+
+- 🗄️ [Polling sync](archive/polling-sync.md) `@polling-sync`: superseded by @scheduler (an event-driven planner replaced the per-minute poll), archived → [@scheduler](shared/scheduler.md#scheduler)
+- Deleted (in git history, listed in archive/RETIRED.md): @email-digest
+
+<sub>🎯 enough · ⬇️ go deeper · ⛔ blocked · ❓ open · ✂️ over-documented · ⏸️ later · ↪️ superseded · ⏹️ retired · 🗄️ archived. Structural nudges only; the skill and reviewers add the ones that need reading (N05, N07, N08, N12, N16, N17).</sub>

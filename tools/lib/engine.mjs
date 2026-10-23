@@ -1,13 +1,14 @@
 // Structural rules (tools/SPEC.md §4): targets, effective targets, open questions, structural nudges, the index.
 import fs from 'node:fs';
 import path from 'node:path';
-import { lv, LV, top, docFiles, itemSettings, factorNames } from './config.mjs';
+import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile } from './config.mjs';
 import { parseFile, SECTION_NAMES, slug } from './parse.mjs';
 import { questionSet, questionsFor } from './questions.mjs';
 
-const ICON = { blocked: '⛔', later: '⏸️', trim: '✂️', gap: '⬇️', open: '❓', enough: '🎯', none: '❓' };
-const ORDER = ['N09', 'N02', 'N15', 'N03', 'N05', 'N01', 'N08', 'N07', 'N06', 'N14', 'N12', 'N10', 'N11', 'N13',
-  'N16', 'N17', 'N04'];
+const ICON = { blocked: '⛔', later: '⏸️', trim: '✂️', gap: '⬇️', open: '❓', enough: '🎯', none: '❓',
+  superseded: '↪️', retired: '⏹️', archived: '🗄️' };
+const ORDER = ['N09', 'N02', 'N18', 'N15', 'N19', 'N21', 'N03', 'N05', 'N01', 'N08', 'N07', 'N06', 'N14', 'N12', 'N10',
+  'N11', 'N13', 'N16', 'N17', 'N20', 'N04'];
 
 /**
  * Read and evaluate a project. `read(rel)` returns a file's text (default: from disk), so the same code can run
@@ -62,6 +63,16 @@ export function evaluate(cfg, { read, files } = {}) {
     for (const m of p.mentions) host.mentions.add(m);
     for (const c of p.children) { c.parent = host; host.children.push(c); }
   }
+  // lifecycle (FORMAT.md §10): superseded, retired or archived items stay readable but stop counting
+  const archiveDir = cfg.archive ? `${path.posix.normalize(cfg.archive)}/` : null;
+  for (const it of items) {
+    it.lifecycle = archiveDir && it.file.startsWith(archiveDir) ? 'archived'
+      : it.supersededBy ? 'superseded' : it.retired ? 'retired' : 'current';
+  }
+  for (const it of items) { // a section item inside a superseded doc goes with it
+    for (let p = it.parent; p && it.lifecycle === 'current'; p = p.parent) if (p.lifecycle !== 'current') it.lifecycle = p.lifecycle;
+  }
+  const retired = readRetired(cfg, read);
   const resolve = (ref, from) => {
     if (ref.id) return byId.get(ref.id) || null;
     const target = path.posix.normalize(path.posix.join(path.posix.dirname(from.file), ref.path));
@@ -133,9 +144,19 @@ export function evaluate(cfg, { read, files } = {}) {
     if (it.placeholders.length && it.risk?.every((n) => n === 0)) it.placeholders.push('the risk scores');
   }
 
-  const model = { cfg, items, byId, untagged, errors, warnings, questions: qs };
+  const successor = (it) => { // follow superseded-by to the current item, if there is one
+    const seen = new Set();
+    let x = it;
+    while (x?.supersededBy && !seen.has(x)) { seen.add(x); x = byId.get(x.supersededBy.id); }
+    return x && x !== it && x.lifecycle === 'current' ? x : null;
+  };
+  for (const it of items) it.successor = it.lifecycle === 'current' ? null : successor(it);
+  const active = items.filter((it) => it.lifecycle === 'current');
+  const inactive = items.filter((it) => it.lifecycle !== 'current');
+  const model = { cfg, items: active, inactive, all: items, byId, retired, untagged, errors, warnings, questions: qs };
   model.nudges = nudges(model);
-  for (const it of items) it.status = statusOf(it, model);
+  for (const it of active) it.status = statusOf(it, model);
+  for (const it of inactive) it.status = it.lifecycle;
   return model;
 }
 
@@ -153,6 +174,10 @@ function nudges(model) {
   for (const it of items) {
     for (const u of it.uses) {
       if (!u.item) { add('N15', 'warn', it, `uses ${u.raw}, which ${u.id ? "doesn't exist" : 'is not a tagged item'}`); continue; }
+      if (u.item.lifecycle !== 'current') {
+        add('N18', 'warn', it, `uses ${name(u.item)}, which is ${lifeText(u.item)}${u.item.successor ? `: point it at ${name(u.item.successor)}` : ''}`, { uses: u.item.key });
+        continue;
+      }
       const need = u.level ? lv(u.level) : u.item.targetN;
       if (need == null || u.item.depthN >= need) continue;
       const late = it.focus === 'later';
@@ -203,15 +228,59 @@ function nudges(model) {
       add('N04', 'info', it, `${it.depth} 🎯 enough${capped ? ` for now (full target ${LV(it.targetN)})` : ''}${it.caveats ? `. Caveats: ${it.caveats}` : ''}`);
     }
   }
+  lifecycleNudges(model, add);
   const words = cfg.nudges.untaggedWords ?? 80;
   for (const u of untagged) {
     if (u.words > words) add('N13', 'info', null, `"${u.heading}" (${u.file}:${u.line}) has ${u.words} words and no tag`, { file: u.file, line: u.line, title: u.heading });
   }
-  const pos = new Map(items.map((it, i) => [it.key, i]));
+  const pos = new Map([...items, ...model.inactive].map((it, i) => [it.key, i]));
   return out.sort((a, b) => (pos.get(a.item) ?? 1e9) - (pos.get(b.item) ?? 1e9) || ORDER.indexOf(a.code) - ORDER.indexOf(b.code));
 }
 
 const name = (it) => it.id || `"${it.title}"`;
+
+/** "superseded by @new", "retired 2026-11-02 (why)", "archived". */
+export function lifeText(it) {
+  if (it.supersededBy) return `superseded by ${it.supersededBy.id}${it.supersededBy.reason ? ` (${it.supersededBy.reason})` : ''}${it.lifecycle === 'archived' ? ', archived' : ''}`;
+  if (it.retired) return `retired${it.retired.date ? ` ${it.retired.date}` : ''}${it.retired.reason ? ` (${it.retired.reason})` : ''}${it.lifecycle === 'archived' ? ', archived' : ''}`;
+  return it.lifecycle === 'archived' ? 'archived' : it.lifecycle;
+}
+
+/** `<archive>/RETIRED.md`: one table row per deleted id. Returns Map id → { date, why, successor, commit }. */
+function readRetired(cfg, read) {
+  const out = new Map(), file = retiredFile(cfg);
+  let text = '';
+  try { text = file ? read(file) : ''; } catch { return out; }
+  for (const line of text.split('\n')) {
+    const c = line.split('|').map((x) => x.trim());
+    if (/^@[A-Za-z][\w-]*$/.test(c[1] || '')) out.set(c[1], { date: c[2] || null, why: c[3] || null, successor: c[4] && c[4] !== '—' ? c[4] : null, commit: c[5] || null });
+  }
+  return out;
+}
+
+/** N15, N19, N20, N21: the lifecycle marks agree with each other, and nothing deleted comes back. */
+function lifecycleNudges(model, add) {
+  const { all, byId, retired } = model;
+  for (const it of all) {
+    const s = it.supersededBy;
+    if (s) {
+      const to = byId.get(s.id);
+      if (!to) add(retired.has(s.id) ? 'N19' : 'N15', 'warn', it, `superseded-by ${s.id}, which ${retired.has(s.id) ? 'was deleted (RETIRED.md)' : "doesn't exist"}`);
+      else if (!to.supersedes.includes(it.id)) add('N19', 'warn', it, `says superseded-by ${s.id}, but ${s.id} doesn't say supersedes: ${name(it)}`);
+      else if (to === it) add('N19', 'warn', it, 'supersedes itself');
+    }
+    for (const old of it.supersedes) {
+      const o = byId.get(old);
+      if (!o) { if (!retired.has(old)) add('N15', 'warn', it, `supersedes ${old}, which doesn't exist`); continue; }
+      if (o.supersededBy?.id !== it.id) add('N19', 'warn', it, `says supersedes: ${old}, but ${old} doesn't say superseded-by: ${name(it)}`);
+    }
+    if (it.lifecycle === 'archived' && !it.supersededBy && !it.retired) add('N21', 'warn', it, 'is in the archive but says neither superseded-by nor retired: say why it was archived');
+    if (it.id && retired.has(it.id)) add('N21', 'warn', it, `${it.id} was deleted (RETIRED.md, ${retired.get(it.id).date || 'no date'}): pick a new id, so old references don't point here`);
+    if (it.lifecycle !== 'current' && it.allOpen.length) {
+      add('N20', 'info', it, `is ${lifeText(it)} but still has ${it.allOpen.length} open question${it.allOpen.length > 1 ? 's' : ''}: move them to ${it.successor ? name(it.successor) : 'the item that took over'}, or close them`);
+    }
+  }
+}
 
 function statusOf(it, model) {
   const mine = model.nudges.filter((n) => n.item === it.key);
@@ -227,11 +296,13 @@ function statusOf(it, model) {
 /** N09: ready only at the full target, nothing open (any level), uses deep enough, no block nudges. */
 export function gate(model, it) {
   const why = [];
+  if (it.lifecycle && it.lifecycle !== 'current') return { ready: false, why: [`${lifeText(it)}${it.successor ? `: gate ${name(it.successor)} instead` : ''}`] };
   if (it.targetN == null) why.push('no target');
   else if (it.depthN < it.targetN) why.push(`${it.depth} → ${LV(it.targetN)}${it.effectiveN < it.targetN ? ' (the full target applies to the gate)' : ''}`);
   if (it.allOpen.length) why.push(`${it.allOpen.length} open`);
   for (const u of it.uses) {
     if (!u.item) why.push(`${u.raw} doesn't resolve`);
+    else if (u.item.lifecycle !== 'current') why.push(`uses ${name(u.item)}, which is ${lifeText(u.item)}`);
     else {
       const need = u.level ? lv(u.level) : u.item.targetN;
       if (need != null && u.item.depthN < need) why.push(`${name(u.item)} at ${u.item.depth} of ${LV(need)}`);
@@ -278,6 +349,11 @@ export function renderIndex(model, indexPath) {
   const nud = model.nudges.filter((n) => n.code !== 'N04' && !(n.code === 'N02' && n.severity === 'info'))
     .map((n) => `- ${NI[n.code] || 'ℹ️'} **${n.title}** ${n.message}`);
   const later = items.flatMap((it) => it.later.map((l) => `- **${it.title}**: ${l.text}`));
+  const past = (model.inactive || []).filter((it) => !it.parent || it.parent.lifecycle === 'current').map((it) => {
+    const to = it.successor ? ` → [${name(it.successor)}](${path.posix.relative(dir, it.successor.file)}${it.successor.anchor ? '#' + it.successor.anchor : ''})` : '';
+    return `- ${icon(it.lifecycle)} ${link(it)}${it.id ? ` \`${it.id}\`` : ''}: ${lifeText(it)}${to}`;
+  });
+  const gone = [...(model.retired || new Map())].map(([id, r]) => `${id}${r.successor ? ` → ${r.successor}` : ''}`);
   return [
     `# Design index · ${cfg.profile} profile · stage: ${cfg.stage}`,
     '',
@@ -295,7 +371,9 @@ export function renderIndex(model, indexPath) {
     '',
     ...(later.length ? later : ['None.']),
     '',
-    `<sub>${icon('enough')} enough · ${icon('gap')} go deeper · ${icon('blocked')} blocked · ${icon('open')} open · ${icon('trim')} over-documented · ${icon('later')} later. Structural nudges only; the skill and reviewers add the ones that need reading (N05, N07, N08, N12, N16, N17).</sub>`,
+    ...(past.length || gone.length ? ['## Superseded and retired', '', ...past,
+      ...(gone.length ? [`- Deleted (in git history, listed in ${path.posix.relative(dir, retiredFile(cfg))}): ${gone.join(', ')}`] : []), ''] : []),
+    `<sub>${icon('enough')} enough · ${icon('gap')} go deeper · ${icon('blocked')} blocked · ${icon('open')} open · ${icon('trim')} over-documented · ${icon('later')} later${(model.inactive || []).length ? ` · ${icon('superseded')} superseded · ${icon('retired')} retired · ${icon('archived')} archived` : ''}. Structural nudges only; the skill and reviewers add the ones that need reading (N05, N07, N08, N12, N16, N17).</sub>`,
     '',
   ].join('\n');
 }

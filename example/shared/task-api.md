@@ -27,3 +27,10 @@ Auth: every call carries the user's bearer token; the user ID comes from the tok
 Failure: the client retries on network errors, `429` and `5xx` with backoff (2 s, doubling, capped at 5 min),
 always with the same `submissionId`. Versioning: `/v1/` is frozen; any breaking change is `/v2/`, because old
 app versions stay installed.
+
+### Decision log
+
+> superseded-by: the client-generated `submissionId` above
+
+Before 2026-09: the server generated task IDs and returned them in the `201`. Replaced because a retry after a
+lost response created a duplicate task. Kept so nobody proposes it again; never counted.

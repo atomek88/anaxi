@@ -14,11 +14,13 @@ export const SECTION_NAMES = {
   D4: ['implementation', 'implementation plan', 'tasks', 'work breakdown', 'milestones', 'code', 'examples', 'testing',
     'test plan', 'rollout', 'migration plan', 'deployment'],
   canvas: ['canvas', 'sketch', 'sketches', 'ideas', 'brainstorm', 'notes', 'thoughts', 'visuals', 'mockups', 'appendix'],
+  // replaced content kept for its reasoning (FORMAT.md §10): kept and labelled, never counted, like the canvas
+  history: ['decision log', 'history', 'superseded', 'retired', 'previous design'],
   questions: ['open questions', 'questions', 'faq'],
 };
 
 export const KNOWN_FIELDS = new Set(['anaxi', 'depth', 'risk', 'target', 'about', 'uses', 'open', 'skip', 'caveats',
-  'later', 'focus', 'profile', 'part-of']);
+  'later', 'focus', 'profile', 'part-of', 'superseded-by', 'supersedes', 'retired', 'archived-from']);
 
 const FENCE = /^\s*(```|~~~)/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
@@ -109,6 +111,20 @@ export function normalizeFields(raw, errs, where) {
         break;
       case 'profile': f.profile = val; break;
       case 'part-of': f.partOf = String(val).replace(/^@?/, '@'); break;
+      case 'superseded-by': {
+        const m = String(val).match(/^@?([A-Za-z][\w-]*)\s*(?:\((.*)\))?/);
+        if (!m) errs.push(`${where}: superseded-by needs an @id, e.g. superseded-by: @new (why)`);
+        else f.supersededBy = { id: `@${m[1]}`, reason: m[2] || null };
+        break;
+      }
+      case 'supersedes': f.supersedes = asList(val).map((x) => x.replace(/\s*\(.*\)$/, '').replace(/^@?/, '@')); break;
+      case 'retired': {
+        const m = String(val).match(/^(\d{4}-\d{2}-\d{2})?\s*(?:\((.*)\))?\s*$/);
+        if (!m || (!m[1] && !m[2])) errs.push(`${where}: retired needs a date and a reason, e.g. retired: 2026-11-02 (cut from the plan)`);
+        else f.retired = { date: m[1] || null, reason: m[2] || null };
+        break;
+      }
+      case 'archived-from': f.archivedFrom = String(val); break;
       default: f.unknown.push(k);
     }
   }
@@ -160,9 +176,10 @@ function sectionByName(text, names) {
   return best;
 }
 
-/** Explicit section mark in a heading: "D2 Shape", a bare `D4` badge, or 🎨. */
+/** Explicit section mark in a heading: "D2 Shape", a bare `D4` badge, 🎨, or a `superseded`/`retired` badge. */
 function sectionByMark(text) {
   if (text.includes('🎨')) return 'canvas';
+  if (/`(superseded|retired)\b[^`]*`/.test(text)) return 'history';
   const m = text.match(/^(D\d)\b/) || text.match(/`(D\d)`/);
   return m ? m[1] : null;
 }
@@ -180,7 +197,7 @@ export function parseFile(text, file, names = SECTION_NAMES) {
   const newItem = (o) => ({ id: null, title: '', file, line: 1, declared: '', hlevel: 0, anchor: '', parent: null,
     children: [], depth: null, arrow: null, enough: false, risk: null, target: null, about: [], uses: [], open: [],
     skip: [], caveats: null, later: [], focus: null, profile: null, checklist: [], sections: [], mentions: new Set(),
-    unknown: [], ...o });
+    supersededBy: null, supersedes: [], retired: null, archivedFrom: null, unknown: [], ...o });
 
   if (lines[0]?.trim() === '---') {
     const end = lines.findIndex((l, i) => i > 0 && l.trim() === '---');
@@ -217,13 +234,14 @@ export function parseFile(text, file, names = SECTION_NAMES) {
       // declarations under the heading: a `>` tag line with depth:, or a <!-- anaxi: --> comment
       let j = i + 1;
       while (j < lines.length && lines[j].trim() === '') j++;
-      let raw = null, declared = '', consumed = i;
+      let raw = null, declared = '', consumed = i, sectionNote = null;
       if (lines[j]?.startsWith('>')) {
         let k = j;
         const parts = [];
         while (k < lines.length && lines[k].startsWith('>')) parts.push(lines[k++].replace(/^>\s?/, '').trim());
         const joined = parts.filter(Boolean).join(' · ');
         if (/(^|\s)(depth|part-of):/.test(joined)) { raw = parseFieldString(joined); declared = 'tag'; consumed = k - 1; }
+        else if (stack.length && /(^|\s)(superseded-by|retired):/.test(joined)) sectionNote = { text: joined, end: k - 1 };
       } else if (/^<!--\s*anaxi:/.test(lines[j]?.trim() || '')) {
         let k = j, s = '';
         while (k < lines.length) { s += ` ${lines[k]}`; if (lines[k].includes('-->')) break; k++; }
@@ -275,11 +293,13 @@ export function parseFile(text, file, names = SECTION_NAMES) {
       // a section inside the current item
       const t = top();
       while (t.sections.length && t.sections[t.sections.length - 1].hlevel >= hlevel) t.sections.pop();
-      let level = sectionByMark(htext), by = 'mark';
+      let level = sectionNote ? 'history' : sectionByMark(htext), by = 'mark';
       if (!level) { level = sectionByName(title, names); by = 'name'; }
       if (!level) { level = t.sections[t.sections.length - 1]?.level || null; by = level ? 'above' : 'none'; }
       t.sections.push({ hlevel, level });
-      t.item.sections.push({ heading: title, level, by, line: i + 1, words: 0 });
+      const sec = { heading: title, level, by, line: i + 1, words: 0 };
+      if (sectionNote) { sec.note = sectionNote.text; i = sectionNote.end; }
+      t.item.sections.push(sec);
       continue;
     }
 
@@ -296,7 +316,7 @@ export function parseFile(text, file, names = SECTION_NAMES) {
     if (bare.includes('<!--')) { bare = bare.slice(0, bare.indexOf('<!--')); inComment = true; }
     const sec = t.item.sections.at(-1);
     if (sec) sec.words += bare.split(/\s+/).filter(Boolean).length;
-    const inCanvas = canvasMark || t.sections[t.sections.length - 1]?.level === 'canvas';
+    const inCanvas = canvasMark || ['canvas', 'history'].includes(t.sections[t.sections.length - 1]?.level);
     if (inCanvas) continue;
     const c = line.match(CHECK);
     if (c) {

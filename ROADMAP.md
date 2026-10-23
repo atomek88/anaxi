@@ -88,7 +88,7 @@ don't follow `@id` links or show who uses an item, and have no idea what's block
 | **an item at a depth** | a depth control per item, and one for the page: "up to D2" hides sections at D3 and deeper (sections already carry levels). The canvas shows or hides with one toggle; it's always labelled |
 | **an item and its parts** | a part (`part-of:`, e.g. in `APPENDIX.md`) shows inline under its host's matching level, or collapsed with a link, never as a separate item |
 | **links that work** | `@id` and `[@id](path)` open in the reader; each item lists what it uses and what uses it (backlinks); a breadcrumb project → topic → item → level |
-| **the super-TDD** | a whole project, an epic or a topic as one scrolling document: the status table, then each item once, at the chosen depth, in `uses:` order. This is `anaxi render` done live, so it isn't a separate tool any more |
+| **the whole design, paged** | a project, epic or topic as linked pages, never one endless scroll: an overview page (status table and map), one page per item with its levels as sections and an outline beside it, next and previous in `uses:` order, at the chosen depth. One continuous document only for print or export (`anaxi render`) |
 | **what to do** | the item's nudges beside it, and the gate: ready, or what blocks it |
 | **what changed** | since a git ref (`--diff`): changed sections marked, new nudges listed. Per item, a short history from git: depth over time, last changed, by whom |
 | **what's no longer true** | superseded and retired items and sections (step 6) shown greyed with a banner pointing to what replaced them; hidden by default from the super-TDD |
