@@ -12,7 +12,7 @@ What each level means, in three layers. Only the first two are maintained here.
 **Why it works this way.** Nobody can keep a global bank right for every API, mobile app, pipeline and
 model. The people and agents doing the work know what they're working on, so they write the specific
 questions, guided by the principles. The method keeps only what is true everywhere. For inspiration there is a
-non-binding [question library](skill/references/question-library.md) by topic and kind of project; nothing in it
+non-binding [question library](skills/anaxi/references/question-library.md) by topic and kind of project; nothing in it
 applies unless someone copies it in.
 
 How to choose and write questions for a project, a stage or a kind of item is in
@@ -67,7 +67,7 @@ canvas.
 Two per level, one at D4. They are deliberately broad: each one is a prompt that the item answers in its own
 way, and the item's own questions (§5.2) fill in the specifics. A question is core only if **it would be wrong
 to skip it on any reasonable project**. The narrower questions that used to be core are in the
-[library](skill/references/question-library.md#core-extras).
+[library](skills/anaxi/references/question-library.md#core-extras).
 
 The table has fixed columns (ID, Question, Why it matters) because the scripts read it ([TOOLING.md](TOOLING.md)).
 All core questions are required: answer them, or skip them with a reason.
@@ -147,7 +147,7 @@ item question → project question (anaxi-questions.md) → core question (this 
 ```
 
 A question moves up when it has proven itself in more than one place. Promoting to core is rare and has to pass
-the core test (§4). The library ([skill/references/question-library.md](skill/references/question-library.md))
+the core test (§4). The library ([skills/anaxi/references/question-library.md](skills/anaxi/references/question-library.md))
 collects good project questions for other projects to borrow. Getting a question into the library is easy;
 getting into core is hard, and core should shrink before it grows.
 

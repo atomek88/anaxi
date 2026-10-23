@@ -14,7 +14,7 @@ and how the questions change over time. The principles and core questions themse
 | **Core questions** (10) | QUESTIONS.md §4 | method owner | always, unless the project rewords or skips them with a reason |
 | **Project questions** | `anaxi-questions.md` in the project | the project's team | to every item, or to items whose `about:` matches `when:` |
 | **Item questions** | a checklist in the item | whoever works on the item: author, reviewer, agent | to that item |
-| **Library** | [skill/references/question-library.md](skill/references/question-library.md) | anyone can add | **never on its own**; only what gets copied in |
+| **Library** | [skills/anaxi/references/question-library.md](skills/anaxi/references/question-library.md) | anyone can add | **never on its own**; only what gets copied in |
 
 **Overrides.** The project file can add questions, and make core ones optional, reworded or dropped (with a
 reason). An item can `skip:` any question, with a reason. Nobody can change the principles or what a level

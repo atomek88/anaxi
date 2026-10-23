@@ -21,7 +21,7 @@ Read only what the current procedure needs. Paths are relative to the method fol
 | `QUESTIONS_REFERENCE.md` | choosing and writing questions by project kind, stage and item type; the canvas |
 | `NUDGES.md` | nudge codes, messages, the signals for N07 and N08, reporting order |
 | `PROFILES.md` | `anaxi.json` settings and profiles |
-| `skill/references/question-library.md` | wording to borrow when writing questions; never applied automatically |
+| `skills/anaxi/references/question-library.md` | wording to borrow when writing questions; never applied automatically |
 | `templates/` | starting files for a TDD, a small item, project questions, settings |
 | `TOOLING.md`, `tools/SPEC.md` | the scripts, the index, rendering |
 

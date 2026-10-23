@@ -4,7 +4,7 @@
 `anaxi-questions.md`, or into an item's checklist. It is a place to borrow from, for people and for agents
 generating an item's questions ([SKILL.md](../SKILL.md), procedure 3).
 
-Each line is already in the project-file format ([../../QUESTIONS.md §5.1](../../QUESTIONS.md#51-project-questions)),
+Each line is already in the project-file format ([QUESTIONS.md §5.1](../../../QUESTIONS.md#51-project-questions)),
 so it can be pasted as-is. Nothing here is required; everything here was useful somewhere. Add `when: <topic>` if it should apply only to some items.
 
 Contributions: add good project questions here when they could help other projects. Low bar: a question, and

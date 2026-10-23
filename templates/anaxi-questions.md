@@ -1,7 +1,7 @@
 # Project questions
 
 <!-- Questions this project asks on top of the core (anaxi/QUESTIONS.md §4). Format: QUESTIONS.md §5.1.
-     Borrow from anaxi/skill/references/question-library.md. Keep this short: the questions this project
+     Borrow from anaxi/skills/anaxi/references/question-library.md. Keep this short: the questions this project
      keeps getting wrong, not everything that could be asked. -->
 
 ## Added

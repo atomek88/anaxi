@@ -20,7 +20,7 @@ Later layers override earlier ones:
 
 ```
 method defaults      METHOD.md, QUESTIONS.md
-  → profile          skill/profiles/<name>.json
+  → profile          profiles/<name>.json
     → project        anaxi.json + anaxi-questions.md at the docs root
       → folder       anaxi.json in a sub-folder (optional; e.g. mobile/ and services/; not read by the scripts yet)
         → item       the tag: profile:, target:, skip:, focus:
@@ -83,7 +83,7 @@ Every key is optional. A project with no `anaxi.json` gets the defaults.
 ## 3. Built-in profiles
 
 A profile is a starting set of settings. Profiles also **suggest** sections of the
-[question library](skill/references/question-library.md). The skill offers them when setting up a project,
+[question library](skills/anaxi/references/question-library.md). The skill offers them when setting up a project,
 but they apply only if someone copies them into `anaxi-questions.md`.
 
 | Profile | For | Settings | Suggests from the library |
@@ -97,7 +97,7 @@ but they apply only if someone copies them into `anaxi-questions.md`.
 | `spike` | prototypes, investigations | maximum target D2; N07 and N08 `block` | spikes |
 | `regulated` | PII, payments, health | `security` and `data` items at least D3 | security and privacy, data and storage |
 
-The profile files are in [skill/profiles/](skill/profiles/), in the same format as `anaxi.json`, plus
+The profile files are in [profiles/](profiles/), in the same format as `anaxi.json`, plus
 `"core"` (changes to core questions, the same as "Changes to core" in the project file) and `"suggest"`
 (library sections).
 

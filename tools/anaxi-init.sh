@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # anaxi-init: add Anaxi to a project, new or existing. Never overwrites a file that's already there.
 #
-#   anaxi-init.sh [TARGET] [--profile NAME] [--stage STAGE] [--docs DIR] [--no-vendor] [--no-hook] [--no-skill]
+#   anaxi-init.sh [TARGET] [--profile NAME] [--stage STAGE] [--docs DIR] [--no-vendor] [--no-hook] [--no-skill] [--plugin]
 #
 #   TARGET       the project folder (default: current folder; created if missing)
 #   --profile    default · service · mobile · data · integration · library · spike · regulated (default: default)
@@ -10,10 +10,11 @@
 #   --no-vendor  don't copy the method into TARGET/tools/anaxi; use $ANAXI_HOME or this copy instead
 #   --no-hook    don't install the pre-commit hook
 #   --no-skill   don't link the agent skill into .claude/skills/
+#   --plugin     for the Claude Code plugin (/anaxi:init): no vendored copy, no skill link; the plugin has both
 set -euo pipefail
 
 METHOD="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TARGET="."; PROFILE="default"; STAGE="shaping"; DOCS="docs"; VENDOR=1; HOOK=1; SKILL=1
+TARGET="."; PROFILE="default"; STAGE="shaping"; DOCS="docs"; VENDOR=1; HOOK=1; SKILL=1; PLUGIN=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -23,14 +24,15 @@ while [ $# -gt 0 ]; do
     --no-vendor) VENDOR=0 ;;
     --no-hook) HOOK=0 ;;
     --no-skill) SKILL=0 ;;
-    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+    --plugin) PLUGIN=1; VENDOR=0; SKILL=0 ;;
+    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     -*) echo "anaxi-init: unknown option $1" >&2; exit 2 ;;
     *) TARGET="$1" ;;
   esac
   shift
 done
 
-[ -f "$METHOD/skill/profiles/$PROFILE.json" ] || { echo "anaxi-init: unknown profile \"$PROFILE\"" >&2; exit 2; }
+[ -f "$METHOD/profiles/$PROFILE.json" ] || { echo "anaxi-init: unknown profile \"$PROFILE\"" >&2; exit 2; }
 case "$STAGE" in discovery|shaping|pre-build|building|change) ;; *) echo "anaxi-init: unknown stage \"$STAGE\"" >&2; exit 2 ;; esac
 
 mkdir -p "$TARGET"
@@ -54,7 +56,8 @@ if [ "$VENDOR" = 1 ]; then
   RUN="tools/anaxi"
 else
   RUN="${ANAXI_HOME:-$METHOD}"
-  say "using    $RUN (not vendored; set ANAXI_HOME on other machines and in CI)"
+  if [ "$PLUGIN" = 1 ]; then say "using    the Claude Code plugin (CI needs ANAXI_HOME or a vendored copy: QUICKSTART.md)"
+  else say "using    $RUN (not vendored; set ANAXI_HOME on other machines and in CI)"; fi
 fi
 
 # 2. settings, questions, the stack, a place for features
@@ -88,7 +91,7 @@ mkdir -p "$DOCS/features"
 # 3. agent skill and hook
 if [ "$SKILL" = 1 ]; then
   if [ -e .claude/skills/anaxi ]; then say "kept     .claude/skills/anaxi"
-  else mkdir -p .claude/skills; ln -s "$( [ "$VENDOR" = 1 ] && echo ../../tools/anaxi/skill || echo "$RUN/skill")" .claude/skills/anaxi; say "linked   .claude/skills/anaxi → skill"; fi
+  else mkdir -p .claude/skills; ln -s "$( [ "$VENDOR" = 1 ] && echo ../../tools/anaxi/skills/anaxi || echo "$RUN/skills/anaxi")" .claude/skills/anaxi; say "linked   .claude/skills/anaxi → skill"; fi
 fi
 if [ "$HOOK" = 1 ]; then
   if git rev-parse --git-dir >/dev/null 2>&1; then
@@ -102,6 +105,14 @@ fi
 node "$RUN/tools/anaxi-check.mjs" index --dir . >/dev/null && say "indexed  $DOCS/INDEX.md"
 echo
 node "$RUN/tools/anaxi-check.mjs" status --dir .
+if [ "$PLUGIN" = 1 ]; then cat <<EOF
+
+Next (in Claude Code):
+  1. Start a TDD:   ask "start a TDD for <feature> with anaxi", or add front matter to one you have
+  2. See status:    /anaxi:status
+  3. Assess a doc:  /anaxi:assess $DOCS/features/<name>.md
+EOF
+exit 0; fi
 cat <<EOF
 
 Next:

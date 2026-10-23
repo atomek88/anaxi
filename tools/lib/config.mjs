@@ -43,6 +43,7 @@ export const DEFAULTS = {
     stage: { discovery: 'D1', shaping: 'D2' },
   },
   nudges: { off: [], severity: {}, untaggedWords: 80 },
+  hooks: { sessionStart: true, afterEdit: false }, // the Claude Code plugin's hooks
 };
 
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
@@ -63,7 +64,7 @@ export function readJson(p) {
 }
 
 export function loadProfile(name) {
-  const p = path.join(METHOD_DIR, 'skill', 'profiles', `${name}.json`);
+  const p = path.join(METHOD_DIR, 'profiles', `${name}.json`);
   if (!fs.existsSync(p)) throw new Error(`unknown profile "${name}" (no ${p})`);
   return readJson(p);
 }

@@ -1,0 +1,15 @@
+{
+  "name": "anaxi",
+  "description": "Anaxi: depth-aware design docs for Claude Code.",
+  "owner": {
+    "name": "Tomasz Michalik"
+  },
+  "plugins": [
+    {
+      "name": "anaxi",
+      "source": "./",
+      "description": "Depth-aware design docs: the Anaxi method, checker, agent skill, commands and hooks.",
+      "category": "productivity"
+    }
+  ]
+}

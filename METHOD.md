@@ -252,6 +252,6 @@ boards are unchanged.
 | **Author** | writes answers, claims depth, scores risk, adds item questions |
 | **Reviewer** | checks the claimed depth against the questions; can lower it |
 | **Scripts** | `anaxi-check` parses tags and reports structural nudges (gaps, blocked, enough, revisit, over-documented); `anaxi-render` composes TDDs ([TOOLING.md](TOOLING.md)) |
-| **Agent skill** | everything the script does, plus semantic checks: which questions are really answered, over-engineering, content outside the item's focus ([skill/SKILL.md](skill/SKILL.md)) |
+| **Agent skill** | everything the script does, plus semantic checks: which questions are really answered, over-engineering, content outside the item's focus ([skills/anaxi/SKILL.md](skills/anaxi/SKILL.md)) |
 | **Project team** | keeps `anaxi-questions.md` short and current |
 | **Method owner** | reviews proposed and challenged core questions and principles; updates [CHANGELOG.md](CHANGELOG.md) |

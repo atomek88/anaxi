@@ -29,7 +29,7 @@ method for reading them ([TOOLING.md](TOOLING.md)).
    true everywhere: each level's aim, bounds and "done when", two broad questions per level (one at D4), and a
    starting set of principles that each project adapts. Each project adds its own questions and principles in
    `anaxi-questions.md`. People and agents add an item's own questions
-   as a checklist while they work. A [library](skill/references/question-library.md) offers wording to borrow;
+   as a checklist while they work. A [library](skills/anaxi/references/question-library.md) offers wording to borrow;
    nothing in it applies unless it's copied in. Choosing and writing questions:
    [QUESTIONS_REFERENCE.md](QUESTIONS_REFERENCE.md).
 
@@ -87,9 +87,9 @@ method for reading them ([TOOLING.md](TOOLING.md)).
 | [templates/](templates/) | a TDD, a small item, `anaxi-questions.md`, `anaxi.json` | starting something |
 | [TOOLING.md](TOOLING.md) | the three layers (method, project docs, output), the scripts, the index, rendering, installing | setting up; building the tools |
 | [tools/SPEC.md](tools/SPEC.md) | the scripts: commands, parsing, rules, JSON, exit codes | building or calling the scripts |
-| [skill/SKILL.md](skill/SKILL.md) | the agent skill | installing for Claude or another agent |
-| [skill/references/question-library.md](skill/references/question-library.md) | questions to borrow, by concern and kind of project | writing questions |
-| [skill/profiles/](skill/profiles/) | the built-in profiles | choosing a profile |
+| [skills/anaxi/SKILL.md](skills/anaxi/SKILL.md) | the agent skill | installing for Claude or another agent |
+| [skills/anaxi/references/question-library.md](skills/anaxi/references/question-library.md) | questions to borrow, by concern and kind of project | writing questions |
+| [profiles/](profiles/) | the built-in profiles | choosing a profile |
 | [example/](example/) | a small project using every form of markup, with its index and nudges | learning by example |
 | [PILOT.md](PILOT.md) | a two-sprint trial with a calibration sheet and retro questions | trying it with a team |
 | [ROADMAP.md](ROADMAP.md) | where it could go: an npm package, a Claude Code plugin, a live viewer (`anaxi watch`), an MCP server for agents | deciding what to build next |
