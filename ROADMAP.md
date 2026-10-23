@@ -73,8 +73,39 @@ A small local server that watches the docs, re-evaluates on every save, and serv
 from Claude Code with `/anaxi:watch` (it prints the URL), or from a terminal. It edits nothing: writing still
 happens in your editor, and an agent writes through files as now.
 
+It has two halves over one model: **the reader**, which shows the documentation itself, and **the map**, which
+shows where you are in it. The reader comes first: it's useful every day, and the map is a way into it.
+
+#### 3.1 The reader: the docs themselves
+
+A markdown reader for the project's actual design docs, kept in step with them on every save. Why not GitHub's
+or the editor's preview: they show raw front matter and tag lines, can't hide what's deeper than you asked for,
+don't follow `@id` links or show who uses an item, and have no idea what's blocked.
+
+| It shows | How |
+|---|---|
+| **the doc as written** | GitHub-flavoured markdown: headings, tables, code, images, mermaid diagrams. Marks become badges (depth, target, status icon, `🎯`) instead of raw YAML |
+| **an item at a depth** | a depth control per item, and one for the page: "up to D2" hides sections at D3 and deeper (sections already carry levels). The canvas shows or hides with one toggle; it's always labelled |
+| **an item and its parts** | a part (`part-of:`, e.g. in `APPENDIX.md`) shows inline under its host's matching level, or collapsed with a link, never as a separate item |
+| **links that work** | `@id` and `[@id](path)` open in the reader; each item lists what it uses and what uses it (backlinks); a breadcrumb project → topic → item → level |
+| **the super-TDD** | a whole project, an epic or a topic as one scrolling document: the status table, then each item once, at the chosen depth, in `uses:` order. This is `anaxi render` done live, so it isn't a separate tool any more |
+| **what to do** | the item's nudges beside it, and the gate: ready, or what blocks it |
+| **what changed** | since a git ref (`--diff`): changed sections marked, new nudges listed. Per item, a short history from git: depth over time, last changed, by whom |
+| **what's no longer true** | superseded and retired items and sections (step 6) shown greyed with a banner pointing to what replaced them; hidden by default from the super-TDD |
+
+Read-only: each section has "open in editor" (a `vscode://` or file link), and writing still happens in files.
+Search covers titles, `@id`s, headings and text. The same renderer can write a **static site**
+(`anaxi watch --export site/`) for sharing or GitHub Pages, so people without the tool can read it.
+
+Building it: the checker stays dependency-free. The reader is one page that may vendor a single markdown renderer
+(e.g. markdown-it) and mermaid, loaded only by the viewer. The server is plain Node (`http`, `fs.watch`), and
+the page gets the model as JSON plus each file's raw markdown, so one engine decides depth everywhere.
+
+#### 3.2 The map: where you are
+
 **What it must answer, at a glance:** what's ready to build, what's blocked and by what, what's still a gap,
-and what's over-designed. Everything else is secondary.
+and what's over-designed. Everything else is secondary. Clicking anything on the map opens it in the reader at
+that depth.
 
 **The one idea behind every view: zoom is depth.** Zooming out shows less depth; zooming in reads deeper, down to
 the text of one level of one item. The data is already in `anaxi-check status --json`: each item's depth and
@@ -97,11 +128,21 @@ target, its status, `uses:` links, parts, `about:` topics and every section's le
 | **House, for one feature** | the same metaphor for one TDD: D0 foundation (why), D1 floor plan (what), D2 frame (shape), D3 utilities and connections to the neighbours (contracts), D4 fit-out (build steps) | reviewing one TDD with its team | doesn't scale to a project |
 
 The likely answer is two views over one model: a 2D graph for daily use, and the city (or the 3D stack) as the
-zoomable overview, both driven by the same JSON and the same depth slider. The prototype decides.
+zoomable overview, both driven by the same JSON and the same depth slider as the reader. A throwaway prototype on
+the example project's real data decides, before any of it is built.
+
+#### 3.3 Letting it evolve
+
+- **The JSON is the contract** (`anaxi/1`, versioned). The reader and the map read only that and the raw
+  files, so new marks reach them through the checker, not through viewer code.
+- **Views are plugins of the page, not forks:** a new picture (another metaphor, a timeline) is one more view
+  over the same model and the same depth control.
+- **The example project is the test fixture:** every view must render it, including a superseded item and a
+  part, and the self-test checks the JSON it relies on.
 
 **Needed from the checker first:** `anaxi-check context @id --at D2` (an item's text up to a level, plus the
-contracts of what it uses: the same thing the MCP server's `anaxi_context` returns), and a stable section id in
-the JSON so a view can link to and open a section.
+contracts of what it uses: the same thing the MCP server's `anaxi_context` returns); a stable section id and
+line range in the JSON, so a view can open, hide or link to a section; and the lifecycle fields (step 6).
 
 ### 4. An MCP server: Anaxi as tools for agents
 
@@ -129,9 +170,44 @@ So a reader (or an agent) can see where a design came from and check it against 
 - **Last changed, and by whom**, from git per item, which is also what N11 (recheck after a shared item changes)
   needs.
 
-### 6. Smaller things
+### 6. Superseding and archiving design knowledge
 
-- `anaxi render`: one combined document for people who want a single file ([TOOLING.md §4.3](TOOLING.md#43-a-rendered-document-anaxi-render-optional-not-built-yet)).
+Designs get replaced, and the old reasoning is still worth having, but a stale doc that reads as current is worse
+than no doc: agents read everything and can't tell. So what replaced what is marked, checked and shown, not
+left to folder names.
+
+**Four states, each a mark, never a deletion first:**
+
+| State | Mark | What happens |
+|---|---|---|
+| **current** | (none) | counted, nudged, gated as now |
+| **superseded** | `superseded-by: @new (why)` on the old item; the new one says `supersedes: @old` | stays where it is, so links still work. Leaves the status table, targets and gates; listed in `INDEX.md` under "Superseded and retired" with its successor. The reader shows it greyed with a banner |
+| **retired** | `retired: 2026-11-02 (why)`: dropped with no successor (a feature cut, a spike that answered its question) | same as superseded, with no successor |
+| **archived** | the file moves to `docs/archive/` (`anaxi-check archive @id` moves it and rewrites links to it) | still read for references, never for status. After that, deleting it is safe: git keeps it, and `docs/archive/RETIRED.md` keeps one line per removed `@id` (date, why, successor, last commit) so the id is never silently reused |
+
+**The same works inside a living TDD.** A replaced decision or section gets the same mark on its heading or tag
+line (`> superseded-by: @new` or a `superseded` badge) and drops out of the item's depth, or moves to a
+`## Decision log` section, which counts like the canvas: kept, labelled, never counted.
+
+**What the checker adds:** a nudge when a current item `uses:` a superseded or retired one (point it at the
+successor); when only one side says `supersedes`/`superseded-by`; when a superseded item still has open
+questions (move them to the successor or close them); and when an archived `@id` is reused. `anaxi_context` and
+the skill follow the chain to the successor and never hand superseded content to an agent unless asked for history.
+
+**When to supersede rather than edit:** edit while the item is being designed. Supersede once something was
+built from it, or once other items depend on it and the change isn't compatible: the old version then explains
+what exists in the code.
+
+**The method dogfoods it.** Anaxi's own knowledge follows the same rules: changes are a line in
+[CHANGELOG.md](CHANGELOG.md); questions move through Proposed, Challenged and Retired
+([QUESTIONS.md §7](QUESTIONS.md#7-proposed-challenged-retired)); a method doc that's replaced moves to `archive/`
+with a header saying why it's kept and what replaced it, and is deleted (git keeps it) once nothing in it is
+still used, as the Strata files were in 0.8.
+
+### 7. Smaller things
+
+- `anaxi render` to a single file, for people who want one to attach; the reader's super-TDD covers reading
+  ([TOOLING.md §4.3](TOOLING.md#43-a-rendered-document-anaxi-render-optional-not-built-yet)).
 - N11, recheck after a shared item changes, from git history.
 - Folder-level `anaxi.json` for monorepos.
 - Editor support: badges, hovers and diagnostics through a small language server.
@@ -144,4 +220,5 @@ After the pilot, ask:
 - Did people use the CLI, or only the agent? If only the agent, build the MCP server before the viewer.
 - Did anyone want to *see* the whole design? If yes, `anaxi watch` and the map (step 3).
 - Did reviewers ask "where did this come from?" If yes, `refs:` (step 5).
+- Did a design change after something was built from it? Then superseding (step 6), before more docs pile up.
 - Is a second team asking to use it? Then package it (step 1) before anything else.

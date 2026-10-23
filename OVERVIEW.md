@@ -230,13 +230,16 @@ self-tested on an example project. Projects can change the ladder and the rubric
 
 1. **Package it:** `npx anaxi init | check | gate` for teams without Claude Code (published on npm as `anaxi`).
 2. **Claude Code plugin:** built in 0.8.
-3. **See the design:** `anaxi watch`, a live local map where zoom is depth: project → topic → item → level →
-   section. Candidate pictures to compare: a 2D graph with depth bars, a 3D layer stack, a city (items as
+3. **See the design:** `anaxi watch`, a live local reader for the docs themselves (marks as badges, read any
+   item or the whole project at a chosen depth, working `@id` links and backlinks, nudges alongside), plus a map
+   where zoom is depth: project → topic → item → level → section. Candidate pictures to compare: a 2D graph with depth bars, a 3D layer stack, a city (items as
    buildings, levels as floors, `uses:` as roads).
 4. **MCP server:** the same engine as agent tools; `anaxi_context(@id, at: D3)` returns an item plus the
    contracts it depends on, at exactly the depth needed.
 5. **References and attribution:** `refs:` to tickets, designs, ADRs, data and prototype evidence, checked by
    the checker; `owner:`; last changed, from git.
+6. **Superseding and archiving:** `superseded-by:`, `supersedes:` and `retired:` marks, so replaced designs stay
+   readable but stop counting, and agents are pointed to what replaced them.
 
 **To do:**
 

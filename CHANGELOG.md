@@ -18,6 +18,10 @@ Newest first. Format: `date · area · change · why`.
   `profiles/`. The archive keeps only the Strata review (§1–5) and its viewer; the rest is in git history.
 - roadmap · Plugin marked built; step 3 is now the zoomable map (2D graph, 3D layer stack, city, house) and step 5
   references and attribution (`refs:`, `owner:`, last changed).
+- roadmap · Step 3 starts with a markdown reader for the docs themselves (depth filter, parts inline, links and
+  backlinks, the super-TDD live, diffs, static export); new step 6, superseding and archiving design knowledge
+  (`superseded-by:`, `supersedes:`, `retired:`, `docs/archive/`, `RETIRED.md`) · seeing the actual docs matters
+  more than the picture, and stale docs mislead agents.
 
 ## 0.7 · 2026-10-21
 
