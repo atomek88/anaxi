@@ -1,9 +1,0 @@
-# Strata ID ledger: append-only. Never delete a line; tombstone the ID in _tombstones.md instead.
-DP.need
-DP.system
-DP.invoicing
-DP.invoice-engine
-DP.proration
-DP.proration-api
-DP.proration-rounding
-DP.rounding-impl

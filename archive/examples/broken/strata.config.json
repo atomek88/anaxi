@@ -1,1 +1,0 @@
-{ "system": "BK", "vendorTerms": ["DynamoDB", "Lambda"], "budgets": { "system": [5, 60] } }

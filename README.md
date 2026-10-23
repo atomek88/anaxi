@@ -104,5 +104,5 @@ method for reading them ([TOOLING.md](TOOLING.md)).
 - **No forms.** The questions are prompts. Answer them in prose, several at once, in whatever order reads
   well.
 
-Origin: a simplification of the Strata proposal ([archive/STRATA.md](archive/STRATA.md)) and its review
-([archive/ANALYSIS-AND-PROPOSAL.md](archive/ANALYSIS-AND-PROPOSAL.md)).
+Origin: a simplification of an earlier proposal, Strata. Why depth became the one thing measured is in
+[archive/ANALYSIS-AND-PROPOSAL.md](archive/ANALYSIS-AND-PROPOSAL.md).

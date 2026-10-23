@@ -1,11 +1,9 @@
 # Archive
 
-Earlier work, kept for reference. Not maintained. The current method is [../](../README.md).
+Earlier work, kept for reference. Not maintained. The current method is [../](../README.md). Everything else from
+before Anaxi (the Strata spec, its checker and examples) is in git history.
 
-| File | What it was |
+| File | Why it's kept |
 |---|---|
-| [STRATA.md](STRATA.md) | the first layered-docs proposal ("Strata" v2) |
-| [strata-check.mjs](strata-check.mjs) | its checker. Parts of the parser can be reused for Anaxi's scripts |
-| [strata-viewer.html](strata-viewer.html) | its graph viewer. A starting point for Anaxi's HTML output |
-| [examples/](examples/) | Strata examples (TaskFlow, deep, broken) |
-| [ANALYSIS-AND-PROPOSAL.md](ANALYSIS-AND-PROPOSAL.md) | the review of Strata that led to Anaxi. §1–5 still explain why depth became one axis; §6–7 (a heavier redesign) were not adopted |
+| [ANALYSIS-AND-PROPOSAL.md](ANALYSIS-AND-PROPOSAL.md) | §1–5 of the review of Strata: why depth became the one thing Anaxi measures |
+| [strata-viewer.html](strata-viewer.html) | Strata's graph viewer: a starting point for `anaxi watch` |

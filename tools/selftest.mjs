@@ -82,6 +82,19 @@ ok(pay.openList.some((q) => /currency rounding/.test(q.text)), 'part checklist c
 ok(pm.errors.some((e) => /part-of @nobody, which doesn't exist/.test(e)), 'part of a missing item');
 ok(!pm.items.some((it) => it.partOf), 'parts are not items');
 fs.rmSync(pd, { recursive: true });
+
+// ignore globs, and a folder with its own anaxi.json is a separate project
+const ig = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
+fs.writeFileSync(path.join(ig, 'anaxi.json'), '{ "ignore": ["templates/**"] }');
+for (const d of ['templates', 'sub']) fs.mkdirSync(path.join(ig, d));
+fs.writeFileSync(path.join(ig, 'templates', 't.md'), '---\nanaxi: "@tpl"\ndepth: D0\n---\n# T\n');
+fs.writeFileSync(path.join(ig, 'sub', 'anaxi.json'), '{}');
+fs.writeFileSync(path.join(ig, 'sub', 's.md'), '---\nanaxi: "@sub"\ndepth: D0\n---\n# S\n');
+fs.writeFileSync(path.join(ig, 'a.md'), '---\nanaxi: "@a"\ndepth: D0\n---\n# A\n');
+const igm = evaluate(loadConfig(ig));
+ok(igm.byId.has('@a') && !igm.byId.has('@tpl'), 'ignore skips matching files');
+ok(!igm.byId.has('@sub') && evaluate(loadConfig(path.join(ig, 'sub'))).byId.has('@sub'), 'a nested anaxi.json is its own project');
+fs.rmSync(ig, { recursive: true });
 fs.rmSync(dir, { recursive: true });
 
 console.log(fails ? `${fails} failed` : 'selftest ok');

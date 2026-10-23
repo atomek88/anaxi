@@ -19,6 +19,7 @@ export const DEFAULTS = {
   profile: 'default',
   stage: 'pre-build',
   docs: ['**/*.md'],
+  ignore: [],
   shared: 'shared',
   questions: 'anaxi-questions.md',
   index: 'INDEX.md',
@@ -133,17 +134,22 @@ export function globRe(glob) {
 
 const SKIP_DIRS = new Set(['node_modules', '.git', '.claude']);
 
-/** Every markdown file under root matching `docs`, minus the questions file, the index and the output folder. */
+/** Every markdown file under root matching `docs`, minus `ignore`, the questions file, the index, the output folder
+ *  and any folder with its own anaxi.json (a separate project). */
 export function docFiles(cfg) {
-  const res = (Array.isArray(cfg.docs) ? cfg.docs : [cfg.docs]).map(globRe);
+  const list = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+  const res = list(cfg.docs).map(globRe);
+  const ign = list(cfg.ignore).map(globRe);
   const exclude = new Set([cfg.questions, cfg.index].filter(Boolean).map((p) => path.normalize(p)));
   const out = [];
   const walk = (rel) => {
     for (const e of fs.readdirSync(path.join(cfg.root, rel), { withFileTypes: true })) {
       const r = rel ? `${rel}/${e.name}` : e.name;
       if (e.isDirectory()) {
-        if (!SKIP_DIRS.has(e.name) && path.normalize(r) !== path.normalize(cfg.out)) walk(r);
-      } else if (r.endsWith('.md') && !exclude.has(path.normalize(r)) && res.some((x) => x.test(r))) out.push(r);
+        if (SKIP_DIRS.has(e.name) || path.normalize(r) === path.normalize(cfg.out) || ign.some((x) => x.test(r) || x.test(`${r}/`))) continue;
+        if (fs.existsSync(path.join(cfg.root, r, 'anaxi.json'))) continue;
+        walk(r);
+      } else if (r.endsWith('.md') && !exclude.has(path.normalize(r)) && res.some((x) => x.test(r)) && !ign.some((x) => x.test(r))) out.push(r);
     }
   };
   walk('');
