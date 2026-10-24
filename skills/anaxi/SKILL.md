@@ -125,6 +125,12 @@ Next: answer D3.contracts and D3.failure; leave RRULEs in later:.
    regenerate the index (`anaxi-check index`) if the project commits one.
 7. When the effective target is reached with nothing open, say **enough** (N04) and stop.
 
+### 5.1 Read before building
+
+Read an item through `anaxi_context` (MCP) or `anaxi-check context @id [--at Dn]`, not file by file: it returns the
+item to the depth needed plus each thing it uses, once each, at the level needed, and the gate, and it follows a
+superseded item to its successor. When the user wants to see the design, offer `/anaxi:watch`.
+
 ### 6. Gate (before implementing, always)
 
 An item is **ready** when: it is at its **full** target (caps don't apply); nothing is open and every box is

@@ -94,6 +94,10 @@ Replaced later? Don't delete or rewrite history: `anaxi-check supersede @old --b
 
 Tickets, estimates and "done" stay in your tracker.
 
+**To read the design:** `/anaxi:watch` (or `node tools/anaxi/tools/anaxi-watch.mjs`) opens a local reader: an
+overview, a page per item with D0–D4 buttons for how deep to read, and a map. **Agents** call `anaxi_context` (MCP)
+or `anaxi-check context @id` for exactly what to read before building.
+
 ## Next
 
 - An example project: [example/](example/)

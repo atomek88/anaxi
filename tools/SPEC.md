@@ -25,6 +25,7 @@ node anaxi-check.mjs uses      @id                                             #
 node anaxi-check.mjs index     [--out docs/INDEX.md] [--check | --path]        # write the index (TOOLING.md §4.2)
 node anaxi-check.mjs check                                                     # syntax, settings and references; for CI
 node anaxi-check.mjs new       NAME [--title T] [--small] [--in DIR]          # a TDD (or small item) from the template, @id and title filled
+node anaxi-check.mjs context   @id [--at Dn] [--history] [--json]              # the item to a depth + each use once, at the level needed; the gate
 node anaxi-check.mjs supersede @old --by @new [--why W]                       # FORMAT.md §10: marks both sides
 node anaxi-check.mjs retire    @id --why W [--date YYYY-MM-DD]                # dropped, no successor
 node anaxi-check.mjs archive   @id [--why W]                                  # whole-file items only; moves to `archive`, rewrites links both ways
@@ -216,3 +217,26 @@ directly, and exit 0 whatever happens: a hook never fails a session or an edit.
 `release.sh VERSION [--push]` refuses a dirty tree or a version with no CHANGELOG entry, runs the self-test, the
 example's CI and `claude plugin validate --strict`, writes the version to `.claude-plugin/plugin.json`, commits,
 and runs `claude plugin tag`.
+
+## 8. Reading, the reader and the MCP server
+
+**Blocks** (`lib/read.mjs`). An item's lines are its whole file after the front matter, or its heading down to
+the next heading of the same or a higher level, then each part's. They split into blocks (`heading`, `para`,
+`list`, `table`, `code`, `mark`), each with a level: a heading's is its section level; a paragraph starting with a
+level's name as a bold lead-in (`**Why.**`, `**What.**`, `**Shape.**`, `**Contract.**`, `**Build.**`, plus the
+project's own level names) sets its own, and a paragraph with several is split at each; other blocks inherit.
+A wrapped list line continues its item. At depth n a block shows when its level ≤ n, the canvas and history only
+on request, and unlevelled text always; deeper never shows less, and nothing is lost (self-tested).
+
+**Context** (`context @id`, `anaxi_context`). The item at `--at` (default: its target), then each item it uses,
+transitively and once each, at the `(Dn)` asked for or that item's target, then the gate. A superseded or retired
+item is replaced by its successor, with a note, unless `--history`.
+
+**anaxi-watch.** `GET /` the page · `GET /api/model` the model (`anaxi/1`: items and inactive items with their
+blocks and gate, deleted ids, nudges, errors, levels) · `GET /events` server-sent `change` after a save
+(`fs.watch`, debounced). Binds 127.0.0.1; GET only; never writes.
+
+**anaxi-mcp.** MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
+`ping`. The project is `--dir`, else `$CLAUDE_PROJECT_DIR`, else the working folder, or a tool's `dir` argument.
+Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`.
+

@@ -14,6 +14,7 @@ method for reading them ([TOOLING.md](TOOLING.md)).
 
 **Using Claude Code?** This repo is a plugin: `claude plugin marketplace add <this repo>`, then
 `claude plugin install anaxi@anaxi`, then `/anaxi:init` in any project ([TOOLING.md §5](TOOLING.md#5-installing)).
+`/anaxi:watch` opens the docs as linked pages you can read at any depth, and agents get `anaxi_context` (MCP).
 
 ## The whole method in one screen
 

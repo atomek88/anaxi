@@ -16,6 +16,16 @@ Newest first. Format: `date · area · change · why`.
 - roadmap · The reader shows the design as linked pages (overview, one page per item, an outline), never one
   endless scroll; one continuous document only for print or export.
 - example · an archived superseded doc, a deleted id, a decision log.
+- tooling · **`anaxi watch`** (`/anaxi:watch`): a read-only local reader. Overview, topic and item pages; D0–D4
+  buttons set how deep to read; parts inline; gate, nudges, uses, used-by; next and previous in `uses:` order; a 2D
+  depth-bar map that opens on topics past 12 items; reloads on save · chosen by an exploration on the example's
+  real data (docs/prototypes/viewer): the 3D stack hid items already at 7, the city's labels collided at 7.
+- tooling · **`anaxi-mcp`** (in the plugin's `.mcp.json`): `anaxi_status`, `anaxi_nudges`, `anaxi_gate`,
+  `anaxi_questions`, `anaxi_context`, `anaxi_uses`; and `anaxi-check context @id --at Dn` · agents read one bounded,
+  depth-aware answer instead of the docs file by file.
+- format · Levels also come from paragraph lead-ins named after the levels (`**Why.**` … `**Build.**`, and a
+  project's own level names), split mid-paragraph · headings alone gave the depth control nothing on 6 of the
+  example's 8 items.
 
 ## 0.8 · 2026-10-23
 

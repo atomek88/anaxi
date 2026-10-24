@@ -67,7 +67,13 @@ Still to do:
 - **Publish the repo** (GitHub) so `claude plugin marketplace add <owner>/anaxi` works for a team.
 - **The MCP server (step 4)** goes in the same plugin as a `.mcp.json` entry.
 
-### 3. Seeing the design: `anaxi watch` and a zoomable map
+### 3. Seeing the design: `anaxi watch` and a zoomable map · reader and 2D map built in 0.9
+
+Built: `tools/anaxi-watch.mjs` (`/anaxi:watch`) serves the reader and the 2D map below, from one model, reloading
+on save. Chosen by a throwaway exploration on the example's real data ([docs/prototypes/viewer/](docs/prototypes/viewer/gedanken/contact.html)):
+the reader as linked pages and a 2D depth-bar map that groups by topic past 12 items. The 3D stack was rejected
+(it hides an item already at 7 items, and 17 of 40 at 40); the city is kept as a later idea (its labels collide
+at 7). Not built yet: search, the per-item git history, the static export, and the "what changed since" view.
 
 A small local server that watches the docs, re-evaluates on every save, and serves a read-only page. Started
 from Claude Code with `/anaxi:watch` (it prints the URL), or from a terminal. It edits nothing: writing still
@@ -144,7 +150,10 @@ the example project's real data decides, before any of it is built.
 contracts of what it uses: the same thing the MCP server's `anaxi_context` returns); a stable section id and
 line range in the JSON, so a view can open, hide or link to a section; and the lifecycle fields (step 6).
 
-### 4. An MCP server: Anaxi as tools for agents
+### 4. An MCP server: Anaxi as tools for agents · built in 0.9
+
+Built: `tools/anaxi-mcp.mjs`, zero-dependency, started by the plugin (`.mcp.json`). `anaxi_context` follows a
+superseded item to its successor unless `history` is asked for; the same call is `anaxi-check context @id --at Dn`.
 
 The same engine, exposed so any agent can query the design instead of grepping it:
 
@@ -154,6 +163,7 @@ The same engine, exposed so any agent can query the design instead of grepping i
 | `anaxi_nudges(id)` | the structural nudges for an item |
 | `anaxi_gate(id)` | ready or not, with the reasons |
 | `anaxi_questions(id, level)` | the questions that apply at a level |
+| `anaxi_uses(id)` | what it uses, and who uses it, transitively |
 | `anaxi_context(id, at)` | the item at the depth asked for, plus the contracts of everything it `uses:`, each once: exactly what an agent needs before building, and no more |
 
 `anaxi_context` is the important one. It turns "read the design docs" into one bounded, depth-aware call, and

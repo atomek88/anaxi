@@ -42,6 +42,9 @@ Zero-dependency Node (≥ 18) and bash. The skill also works without them (by ha
 | `tools/hooks/pre-commit` | runs `anaxi-ci.sh --fix` on commits that touch markdown | built |
 | `tools/selftest.mjs` | checks the example's statuses and that a broken project trips every structural check | built |
 | `tools/anaxi-init.sh` | adds Anaxi to a new or existing project: vendors the method into `tools/anaxi`, writes `anaxi.json`, `anaxi-questions.md` and `@stack`, links the skill, installs the hook, builds the first index. Never overwrites | built |
+| `tools/anaxi-watch.mjs` | the reader: linked pages (overview → topic → item) with a depth control, parts inline, uses and used-by, the gate, and a 2D map; reloads on save; read-only (§4.3) | built |
+| `tools/anaxi-mcp.mjs` | the engine as MCP tools for agents: `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_uses` | built |
+| `tools/lib/read.mjs` | an item's text as levelled blocks (headings, and lead-ins named after the levels), the depth filter, and the bounded context for building | built |
 | `tools/release.sh` | releases a plugin version: checks, sets the version, commits, tags (§5.1) | built |
 | `hooks/` | the plugin's session-start and after-edit hooks ([tools/SPEC.md §7](tools/SPEC.md#7-plugin-hooks)) | built |
 | `tools/anaxi-render.mjs` | optional: composes several items into one document | not built: links and the index cover most needs |
@@ -135,9 +138,27 @@ A GitHub Actions job, for example:
 If none of these is in place, don't commit `INDEX.md`: generate it when you need it (`anaxi-check index`), or
 read `anaxi-check status`.
 
-### 4.3 A rendered document (`anaxi-render`, optional, not built yet)
+### 4.3 The reader (`anaxi watch`)
 
-For people who want one file to read, print or send:
+```bash
+/anaxi:watch                                     # in Claude Code
+node tools/anaxi/tools/anaxi-watch.mjs           # or from a terminal; --port N, --dir DIR
+```
+
+A local, read-only page at `http://127.0.0.1:4321/` that reloads when a doc is saved:
+
+| Page | Shows |
+|---|---|
+| **overview** | every item grouped by what needs attention (blocked, go deeper, open, over-designed, later, enough), with what blocks it and who uses it; superseded, retired and deleted items |
+| **topic** | a topic's items (`about:`, else the folder) and what they use outside it |
+| **item** | the doc as written, marks as badges; **D0–D4 buttons** set how deep to read (sections and `**Why.**`-style lead-ins carry levels); parts inline; canvas and decision log on request; the gate, nudges, uses and used-by beside it; previous and next in `uses:` order, so the whole design reads as pages, never one long scroll |
+| **map** | the 2D graph: what an item uses is to its left, a bar per item filled to its depth and dashed to its target, red where blocked, history below; above 12 items it opens on topics |
+
+Links between docs open in the reader; a superseded page has a banner pointing at its successor.
+
+### 4.4 A rendered document (`anaxi-render`, optional, not built yet)
+
+For people who want one file to print or send (reading is the reader's job, §4.3):
 
 | Selector | Roots |
 |---|---|
@@ -176,6 +197,8 @@ Then, in any project, `/anaxi:init [--profile P] [--stage S] [--docs DIR]`. The 
 | `/anaxi:assess <file or @id>` | checker nudges plus the skill's read of the content: what's missing, or "enough" |
 | `/anaxi:gate @id` | ready to build or not, and why |
 | `/anaxi:init` | `anaxi-init.sh --plugin`: settings, questions, `@stack`, the git hook; nothing vendored |
+| `/anaxi:watch` | the reader (§4.3), in the background; prints its URL |
+| MCP server `anaxi` | `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_uses` for any agent in the session |
 | hook: session start | in a project with `anaxi.json`, gives Claude the status table. Off: `"hooks": {"sessionStart": false}` |
 | hook: after an edit | opt-in, `"hooks": {"afterEdit": true}`: after Claude edits a markdown doc, it sees that file's nudges. Never blocks |
 
