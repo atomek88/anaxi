@@ -150,6 +150,7 @@ In a tag line, fields are separated by `·`, and the tag may run over several `>
 | `skip:` | questions skipped on purpose, with a reason: `skip: D3.contracts (nothing stored or exchanged)` | no |
 | `caveats:` | known limits accepted at this depth | no |
 | `later:` | what is deliberately deferred, and what should trigger it (§6) | no |
+| `superseded-by:` / `supersedes:` / `retired:` | the item was replaced, or dropped (§6.1) | no |
 | `focus:` | `now` (default), `next` or `later`: is this item part of the current plan? Caps the effective target (§3.1) | no |
 | `profile:` | use a different profile for this item | no |
 
@@ -183,6 +184,19 @@ owns it.
 - `later:` records what is deliberately deferred, and the trigger for coming back: another item reaching a
   depth (`when @bulk-import reaches D1`), or an event in words (`when usage passes 10%`). Triggers that name an
   item and a depth are checked by the script. The others are surfaced for a person to judge.
+
+### 6.1 Superseding, retiring, archiving
+
+Docs are living: edit an item freely while it's being designed. **Supersede** it instead once something was
+built from it, or once other items depend on it and the change isn't compatible: the old version then still
+explains what exists, and the new one starts its own depth from D0 or wherever it really is. **Retire** what is
+dropped with nothing in its place (a cut feature, a spike that answered its question). **Archive** a superseded
+or retired doc when it gets in the way of reading the current ones, and **delete** it once nothing needs it;
+git and `RETIRED.md` keep the trail. Marks, commands and what each state does: [FORMAT.md §10](FORMAT.md#10-superseded-retired-archived).
+
+The method's own knowledge works the same way: changes are a line in [CHANGELOG.md](CHANGELOG.md), questions
+move through Proposed, Challenged and Retired ([QUESTIONS.md §7](QUESTIONS.md#7-proposed-challenged-retired)),
+and a replaced method doc goes to `archive/` with a header saying why it's kept, until git history is enough.
 
 ## 7. Composing TDDs and the super-TDD
 

@@ -56,6 +56,10 @@ never over-documented, over-engineered or out of focus.
 | **N14** | no-target | the target can't be known: no `risk:`, no `target:`, and the depth has no `→` or `enough` | script | warn | "**Search** has no target. Score its risk." | score it |
 | **N15** | dangling | `uses:`, `part-of:` or a `later:` trigger names an `@id` that doesn't exist | script | warn | "**Recurring tasks** uses @calendar-sync, which doesn't exist." | fix the reference, or create the shared item at D0 |
 | **N16** | question-friction | the same question is skipped with the same reason on several items, or an agent couldn't interpret it | agent | info | "D3.app-versions skipped on 4 items as 'not called by the app'. Add `when: api` to it in anaxi-questions.md." | change `anaxi-questions.md`; for a core question, add a Challenged row ([QUESTIONS.md §6](QUESTIONS.md#6-a-living-set)) |
+| **N18** | uses-superseded | a current item `uses:` a superseded, retired or archived one | script | warn | "**Recurring tasks** uses @polling-sync, which is superseded by @scheduler: point it at @scheduler." | point it at the successor; if there is none, find another dependency or retire this item too |
+| **N19** | one-sided | `superseded-by:` without a matching `supersedes:` (or the reverse), or `superseded-by:` a deleted id | script | warn | "@polling-sync says superseded-by @scheduler, but @scheduler doesn't say supersedes: @polling-sync." | add the other side (`anaxi-check supersede` writes both) |
+| **N20** | superseded-open | a superseded or retired item still has open questions | script | info | "@polling-sync is superseded by @scheduler but still has 1 open question: move it to @scheduler, or close it." | move the question to the successor, or tick it |
+| **N21** | archive-hygiene | a doc in the archive says neither `superseded-by:` nor `retired:`, or an id listed in `RETIRED.md` is declared again | script | warn | "@polling-sync was deleted (RETIRED.md, 2026-10-23): pick a new id." | say why it was archived; pick a new id |
 | **N17** | canvas-promote | a decision, answer or contract lives only in the canvas, while the item's levels (or another item) rely on it | agent | info | "**Recurring tasks** Proposed design relies on the 'materialize a week ahead' idea, which is only in the Sketch section." | move it into the level it belongs to; keep the sketch if it helps |
 
 ## 3. Over-engineered and out of focus: what to look for
@@ -90,12 +94,12 @@ item it belongs to, or to a short "ideas" note. Keep the item at its target.
 When an item has several nudges, report them in this order, so the most useful action comes first:
 
 1. N09 gate (when implementing)
-2. N02 blocked-by-shared, N15 dangling
+2. N02 blocked-by-shared, N18 uses-superseded, N15 dangling, N19 one-sided, N21 archive-hygiene
 3. N03 open-question, N05 claim-unsupported
 4. N01 go-deeper
 5. N08 out-of-focus, N07 over-engineered, N06 over-documented
 6. N14 no-target, N12 rescore
-7. N10 revisit, N11 recheck-shared, N13 untagged, N16 question-friction, N17 canvas-promote
+7. N10 revisit, N11 recheck-shared, N13 untagged, N16 question-friction, N17 canvas-promote, N20 superseded-open
 8. N04 enough (only when nothing above applies)
 
 ## 5. Adding a nudge

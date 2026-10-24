@@ -3,6 +3,20 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
+## 0.9 · unreleased
+
+- format · **Lifecycle marks:** `superseded-by:`, `supersedes:`, `retired:`, an `archive` folder with
+  `RETIRED.md`, and `Decision log` sections that are kept but never counted (FORMAT.md §10, METHOD.md §6.1) ·
+  replaced designs must stay readable without reading as current, especially to agents.
+- tooling · `anaxi-check supersede | retire | archive | restore | delete`: edit the marks in whatever form they
+  were declared, move whole files, rewrite links both ways; `restore` undoes exactly; `delete` only for committed
+  archived files. `status --all`, `inactive` and `deleted` in the JSON, a "Superseded and retired" index section.
+- nudges · N18 uses-superseded, N19 one-sided, N20 superseded-open, N21 archive-hygiene. The gate fails on a
+  non-current item and on uses of one.
+- roadmap · The reader shows the design as linked pages (overview, one page per item, an outline), never one
+  endless scroll; one continuous document only for print or export.
+- example · an archived superseded doc, a deleted id, a decision log.
+
 ## 0.8 · 2026-10-23
 
 - tooling · **Claude Code plugin.** The repo is the plugin and its own marketplace: the skill, the checker,

@@ -132,12 +132,26 @@ checked; every `uses:` item is deep enough; and there are no `block` nudges. If 
 item's levels and the contracts of what it uses. **Never from the canvas, and never from a guess at a missing
 contract.** If it isn't ready, report N09 with the blockers, then deepen (procedure 5) or ask.
 
+### 6.1 Superseded, retired, archived (FORMAT.md §10)
+
+- **Never build from, cite or extend a superseded, retired or archived item** (`status --all`, or a
+  `superseded-by:` / `retired:` mark, or a file under the archive). Follow `superseded-by:` to the current
+  successor and use that; mention the old one only when asked why something is the way it is.
+- When a change to an item isn't compatible and something was built from it, or other items depend on it,
+  propose superseding rather than rewriting: `anaxi-check supersede @old --by @new --why "…"`. Dropped with no
+  replacement: `retire`. Out of the way: `archive`; gone: `delete` (only committed files). `restore` undoes.
+  These change files, so say what you'll run and why before running them.
+- Act on N18 (point uses at the successor), N19 (add the missing side), N20 (move open questions to the
+  successor) and N21 (say why it was archived; pick a new id).
+- A replaced decision inside a living TDD goes under a `Decision log` heading, not deleted.
+
 ### 7. Index and compose
 
 - **Index:** `anaxi-check index` after any change to marks. Without the scripts, edit `INDEX.md` by hand in the
   shape of `TOOLING.md §4.2` and say it was edited by hand (CI will regenerate it if set up).
 - **A combined document** (only if asked): the roots and their sub-items, then everything they `uses`,
-  transitively (`anaxi-check uses` lists them), each once; the status table first; canvas labelled. Assemble it
+  transitively (`anaxi-check uses` lists them), each once; the status table first; canvas labelled; superseded
+  and retired items left out unless asked for history. Assemble it
   yourself (`anaxi-render` isn't built yet) and say so.
 - Prefer pointing people (and yourself) at the docs and the index over generating a copy.
 

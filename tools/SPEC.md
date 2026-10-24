@@ -25,6 +25,11 @@ node anaxi-check.mjs uses      @id                                             #
 node anaxi-check.mjs index     [--out docs/INDEX.md] [--check | --path]        # write the index (TOOLING.md §4.2)
 node anaxi-check.mjs check                                                     # syntax, settings and references; for CI
 node anaxi-check.mjs new       NAME [--title T] [--small] [--in DIR]          # a TDD (or small item) from the template, @id and title filled
+node anaxi-check.mjs supersede @old --by @new [--why W]                       # FORMAT.md §10: marks both sides
+node anaxi-check.mjs retire    @id --why W [--date YYYY-MM-DD]                # dropped, no successor
+node anaxi-check.mjs archive   @id [--why W]                                  # whole-file items only; moves to `archive`, rewrites links both ways
+node anaxi-check.mjs restore   @id                                            # removes the marks (both sides) and moves back to archived-from
+node anaxi-check.mjs delete    @id [--force]                                  # archived and committed only; appends a row to <archive>/RETIRED.md
 ```
 
 Human output is coloured on a terminal and wrapped to its width; `NO_COLOR=1` or a pipe turns colour off. Each
@@ -33,6 +38,10 @@ item ends with a `→ Next:` line, the first one or two actions in nudge order. 
 - Every command takes `--dir DIR` (default: the current folder).
 - `--diff BASE` re-reads the docs as they were at a git ref and reports only nudges that are new or changed
   since then. It uses today's settings and questions for both.
+- `status --all` also lists superseded, retired and archived items; `status --json` has them in `inactive`, and
+  the ids in `RETIRED.md` in `deleted`. Every item has `lifecycle`, `supersededBy`, `supersedes`, `retired`, `successor`.
+- The lifecycle commands take `--dry-run`, edit only the marks (in the form they were declared), and never touch
+  a file's other text except relative links to a moved file.
 - `index --check` exits 1 if the file on disk differs from what would be generated; `index --path` prints where
   the index goes (used by the pre-commit hook).
 
@@ -98,6 +107,10 @@ field    = "depth:" level [ arrow level | done ]
          | "caveats:" text | "later:" text           ; trigger: "when @id reaches Dn"
          | "focus:" ("now" | "next" | "later")
          | "profile:" name
+         | "part-of:" "@" id
+         | "superseded-by:" "@" id [ "(" reason ")" ] | "supersedes:" "@" id { "," "@" id }
+         | "retired:" date [ "(" reason ")" ]          ; date YYYY-MM-DD; a date or a reason is required
+         | "archived-from:" path                       ; written by `archive`, read by `restore`
 ref      = ( "@" id | "[" text "](" path ")" ) [ "(" level ")" ]    ; a link counts if its target is a tagged item
 level    = "D0" | "D1" | "D2" | "D3" | "D4"
 arrow    = "→" | "->"
@@ -146,6 +159,12 @@ lines (`reword:`, `skip-all:`), and `## Principles` (shown by the skill, not che
 | N14 | no `risk:`, no `target:`, and `depth:` has no `→ Dt` or `enough` (`Dn enough` sets target = Dn) |
 | N15 | an `@id` in `uses:` or `later:` that nothing declares, or a link in `uses:` to an untagged target |
 | check | errors: unreadable depth, risk or target; duplicate `@id`; a `uses:` that doesn't resolve; `skip:` or `skip-all:` without a reason; a change to a core question that doesn't exist. Warnings: risk and the written target disagree; `enough` below the target; a heading badge and a tag that disagree; unknown fields; the wrong number of risk scores |
+| lifecycle | archived if the file is under `archive`; else superseded if `superseded-by:`; else retired if `retired:`; else current. A section item inherits a non-current parent's state. Non-current items are left out of `items`, targets, caps, N01–N06 and the status table; they're in `inactive`. The successor follows `superseded-by:` until a current item |
+| N18 | a current item's `uses:` resolves to a non-current item (instead of N02) |
+| N19 | `superseded-by: @x` where @x doesn't say `supersedes:` this id, or names a deleted id; `supersedes: @x` where @x doesn't say `superseded-by:` this item |
+| N20 | a non-current item with anything open |
+| N21 | an archived item with neither `superseded-by:` nor `retired:`; a declared id that `RETIRED.md` lists |
+| gate (lifecycle) | a non-current item is never ready (the reason names its successor); a `uses:` that resolves to a non-current item fails the gate |
 | status | ⛔ blocked (an N02 block) · ⏸️ `focus: later` · ✂️ over-documented (N06) · ⬇️ go deeper (N01) · ❓ open, or no target · 🎯 enough, in that order |
 
 ## 5. JSON output

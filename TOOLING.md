@@ -37,7 +37,7 @@ Zero-dependency Node (≥ 18) and bash. The skill also works without them (by ha
 | Script | Does | Status |
 |---|---|---|
 | `tools/lib/` (`config.mjs`, `parse.mjs`, `questions.mjs`, `engine.mjs`) | shared code. **config:** profile → `anaxi.json` layering, finding the docs. **parse:** the four ways to declare an item, icons, `@id` and link references, section-to-level mapping, the canvas, checklists. **questions:** the core table in QUESTIONS.md and the project's `anaxi-questions.md`. **engine:** targets, caps, open questions, structural nudges, the gate, the index | built |
-| `tools/anaxi-check.mjs` | `status`, `nudges` (with `--diff`), `gate`, `questions`, `uses`, `index` (with `--check`), `check`; JSON output | built |
+| `tools/anaxi-check.mjs` | `status`, `nudges` (with `--diff`), `gate`, `questions`, `uses`, `index` (with `--check`), `check`, `new`; the lifecycle: `supersede`, `retire`, `archive`, `restore`, `delete`; JSON output | built |
 | `tools/anaxi-ci.sh` | for CI or a pre-commit hook: `check`, then `INDEX.md` (fail if stale, or `--fix` to regenerate and stage it), new nudges since a ref (`--base`), gates (`--gate "@a @b"`) | built |
 | `tools/hooks/pre-commit` | runs `anaxi-ci.sh --fix` on commits that touch markdown | built |
 | `tools/selftest.mjs` | checks the example's statuses and that a broken project trips every structural check | built |
@@ -200,7 +200,7 @@ path/to/anaxi/tools/anaxi-init.sh my-project --profile service --stage shaping
 ```
 
 That vendors the method into `my-project/tools/anaxi/`, writes `anaxi.json`, `docs/anaxi-questions.md` and
-`docs/shared/stack.md`, links the skill into `.claude/skills/`, installs the pre-commit hook (in a git repo) and
+`docs/shared/stack.md` (and sets `docs/archive`), links the skill into `.claude/skills/`, installs the pre-commit hook (in a git repo) and
 builds the first index. It works on an existing project and never overwrites a file; `--docs DIR` points it at
 where your docs already are, `--no-vendor` uses `$ANAXI_HOME` instead of a copy. Add CI yourself (§4.2). A
 vendored copy wins over the plugin for the git hook, so CI, the hook and Claude agree.

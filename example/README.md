@@ -13,6 +13,9 @@ every way of marking up an item ([../FORMAT.md](../FORMAT.md)):
 | [features/settings-screen.md](features/settings-screen.md) | @settings | **HTML comment** | over-documented for its risk |
 | [features/multi-calendar.md](features/multi-calendar.md) | @multi-calendar | **tag line** | over-documented for the plan (`focus: later`) |
 | [features/APPENDIX.md](features/APPENDIX.md) | part of @recurring | **`part-of:`** tag line | detail kept out of the TDD, counted as @recurring's own |
+| [archive/polling-sync.md](archive/polling-sync.md) | @polling-sync | **front matter**, `superseded-by: @scheduler` | an archived design: readable, linked from its successor, never counted |
+| [archive/RETIRED.md](archive/RETIRED.md) | @email-digest | a row | a deleted item whose id stays reserved |
+| [shared/task-api.md](shared/task-api.md) `Decision log` | (a section) | heading name, `> superseded-by:` | a replaced decision kept inside a living doc |
 
 `INDEX.md` is generated (`node ../tools/anaxi-check.mjs index`, run from this folder). The output below is
 real script output, followed by what the skill adds after reading the content.

@@ -80,6 +80,9 @@ and ideas go under `## Sketch` or `## Appendix`, where nothing counts or nags.
 
 At the target, write `depth: D3 🎯` (or `D3 enough`) and stop.
 
+Replaced later? Don't delete or rewrite history: `anaxi-check supersede @old --by @new --why "…"` (or `retire`,
+`archive`). The old doc stays readable and stops counting ([FORMAT.md §10](FORMAT.md#10-superseded-retired-archived)).
+
 ## 4. Use it in your sprint
 
 | When | Do |

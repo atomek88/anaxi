@@ -170,7 +170,10 @@ So a reader (or an agent) can see where a design came from and check it against 
 - **Last changed, and by whom**, from git per item, which is also what N11 (recheck after a shared item changes)
   needs.
 
-### 6. Superseding and archiving design knowledge
+### 6. Superseding and archiving design knowledge · built in 0.9
+
+Built as below, except `anaxi_context` (step 4) and the reader's banner (step 3), which come with those steps.
+Marks and commands: [FORMAT.md §10](FORMAT.md#10-superseded-retired-archived).
 
 Designs get replaced, and the old reasoning is still worth having, but a stale doc that reads as current is worse
 than no doc: agents read everything and can't tell. So what replaced what is marked, checked and shown, not

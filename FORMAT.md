@@ -211,3 +211,47 @@ or, for a whole file, front matter `part-of: "@recurring"`. Then link to it from
 A part is committed content. Exploration still goes in a canvas: a heading named `Appendix` *inside* a TDD is
 canvas (§6); a `part-of:` section in `APPENDIX.md` is not. When a part grows into something other items use
 (an API, a store), make it a shared item with its own `@id` instead.
+
+## 10. Superseded, retired, archived
+
+Designs get replaced. The old one is still worth reading (it explains what was built from it, and why the new
+one exists), but it must not read as current: agents read everything and can't tell. So the change is a mark,
+never just a folder name or a deletion.
+
+| State | Mark | What changes |
+|---|---|---|
+| **current** | (none) | counted, nudged and gated as usual |
+| **superseded** | `superseded-by: @new (why)` on the old item, and `supersedes: @old` on the new one | stays where it is, so links still work; leaves the status table, targets and gates; `INDEX.md` lists it under "Superseded and retired" with its successor |
+| **retired** | `retired: 2026-11-02 (why)`: dropped, nothing replaces it | the same, with no successor |
+| **archived** | the file is in the archive folder (`archive` in `anaxi.json`, `docs/archive` by default), with `archived-from:` | still read for references, never for status |
+
+```markdown
+---
+anaxi: "@polling-sync"
+depth: D2
+superseded-by: "@scheduler (an event-driven planner replaced the per-minute poll)"
+---
+```
+
+The marks work in every declaration form: front matter, tag line, comment, heading badge. A section item inside
+a superseded doc goes with it.
+
+**Inside a living TDD**, a replaced decision or section is kept under a heading named `Decision log` (or
+`History`, `Previous design`), or a heading with a `` `superseded` `` badge, or with a `> superseded-by: …` line
+under it. Like the canvas, it's kept and labelled and never counted.
+
+**Deleting.** Once an archived doc is no longer read, it can be deleted: git keeps it. `archive/RETIRED.md`
+keeps one row per deleted `@id` (date, why, successor, last commit), so the id is never reused by accident.
+
+**Moving between states** is done by the checker, which edits the marks, moves the file and fixes the links:
+
+```bash
+anaxi-check supersede @old --by @new --why "…"   # both sides marked
+anaxi-check retire    @id --why "…"              # dropped, no successor
+anaxi-check archive   @id [--why "…"]            # a whole-file item moves to the archive; links are rewritten
+anaxi-check restore   @id                        # back to current, and out of the archive
+anaxi-check delete    @id                        # an archived, committed file is removed; RETIRED.md keeps the id
+```
+
+Each takes `--dry-run`. `restore` undoes `supersede`, `retire` and `archive` exactly. When to supersede rather
+than edit: [METHOD.md §6.1](METHOD.md#61-superseding-retiring-archiving).

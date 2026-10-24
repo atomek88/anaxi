@@ -71,6 +71,7 @@ Every key is optional. A project with no `anaxi.json` gets the defaults.
 | `ignore` | globs to leave out, e.g. `["templates/**"]`. A folder with its own `anaxi.json` is always left out: it's a separate project |
 | `questions` | path of the project questions file (default `anaxi-questions.md` at the docs root) |
 | `index` / `out` | where the generated index goes, and where rendered documents go |
+| `archive` | where archived docs go (default `archive`; `anaxi-init` sets `docs/archive`). Its `RETIRED.md` lists deleted ids ([FORMAT.md §10](FORMAT.md#10-superseded-retired-archived)) |
 | `sections` | extra heading names that map to a level, or to the canvas ([FORMAT.md §4](FORMAT.md#4-what-level-a-piece-of-content-is-at)), to match your TDD template |
 | `levels` | the ladder: `{ "D2": { "name": "Design", "done": "…" } }` renames or redefines a level, `"D4": null` drops it, `"D5": {…}` adds one. Levels run D0, D1, … with no gaps |
 | `rubric.factors.base` | the risk factors (default blast · reversibility · novelty · certainty). Replace the list to use your own |
