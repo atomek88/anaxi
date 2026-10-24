@@ -1,0 +1,3391 @@
+{
+  "schema": "proto-manifest/1",
+  "title": "Anaxi viewer",
+  "question": "Which views should anaxi watch ship first so a team can triage the design at a glance, and read any item or the whole design at the depth they need, without scrolling forever?",
+  "lens": "gedanken",
+  "frame": null,
+  "variants": null,
+  "states": [
+    {
+      "id": "frame",
+      "title": "Framing",
+      "group": "Gedanken",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "→ the reader"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "→ the maps"
+        },
+        {
+          "to": "scale",
+          "mode": "link",
+          "label": "→ the scale test"
+        }
+      ]
+    },
+    {
+      "id": "reader-overview",
+      "title": "Reader · project overview",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-settings",
+          "mode": "link",
+          "label": "@settings"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-upgrade-policy",
+          "mode": "link",
+          "label": "Upgrade policy"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "@polling-sync"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-settings",
+          "mode": "link",
+          "label": "@settings"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-settings",
+          "mode": "link",
+          "label": "@settings"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        }
+      ]
+    },
+    {
+      "id": "item-multi-calendar",
+      "title": "Reader · @multi-calendar",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        }
+      ]
+    },
+    {
+      "id": "item-recurring",
+      "title": "Reader · @recurring",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        }
+      ]
+    },
+    {
+      "id": "item-settings",
+      "title": "Reader · @settings",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui"
+        },
+        {
+          "to": "item-upgrade-policy",
+          "mode": "link",
+          "label": "Upgrade policy"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        }
+      ]
+    },
+    {
+      "id": "item-scheduler",
+      "title": "Reader · @scheduler",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "@polling-sync"
+        }
+      ]
+    },
+    {
+      "id": "item-stack",
+      "title": "Reader · @stack",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-upgrade-policy",
+          "mode": "link",
+          "label": "Upgrade policy"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        }
+      ]
+    },
+    {
+      "id": "item-upgrade-policy",
+      "title": "Reader · Upgrade policy",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-settings",
+          "mode": "link",
+          "label": "@settings"
+        }
+      ]
+    },
+    {
+      "id": "item-task-api",
+      "title": "Reader · @task-api",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-settings",
+          "mode": "link",
+          "label": "@settings"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        }
+      ]
+    },
+    {
+      "id": "item-polling-sync",
+      "title": "Reader · @polling-sync",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        }
+      ]
+    },
+    {
+      "id": "item-recurring-at-d1",
+      "title": "Reader · @recurring read at D1",
+      "group": "Reader",
+      "kind": "screen",
+      "of": "item-recurring",
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        }
+      ]
+    },
+    {
+      "id": "item-task-api-log",
+      "title": "Reader · @task-api with its decision log",
+      "group": "Reader",
+      "kind": "screen",
+      "of": "item-task-api",
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-settings",
+          "mode": "link",
+          "label": "@settings"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        }
+      ]
+    },
+    {
+      "id": "topic-integration",
+      "title": "Reader · topic integration",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        }
+      ]
+    },
+    {
+      "id": "topic-data",
+      "title": "Reader · topic data",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        }
+      ]
+    },
+    {
+      "id": "topic-ui",
+      "title": "Reader · topic ui",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-settings",
+          "mode": "link",
+          "label": "@settings"
+        }
+      ]
+    },
+    {
+      "id": "topic-async",
+      "title": "Reader · topic async",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-multi-calendar",
+          "mode": "link",
+          "label": "@multi-calendar"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        }
+      ]
+    },
+    {
+      "id": "topic-infra",
+      "title": "Reader · topic infra",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        }
+      ]
+    },
+    {
+      "id": "topic-shared",
+      "title": "Reader · topic shared",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-upgrade-policy",
+          "mode": "link",
+          "label": "Upgrade policy"
+        }
+      ]
+    },
+    {
+      "id": "topic-api",
+      "title": "Reader · topic api",
+      "group": "Reader",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "Overview"
+        },
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "Map"
+        },
+        {
+          "to": "topic-api",
+          "mode": "link",
+          "label": "api · 1"
+        },
+        {
+          "to": "topic-async",
+          "mode": "link",
+          "label": "async · 1"
+        },
+        {
+          "to": "topic-data",
+          "mode": "link",
+          "label": "data · 1"
+        },
+        {
+          "to": "topic-infra",
+          "mode": "link",
+          "label": "infra · 1"
+        },
+        {
+          "to": "topic-integration",
+          "mode": "link",
+          "label": "integration · 1"
+        },
+        {
+          "to": "topic-shared",
+          "mode": "link",
+          "label": "shared · 1"
+        },
+        {
+          "to": "topic-ui",
+          "mode": "link",
+          "label": "ui · 1"
+        },
+        {
+          "to": "item-polling-sync",
+          "mode": "link",
+          "label": "🗄️ @polling-sync"
+        },
+        {
+          "to": "reader-overview",
+          "mode": "link",
+          "label": "TaskFlow"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-scheduler",
+          "mode": "link",
+          "label": "@scheduler"
+        },
+        {
+          "to": "item-stack",
+          "mode": "link",
+          "label": "@stack"
+        },
+        {
+          "to": "item-recurring",
+          "mode": "link",
+          "label": "@recurring"
+        },
+        {
+          "to": "item-task-api",
+          "mode": "link",
+          "label": "@task-api"
+        }
+      ]
+    },
+    {
+      "id": "map-2d",
+      "title": "Map · 2D graph with depth bars",
+      "group": "Maps",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "2D"
+        },
+        {
+          "to": "map-3d",
+          "mode": "link",
+          "label": "3D stack"
+        },
+        {
+          "to": "map-city",
+          "mode": "link",
+          "label": "city"
+        },
+        {
+          "to": "scale",
+          "mode": "link",
+          "label": "scale test"
+        },
+        {
+          "to": "glance",
+          "mode": "link",
+          "label": "glance matrix"
+        },
+        {
+          "to": "checks",
+          "mode": "link",
+          "label": "checks"
+        }
+      ]
+    },
+    {
+      "id": "map-3d",
+      "title": "Map · 3D layer stack",
+      "group": "Maps",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "2D"
+        },
+        {
+          "to": "map-3d",
+          "mode": "link",
+          "label": "3D stack"
+        },
+        {
+          "to": "map-city",
+          "mode": "link",
+          "label": "city"
+        },
+        {
+          "to": "scale",
+          "mode": "link",
+          "label": "scale test"
+        },
+        {
+          "to": "glance",
+          "mode": "link",
+          "label": "glance matrix"
+        },
+        {
+          "to": "checks",
+          "mode": "link",
+          "label": "checks"
+        }
+      ]
+    },
+    {
+      "id": "map-city",
+      "title": "Map · city",
+      "group": "Maps",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "2D"
+        },
+        {
+          "to": "map-3d",
+          "mode": "link",
+          "label": "3D stack"
+        },
+        {
+          "to": "map-city",
+          "mode": "link",
+          "label": "city"
+        },
+        {
+          "to": "scale",
+          "mode": "link",
+          "label": "scale test"
+        },
+        {
+          "to": "glance",
+          "mode": "link",
+          "label": "glance matrix"
+        },
+        {
+          "to": "checks",
+          "mode": "link",
+          "label": "checks"
+        }
+      ]
+    },
+    {
+      "id": "scale",
+      "title": "Scale test · flat vs by topic",
+      "group": "Simulate",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": [
+        {
+          "to": "map-2d",
+          "mode": "link",
+          "label": "2D"
+        },
+        {
+          "to": "map-3d",
+          "mode": "link",
+          "label": "3D stack"
+        },
+        {
+          "to": "map-city",
+          "mode": "link",
+          "label": "city"
+        },
+        {
+          "to": "scale",
+          "mode": "link",
+          "label": "scale test"
+        },
+        {
+          "to": "glance",
+          "mode": "link",
+          "label": "glance matrix"
+        },
+        {
+          "to": "checks",
+          "mode": "link",
+          "label": "checks"
+        }
+      ]
+    },
+    {
+      "id": "glance",
+      "title": "Glance matrix · which questions each view answers",
+      "group": "Simulate",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": []
+    },
+    {
+      "id": "checks",
+      "title": "Sanity checks",
+      "group": "Simulate",
+      "kind": "screen",
+      "of": null,
+      "anaxi": null,
+      "zoom": null,
+      "overlay": null,
+      "stub": false,
+      "notes": "",
+      "variants": false,
+      "exits": []
+    }
+  ],
+  "scenarios": [],
+  "anaxi": null,
+  "shape": {
+    "schema": "proto-shape/1",
+    "question": "Which views should anaxi watch ship first so a team can triage the design at a glance, and read any item or the whole design at the depth they need, without scrolling forever?",
+    "anaxi": null,
+    "approach": "anaxi watch: a read-only local reader of linked pages (overview → topic → item, depth control, outline, parts inline, superseded banner, next/previous in uses: order) with a 2D depth-bar map that zooms by topic; all from one ViewModel; a city view possible later over the same layout",
+    "rejected": [
+      {
+        "approach": "City (for v1)",
+        "why": "labels collide at 7 items (2/7 hidden), a third at 40; memorable but not readable; a later optional view"
+      },
+      {
+        "approach": "3D layer stack",
+        "why": "17/40 columns hidden and no readable labels at 40 items flat; depth-as-height duplicates the bar"
+      },
+      {
+        "approach": "One continuous super-TDD document",
+        "why": "the example's @recurring alone is 439 words at D4; a project reads as pages with a depth control, and one document only for export"
+      },
+      {
+        "approach": "Flat maps of the whole project",
+        "why": "no picture labels 150 items on one screen; the top zoom must be topics"
+      }
+    ],
+    "entities": {
+      "ViewModel": {
+        "name": "ViewModel",
+        "desc": "what the page gets: anaxi-check status --json (anaxi/1) plus blocks",
+        "fields": [
+          {
+            "name": "items",
+            "type": "Item[]",
+            "note": "current, with status, uses, parts, sections",
+            "key": ""
+          },
+          {
+            "name": "inactive",
+            "type": "Item[]",
+            "note": "superseded, retired, archived, with successor",
+            "key": ""
+          },
+          {
+            "name": "deleted",
+            "type": "{id,date,why,successor,commit}[]",
+            "note": "RETIRED.md",
+            "key": ""
+          },
+          {
+            "name": "nudges",
+            "type": "Nudge[]",
+            "note": "",
+            "key": ""
+          },
+          {
+            "name": "blocks",
+            "type": "{item, file, line, kind, level}[]",
+            "note": "proposed: from the checker",
+            "key": ""
+          }
+        ]
+      }
+    },
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "summary": "overview page"
+      },
+      {
+        "method": "GET",
+        "path": "/item/:id?at=D2",
+        "summary": "an item's page at a depth"
+      },
+      {
+        "method": "GET",
+        "path": "/topic/:topic",
+        "summary": "a topic page"
+      },
+      {
+        "method": "GET",
+        "path": "/map?topic=&cut=",
+        "summary": "the 2D map, by topic"
+      },
+      {
+        "method": "GET",
+        "path": "/api/model",
+        "summary": "the ViewModel JSON"
+      },
+      {
+        "method": "EVENT",
+        "path": "/events",
+        "summary": "server-sent: model changed after a save"
+      }
+    ],
+    "states": [
+      {
+        "id": "overview",
+        "title": "Project overview",
+        "group": "Reader",
+        "notes": "status groups, blocked-by, history and deleted ids; links only"
+      },
+      {
+        "id": "topic",
+        "title": "Topic page",
+        "group": "Reader",
+        "notes": "a topic's items and what they use outside it"
+      },
+      {
+        "id": "item",
+        "title": "Item page",
+        "group": "Reader",
+        "notes": "depth control D0–D4, outline, parts inline, uses/used-by, nudges, gate, next/previous"
+      },
+      {
+        "id": "item-superseded",
+        "title": "Superseded item page",
+        "group": "Reader",
+        "notes": "banner with the successor; no pager"
+      },
+      {
+        "id": "map",
+        "title": "2D map",
+        "group": "Map",
+        "notes": "depth bars, red blocking edges, history strip; project = topics, topic = items"
+      }
+    ],
+    "model": [
+      "model.js"
+    ],
+    "graphs": {},
+    "decisions": [
+      {
+        "text": "Reader first: anaxi watch ships the docs as linked pages (overview → topic → item), each item one page with a depth control, an outline, parts inline, uses/used-by, nudges and the gate; 'next' walks the design in uses: order. Never one endless scroll.",
+        "status": "made",
+        "level": null,
+        "answers": null
+      },
+      {
+        "text": "The 2D graph with depth bars is the default map, and it zooms by topic: the project level shows topics (counts and worst status), a topic shows its items. Readable at 7, 40 and 150 items by topic (scale test, 20 seeds).",
+        "status": "made",
+        "level": null,
+        "answers": null
+      },
+      {
+        "text": "No city in v1: it is the most memorable picture, but its labels already collide at the example's 7 items (2 of 7 hidden: @scheduler and Upgrade policy in the render) and a third at 40; by topic it holds to ~11 items. Keep it as a later, optional view over the same layout.",
+        "status": "made",
+        "level": null,
+        "answers": null
+      },
+      {
+        "text": "No 3D layer stack: @recurring is already hidden behind @multi-calendar at 7 items, and at 40 flat it hides 17 of 40 columns with no label readable; depth is already a length in the 2D bar, so height adds nothing.",
+        "status": "made",
+        "level": null,
+        "answers": null
+      },
+      {
+        "text": "Levels come from headings AND from paragraph lead-ins named after the levels (Why, What, Shape, Contract, Build), split mid-paragraph: headings alone give the depth control nothing on 6 of 8 example items.",
+        "status": "made",
+        "level": "D2",
+        "answers": null
+      },
+      {
+        "text": "Readability measured on bounding-box geometry, not pixels or people; a rotatable 3D view could recover some occlusion at the cost of interaction.",
+        "status": "assumed",
+        "level": null,
+        "answers": null
+      },
+      {
+        "text": "The glance matrix is a judgment from the renders, not a user test.",
+        "status": "assumed",
+        "level": null,
+        "answers": null
+      }
+    ],
+    "questions": [
+      {
+        "text": "Should the checker emit blocks (section and lead-in levels, line ranges) in the JSON, so the reader never re-parses markdown?",
+        "level": "D3",
+        "id": "qm408jh",
+        "refines": null
+      },
+      {
+        "text": "A topic above ~25 items stops fitting the 2D map too (the curve fades past 150 items): split it by folder or sub-topic, or fall back to the overview list?",
+        "level": "D2",
+        "id": "qd2dx74",
+        "refines": null
+      },
+      {
+        "text": "Topic for an item without about: — its folder, or 'unsorted'?",
+        "level": "D2",
+        "id": "q164hlmg",
+        "refines": null
+      },
+      {
+        "text": "Does the live reload need per-file granularity (SSE with the changed paths) or is a full model refresh fast enough (~0.07 s)?",
+        "level": "D3",
+        "id": "qnzbrw8",
+        "refines": null
+      }
+    ]
+  },
+  "graphs": {},
+  "charts": {
+    "legible": {
+      "id": "legible",
+      "type": "vega-lite",
+      "title": "Items you can read at a glance (share), by project size",
+      "spec": {
+        "height": 200,
+        "mark": {
+          "type": "line",
+          "point": true,
+          "strokeWidth": 2.5
+        },
+        "encoding": {
+          "x": {
+            "field": "n",
+            "type": "quantitative",
+            "title": "items in the project"
+          },
+          "y": {
+            "field": "share",
+            "type": "quantitative",
+            "title": null,
+            "axis": {
+              "format": "%"
+            }
+          },
+          "color": {
+            "field": "view",
+            "type": "nominal",
+            "title": null
+          },
+          "strokeDash": {
+            "field": "zoom",
+            "type": "nominal",
+            "title": null
+          }
+        }
+      }
+    }
+  },
+  "codes": {},
+  "zooms": {},
+  "params": {
+    "cut": {
+      "name": "cut",
+      "step": 1,
+      "label": "Show depth up to (maps)",
+      "min": 0,
+      "max": 4,
+      "value": 4
+    },
+    "n": {
+      "name": "n",
+      "step": 1,
+      "label": "Items in the project",
+      "min": 1,
+      "max": 200,
+      "value": 40
+    },
+    "zoom": {
+      "name": "zoom",
+      "step": 1,
+      "label": "Semantic zoom (1 = topic level)",
+      "min": 0,
+      "max": 1,
+      "value": 0
+    }
+  },
+  "presets": {
+    "example": {
+      "id": "example",
+      "label": "Example-sized project (7)",
+      "values": {
+        "n": 7,
+        "zoom": 0
+      }
+    },
+    "team": {
+      "id": "team",
+      "label": "One team (40), flat",
+      "values": {
+        "n": 40,
+        "zoom": 0
+      }
+    },
+    "team-zoom": {
+      "id": "team-zoom",
+      "label": "One team (40), by topic",
+      "values": {
+        "n": 40,
+        "zoom": 1
+      }
+    },
+    "org": {
+      "id": "org",
+      "label": "Several teams (150), flat",
+      "values": {
+        "n": 150,
+        "zoom": 0
+      }
+    },
+    "org-zoom": {
+      "id": "org-zoom",
+      "label": "Several teams (150), by topic",
+      "values": {
+        "n": 150,
+        "zoom": 1
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "every current item appears exactly once in the map layout; history items never do",
+      "ok": true,
+      "detail": "7 placed, 1 in history",
+      "preset": null
+    },
+    {
+      "name": "statuses come from the checker (no view computes its own)",
+      "ok": true,
+      "detail": "later blocked trim gap enough enough enough",
+      "preset": null
+    },
+    {
+      "name": "deeper never shows less: words visible at D0 ≤ D1 ≤ … ≤ D4, for every item",
+      "ok": true,
+      "detail": "all monotonic",
+      "preset": null
+    },
+    {
+      "name": "no text lost: splitting at lead-ins keeps every word (D4 + canvas + history = all)",
+      "ok": true,
+      "detail": "none lost",
+      "preset": null
+    },
+    {
+      "name": "lead-ins give the depth control something to filter on most items",
+      "ok": true,
+      "detail": "7/8 items have ≥2 levelled blocks (headings alone: 2)",
+      "preset": null
+    },
+    {
+      "name": "synthetic projects: blocked exactly when a used item is short of its target",
+      "ok": true,
+      "detail": "14 blocked of 40",
+      "preset": null
+    },
+    {
+      "name": "extreme: one item is readable in every picture",
+      "ok": true,
+      "detail": "1/1/1",
+      "preset": null
+    },
+    {
+      "name": "the ranking isn't luck: across 20 seeds at 40 items by topic, 2D reads at least as many items as 3D and the city",
+      "ok": true,
+      "detail": "20/20 seeds",
+      "preset": null
+    },
+    {
+      "name": "every current item appears exactly once in the map layout; history items never do",
+      "ok": true,
+      "detail": "7 placed, 1 in history",
+      "preset": "example"
+    },
+    {
+      "name": "statuses come from the checker (no view computes its own)",
+      "ok": true,
+      "detail": "later blocked trim gap enough enough enough",
+      "preset": "example"
+    },
+    {
+      "name": "deeper never shows less: words visible at D0 ≤ D1 ≤ … ≤ D4, for every item",
+      "ok": true,
+      "detail": "all monotonic",
+      "preset": "example"
+    },
+    {
+      "name": "no text lost: splitting at lead-ins keeps every word (D4 + canvas + history = all)",
+      "ok": true,
+      "detail": "none lost",
+      "preset": "example"
+    },
+    {
+      "name": "lead-ins give the depth control something to filter on most items",
+      "ok": true,
+      "detail": "7/8 items have ≥2 levelled blocks (headings alone: 2)",
+      "preset": "example"
+    },
+    {
+      "name": "synthetic projects: blocked exactly when a used item is short of its target",
+      "ok": true,
+      "detail": "1 blocked of 7",
+      "preset": "example"
+    },
+    {
+      "name": "extreme: one item is readable in every picture",
+      "ok": true,
+      "detail": "1/1/1",
+      "preset": "example"
+    },
+    {
+      "name": "the ranking isn't luck: across 20 seeds at 40 items by topic, 2D reads at least as many items as 3D and the city",
+      "ok": true,
+      "detail": "20/20 seeds",
+      "preset": "example"
+    },
+    {
+      "name": "every current item appears exactly once in the map layout; history items never do",
+      "ok": true,
+      "detail": "7 placed, 1 in history",
+      "preset": "team"
+    },
+    {
+      "name": "statuses come from the checker (no view computes its own)",
+      "ok": true,
+      "detail": "later blocked trim gap enough enough enough",
+      "preset": "team"
+    },
+    {
+      "name": "deeper never shows less: words visible at D0 ≤ D1 ≤ … ≤ D4, for every item",
+      "ok": true,
+      "detail": "all monotonic",
+      "preset": "team"
+    },
+    {
+      "name": "no text lost: splitting at lead-ins keeps every word (D4 + canvas + history = all)",
+      "ok": true,
+      "detail": "none lost",
+      "preset": "team"
+    },
+    {
+      "name": "lead-ins give the depth control something to filter on most items",
+      "ok": true,
+      "detail": "7/8 items have ≥2 levelled blocks (headings alone: 2)",
+      "preset": "team"
+    },
+    {
+      "name": "synthetic projects: blocked exactly when a used item is short of its target",
+      "ok": true,
+      "detail": "14 blocked of 40",
+      "preset": "team"
+    },
+    {
+      "name": "extreme: one item is readable in every picture",
+      "ok": true,
+      "detail": "1/1/1",
+      "preset": "team"
+    },
+    {
+      "name": "the ranking isn't luck: across 20 seeds at 40 items by topic, 2D reads at least as many items as 3D and the city",
+      "ok": true,
+      "detail": "20/20 seeds",
+      "preset": "team"
+    },
+    {
+      "name": "every current item appears exactly once in the map layout; history items never do",
+      "ok": true,
+      "detail": "7 placed, 1 in history",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "statuses come from the checker (no view computes its own)",
+      "ok": true,
+      "detail": "later blocked trim gap enough enough enough",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "deeper never shows less: words visible at D0 ≤ D1 ≤ … ≤ D4, for every item",
+      "ok": true,
+      "detail": "all monotonic",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "no text lost: splitting at lead-ins keeps every word (D4 + canvas + history = all)",
+      "ok": true,
+      "detail": "none lost",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "lead-ins give the depth control something to filter on most items",
+      "ok": true,
+      "detail": "7/8 items have ≥2 levelled blocks (headings alone: 2)",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "synthetic projects: blocked exactly when a used item is short of its target",
+      "ok": true,
+      "detail": "14 blocked of 40",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "extreme: one item is readable in every picture",
+      "ok": true,
+      "detail": "1/1/1",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "the ranking isn't luck: across 20 seeds at 40 items by topic, 2D reads at least as many items as 3D and the city",
+      "ok": true,
+      "detail": "20/20 seeds",
+      "preset": "team-zoom"
+    },
+    {
+      "name": "every current item appears exactly once in the map layout; history items never do",
+      "ok": true,
+      "detail": "7 placed, 1 in history",
+      "preset": "org"
+    },
+    {
+      "name": "statuses come from the checker (no view computes its own)",
+      "ok": true,
+      "detail": "later blocked trim gap enough enough enough",
+      "preset": "org"
+    },
+    {
+      "name": "deeper never shows less: words visible at D0 ≤ D1 ≤ … ≤ D4, for every item",
+      "ok": true,
+      "detail": "all monotonic",
+      "preset": "org"
+    },
+    {
+      "name": "no text lost: splitting at lead-ins keeps every word (D4 + canvas + history = all)",
+      "ok": true,
+      "detail": "none lost",
+      "preset": "org"
+    },
+    {
+      "name": "lead-ins give the depth control something to filter on most items",
+      "ok": true,
+      "detail": "7/8 items have ≥2 levelled blocks (headings alone: 2)",
+      "preset": "org"
+    },
+    {
+      "name": "synthetic projects: blocked exactly when a used item is short of its target",
+      "ok": true,
+      "detail": "60 blocked of 150",
+      "preset": "org"
+    },
+    {
+      "name": "extreme: one item is readable in every picture",
+      "ok": true,
+      "detail": "1/1/1",
+      "preset": "org"
+    },
+    {
+      "name": "the ranking isn't luck: across 20 seeds at 40 items by topic, 2D reads at least as many items as 3D and the city",
+      "ok": true,
+      "detail": "20/20 seeds",
+      "preset": "org"
+    },
+    {
+      "name": "every current item appears exactly once in the map layout; history items never do",
+      "ok": true,
+      "detail": "7 placed, 1 in history",
+      "preset": "org-zoom"
+    },
+    {
+      "name": "statuses come from the checker (no view computes its own)",
+      "ok": true,
+      "detail": "later blocked trim gap enough enough enough",
+      "preset": "org-zoom"
+    },
+    {
+      "name": "deeper never shows less: words visible at D0 ≤ D1 ≤ … ≤ D4, for every item",
+      "ok": true,
+      "detail": "all monotonic",
+      "preset": "org-zoom"
+    },
+    {
+      "name": "no text lost: splitting at lead-ins keeps every word (D4 + canvas + history = all)",
+      "ok": true,
+      "detail": "none lost",
+      "preset": "org-zoom"
+    },
+    {
+      "name": "lead-ins give the depth control something to filter on most items",
+      "ok": true,
+      "detail": "7/8 items have ≥2 levelled blocks (headings alone: 2)",
+      "preset": "org-zoom"
+    },
+    {
+      "name": "synthetic projects: blocked exactly when a used item is short of its target",
+      "ok": true,
+      "detail": "60 blocked of 150",
+      "preset": "org-zoom"
+    },
+    {
+      "name": "extreme: one item is readable in every picture",
+      "ok": true,
+      "detail": "1/1/1",
+      "preset": "org-zoom"
+    },
+    {
+      "name": "the ranking isn't luck: across 20 seeds at 40 items by topic, 2D reads at least as many items as 3D and the city",
+      "ok": true,
+      "detail": "20/20 seeds",
+      "preset": "org-zoom"
+    }
+  ],
+  "entities": {
+    "ViewModel": {
+      "name": "ViewModel",
+      "desc": "what the page gets: anaxi-check status --json (anaxi/1) plus blocks",
+      "fields": [
+        {
+          "name": "items",
+          "type": "Item[]",
+          "note": "current, with status, uses, parts, sections",
+          "key": ""
+        },
+        {
+          "name": "inactive",
+          "type": "Item[]",
+          "note": "superseded, retired, archived, with successor",
+          "key": ""
+        },
+        {
+          "name": "deleted",
+          "type": "{id,date,why,successor,commit}[]",
+          "note": "RETIRED.md",
+          "key": ""
+        },
+        {
+          "name": "nudges",
+          "type": "Nudge[]",
+          "note": "",
+          "key": ""
+        },
+        {
+          "name": "blocks",
+          "type": "{item, file, line, kind, level}[]",
+          "note": "proposed: from the checker",
+          "key": ""
+        }
+      ]
+    }
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "summary": "overview page"
+    },
+    {
+      "method": "GET",
+      "path": "/item/:id?at=D2",
+      "summary": "an item's page at a depth"
+    },
+    {
+      "method": "GET",
+      "path": "/topic/:topic",
+      "summary": "a topic page"
+    },
+    {
+      "method": "GET",
+      "path": "/map?topic=&cut=",
+      "summary": "the 2D map, by topic"
+    },
+    {
+      "method": "GET",
+      "path": "/api/model",
+      "summary": "the ViewModel JSON"
+    },
+    {
+      "method": "EVENT",
+      "path": "/events",
+      "summary": "server-sent: model changed after a save"
+    }
+  ],
+  "edges": [],
+  "decisions": [
+    {
+      "text": "Reader first: anaxi watch ships the docs as linked pages (overview → topic → item), each item one page with a depth control, an outline, parts inline, uses/used-by, nudges and the gate; 'next' walks the design in uses: order. Never one endless scroll.",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "The 2D graph with depth bars is the default map, and it zooms by topic: the project level shows topics (counts and worst status), a topic shows its items. Readable at 7, 40 and 150 items by topic (scale test, 20 seeds).",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "No city in v1: it is the most memorable picture, but its labels already collide at the example's 7 items (2 of 7 hidden: @scheduler and Upgrade policy in the render) and a third at 40; by topic it holds to ~11 items. Keep it as a later, optional view over the same layout.",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "No 3D layer stack: @recurring is already hidden behind @multi-calendar at 7 items, and at 40 flat it hides 17 of 40 columns with no label readable; depth is already a length in the 2D bar, so height adds nothing.",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "Levels come from headings AND from paragraph lead-ins named after the levels (Why, What, Shape, Contract, Build), split mid-paragraph: headings alone give the depth control nothing on 6 of 8 example items.",
+      "status": "made",
+      "level": "D2",
+      "answers": null
+    },
+    {
+      "text": "Readability measured on bounding-box geometry, not pixels or people; a rotatable 3D view could recover some occlusion at the cost of interaction.",
+      "status": "assumed",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "The glance matrix is a judgment from the renders, not a user test.",
+      "status": "assumed",
+      "level": null,
+      "answers": null
+    }
+  ],
+  "questions": [
+    {
+      "text": "Should the checker emit blocks (section and lead-in levels, line ranges) in the JSON, so the reader never re-parses markdown?",
+      "level": "D3",
+      "id": "qm408jh",
+      "refines": null
+    },
+    {
+      "text": "A topic above ~25 items stops fitting the 2D map too (the curve fades past 150 items): split it by folder or sub-topic, or fall back to the overview list?",
+      "level": "D2",
+      "id": "qd2dx74",
+      "refines": null
+    },
+    {
+      "text": "Topic for an item without about: — its folder, or 'unsorted'?",
+      "level": "D2",
+      "id": "q164hlmg",
+      "refines": null
+    },
+    {
+      "text": "Does the live reload need per-file granularity (SSE with the changed paths) or is a full model refresh fast enough (~0.07 s)?",
+      "level": "D3",
+      "id": "qnzbrw8",
+      "refines": null
+    }
+  ],
+  "captures": [
+    {
+      "id": "frame",
+      "kind": "state",
+      "state": "frame",
+      "title": "Framing",
+      "group": "Gedanken",
+      "hash": "#/frame",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/frame.png"
+    },
+    {
+      "id": "reader-overview",
+      "kind": "state",
+      "state": "reader-overview",
+      "title": "Reader · project overview",
+      "group": "Reader",
+      "hash": "#/reader-overview",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/reader-overview.png"
+    },
+    {
+      "id": "item-multi-calendar",
+      "kind": "state",
+      "state": "item-multi-calendar",
+      "title": "Reader · @multi-calendar",
+      "group": "Reader",
+      "hash": "#/item-multi-calendar",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-multi-calendar.png"
+    },
+    {
+      "id": "item-recurring",
+      "kind": "state",
+      "state": "item-recurring",
+      "title": "Reader · @recurring",
+      "group": "Reader",
+      "hash": "#/item-recurring",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-recurring.png"
+    },
+    {
+      "id": "item-settings",
+      "kind": "state",
+      "state": "item-settings",
+      "title": "Reader · @settings",
+      "group": "Reader",
+      "hash": "#/item-settings",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-settings.png"
+    },
+    {
+      "id": "item-scheduler",
+      "kind": "state",
+      "state": "item-scheduler",
+      "title": "Reader · @scheduler",
+      "group": "Reader",
+      "hash": "#/item-scheduler",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-scheduler.png"
+    },
+    {
+      "id": "item-stack",
+      "kind": "state",
+      "state": "item-stack",
+      "title": "Reader · @stack",
+      "group": "Reader",
+      "hash": "#/item-stack",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-stack.png"
+    },
+    {
+      "id": "item-upgrade-policy",
+      "kind": "state",
+      "state": "item-upgrade-policy",
+      "title": "Reader · Upgrade policy",
+      "group": "Reader",
+      "hash": "#/item-upgrade-policy",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-upgrade-policy.png"
+    },
+    {
+      "id": "item-task-api",
+      "kind": "state",
+      "state": "item-task-api",
+      "title": "Reader · @task-api",
+      "group": "Reader",
+      "hash": "#/item-task-api",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-task-api.png"
+    },
+    {
+      "id": "item-polling-sync",
+      "kind": "state",
+      "state": "item-polling-sync",
+      "title": "Reader · @polling-sync",
+      "group": "Reader",
+      "hash": "#/item-polling-sync",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-polling-sync.png"
+    },
+    {
+      "id": "item-recurring-at-d1",
+      "kind": "state",
+      "state": "item-recurring-at-d1",
+      "title": "Reader · @recurring read at D1",
+      "group": "Reader",
+      "hash": "#/item-recurring-at-d1",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-recurring-at-d1.png"
+    },
+    {
+      "id": "item-task-api-log",
+      "kind": "state",
+      "state": "item-task-api-log",
+      "title": "Reader · @task-api with its decision log",
+      "group": "Reader",
+      "hash": "#/item-task-api-log",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/item-task-api-log.png"
+    },
+    {
+      "id": "topic-integration",
+      "kind": "state",
+      "state": "topic-integration",
+      "title": "Reader · topic integration",
+      "group": "Reader",
+      "hash": "#/topic-integration",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/topic-integration.png"
+    },
+    {
+      "id": "topic-data",
+      "kind": "state",
+      "state": "topic-data",
+      "title": "Reader · topic data",
+      "group": "Reader",
+      "hash": "#/topic-data",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/topic-data.png"
+    },
+    {
+      "id": "topic-ui",
+      "kind": "state",
+      "state": "topic-ui",
+      "title": "Reader · topic ui",
+      "group": "Reader",
+      "hash": "#/topic-ui",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/topic-ui.png"
+    },
+    {
+      "id": "topic-async",
+      "kind": "state",
+      "state": "topic-async",
+      "title": "Reader · topic async",
+      "group": "Reader",
+      "hash": "#/topic-async",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/topic-async.png"
+    },
+    {
+      "id": "topic-infra",
+      "kind": "state",
+      "state": "topic-infra",
+      "title": "Reader · topic infra",
+      "group": "Reader",
+      "hash": "#/topic-infra",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/topic-infra.png"
+    },
+    {
+      "id": "topic-shared",
+      "kind": "state",
+      "state": "topic-shared",
+      "title": "Reader · topic shared",
+      "group": "Reader",
+      "hash": "#/topic-shared",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/topic-shared.png"
+    },
+    {
+      "id": "topic-api",
+      "kind": "state",
+      "state": "topic-api",
+      "title": "Reader · topic api",
+      "group": "Reader",
+      "hash": "#/topic-api",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/topic-api.png"
+    },
+    {
+      "id": "map-2d",
+      "kind": "state",
+      "state": "map-2d",
+      "title": "Map · 2D graph with depth bars",
+      "group": "Maps",
+      "hash": "#/map-2d",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/map-2d.png"
+    },
+    {
+      "id": "map-3d",
+      "kind": "state",
+      "state": "map-3d",
+      "title": "Map · 3D layer stack",
+      "group": "Maps",
+      "hash": "#/map-3d",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/map-3d.png"
+    },
+    {
+      "id": "map-city",
+      "kind": "state",
+      "state": "map-city",
+      "title": "Map · city",
+      "group": "Maps",
+      "hash": "#/map-city",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/map-city.png"
+    },
+    {
+      "id": "scale@example",
+      "kind": "state",
+      "state": "scale",
+      "title": "Scale test · flat vs by topic · Example-sized project (7)",
+      "group": "Simulate",
+      "hash": "#/scale",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 7,
+        "zoom": 0
+      },
+      "preset": "example",
+      "width": 1180,
+      "height": 620,
+      "png": "png/scale@example.png"
+    },
+    {
+      "id": "scale@team",
+      "kind": "state",
+      "state": "scale",
+      "title": "Scale test · flat vs by topic · One team (40), flat",
+      "group": "Simulate",
+      "hash": "#/scale",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": "team",
+      "width": 1180,
+      "height": 620,
+      "png": "png/scale@team.png"
+    },
+    {
+      "id": "scale@team-zoom",
+      "kind": "state",
+      "state": "scale",
+      "title": "Scale test · flat vs by topic · One team (40), by topic",
+      "group": "Simulate",
+      "hash": "#/scale",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 1
+      },
+      "preset": "team-zoom",
+      "width": 1180,
+      "height": 620,
+      "png": "png/scale@team-zoom.png"
+    },
+    {
+      "id": "scale@org",
+      "kind": "state",
+      "state": "scale",
+      "title": "Scale test · flat vs by topic · Several teams (150), flat",
+      "group": "Simulate",
+      "hash": "#/scale",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 150,
+        "zoom": 0
+      },
+      "preset": "org",
+      "width": 1180,
+      "height": 620,
+      "png": "png/scale@org.png"
+    },
+    {
+      "id": "scale@org-zoom",
+      "kind": "state",
+      "state": "scale",
+      "title": "Scale test · flat vs by topic · Several teams (150), by topic",
+      "group": "Simulate",
+      "hash": "#/scale",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 150,
+        "zoom": 1
+      },
+      "preset": "org-zoom",
+      "width": 1180,
+      "height": 620,
+      "png": "png/scale@org-zoom.png"
+    },
+    {
+      "id": "glance",
+      "kind": "state",
+      "state": "glance",
+      "title": "Glance matrix · which questions each view answers",
+      "group": "Simulate",
+      "hash": "#/glance",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": null,
+      "width": 1180,
+      "height": 620,
+      "png": "png/glance.png"
+    },
+    {
+      "id": "checks@example",
+      "kind": "state",
+      "state": "checks",
+      "title": "Sanity checks · Example-sized project (7)",
+      "group": "Simulate",
+      "hash": "#/checks",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 7,
+        "zoom": 0
+      },
+      "preset": "example",
+      "width": 1180,
+      "height": 620,
+      "png": "png/checks@example.png"
+    },
+    {
+      "id": "checks@team",
+      "kind": "state",
+      "state": "checks",
+      "title": "Sanity checks · One team (40), flat",
+      "group": "Simulate",
+      "hash": "#/checks",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 0
+      },
+      "preset": "team",
+      "width": 1180,
+      "height": 620,
+      "png": "png/checks@team.png"
+    },
+    {
+      "id": "checks@team-zoom",
+      "kind": "state",
+      "state": "checks",
+      "title": "Sanity checks · One team (40), by topic",
+      "group": "Simulate",
+      "hash": "#/checks",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 40,
+        "zoom": 1
+      },
+      "preset": "team-zoom",
+      "width": 1180,
+      "height": 620,
+      "png": "png/checks@team-zoom.png"
+    },
+    {
+      "id": "checks@org",
+      "kind": "state",
+      "state": "checks",
+      "title": "Sanity checks · Several teams (150), flat",
+      "group": "Simulate",
+      "hash": "#/checks",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 150,
+        "zoom": 0
+      },
+      "preset": "org",
+      "width": 1180,
+      "height": 620,
+      "png": "png/checks@org.png"
+    },
+    {
+      "id": "checks@org-zoom",
+      "kind": "state",
+      "state": "checks",
+      "title": "Sanity checks · Several teams (150), by topic",
+      "group": "Simulate",
+      "hash": "#/checks",
+      "variant": null,
+      "params": {
+        "cut": 4,
+        "n": 150,
+        "zoom": 1
+      },
+      "preset": "org-zoom",
+      "width": 1180,
+      "height": 620,
+      "png": "png/checks@org-zoom.png"
+    }
+  ],
+  "errors": [],
+  "source": "../../../../prototype/viewer/gedanken.html",
+  "capturedAt": "2026-10-24T04:23:11.636Z"
+}

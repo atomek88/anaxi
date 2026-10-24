@@ -1,0 +1,404 @@
+<!doctype html>
+<!-- EXPLORATION (throwaway) · Anaxi viewer: how should people see and move through depth-marked design docs?
+QUESTION  Which views should `anaxi watch` ship first so a team can (a) triage the design at a glance and (b) read any
+          item, or the whole design, at the depth they need, without scrolling forever?
+AUDIENCE  the Anaxi author, who likes spatial metaphors (3D stack, city) and wants the docs themselves readable
+LAYERS    project → topic → item → level → section (zoom is depth); overlays: status, blocked-by, lifecycle
+VIEWS     frame (what kind of problem) · reader overview (triage as text) · reader item page at a depth (read) ·
+          superseded page (lifecycle) · topic page (zoom one step) · map 2D / 3D stack / city on the SAME example
+          data (glance) · scale test, same seeded projects for all three, flat vs semantic zoom (does it hold?) ·
+          glance matrix (which questions each picture answers) · checks
+SIMULATE  varies: project size n, semantic zoom on/off, seed · random: synthetic projects (seeded LCG) · compared:
+          2D graph, 3D layer stack, city · measured: label space, items hidden behind others, legible items
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anaxi viewer</title>
+  <link rel="stylesheet" href="kit/kit.css">
+  <script src="kit/vendor/elk.bundled.js"></script>
+  <script src="kit/vendor/vega.min.js"></script>
+  <script src="kit/vendor/vega-lite.min.js"></script>
+  <script src="kit/vendor/vega-embed.min.js"></script>
+  <script src="kit/vendor/d3.min.js"></script>
+  <script src="kit/vendor/d3-sankey.min.js"></script>
+  <script src="kit/vendor/three.min.js"></script>
+  <!--VENDOR-->
+  <style>
+    .ex-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 6px 0 18px; }
+    .ex-card { border: 1.5px solid var(--pk-line); border-radius: 14px; padding: 13px 15px; }
+    .ex-card h3 { margin: 0 0 5px; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: var(--pk-ink-3); }
+    .ex-card p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--pk-ink-2); }
+    .ex-card.pick { border-color: var(--pk-accent); background: var(--pk-accent-soft); }
+    /* the reader */
+    .vw { display: grid; grid-template-columns: 190px minmax(0, 1fr) 250px; gap: 22px; font-size: 14px; line-height: 1.55; }
+    .vw-crumb { font-size: 12px; color: var(--pk-ink-3); margin-bottom: 6px; }
+    .vw-crumb button, .vw-nav button, .vw-rail button, .vw-at { color: var(--pk-accent); font: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
+    .vw-nav { font-size: 13px; border-right: 1px solid var(--pk-line); padding-right: 12px; }
+    .vw-nav h4, .vw-rail h4 { margin: 12px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--pk-ink-3); }
+    .vw-nav .o { display: block; padding: 2px 0; color: var(--pk-ink-2); }
+    .vw-nav .o.dim { color: var(--pk-ink-3); opacity: .55; }
+    .vw-rail { font-size: 13px; border-left: 1px solid var(--pk-line); padding-left: 12px; }
+    .vw-rail .n { margin: 4px 0; }
+    .vw-rail .o { display: block; padding: 1px 0; color: var(--pk-ink-2); } .vw-rail .o.dim { opacity: .5; }
+    .vw-main h1 { margin: 0 0 4px; font-size: 24px; }
+    .vw-badges { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 12px; }
+    .vw-b { font-size: 12px; border: 1px solid var(--pk-line); border-radius: 999px; padding: 1px 9px; color: var(--pk-ink-2); }
+    .vw-b.st-blocked { border-color: var(--pk-bad); color: var(--pk-bad); }
+    .vw-b.st-enough { border-color: var(--pk-ok); color: var(--pk-ok); }
+    .vw-depth { display: inline-flex; border: 1px solid var(--pk-line); border-radius: 8px; overflow: hidden; margin: 2px 0 10px; }
+    .vw-depth button { padding: 3px 10px; font-size: 12px; border: 0; border-right: 1px solid var(--pk-line); background: none; cursor: pointer; color: var(--pk-ink-2); }
+    .vw-depth button.on { background: var(--pk-accent); color: #fff; }
+    .vw-depth button.past { color: var(--pk-ink-3); text-decoration: line-through; }
+    .vw-h { margin: 16px 0 6px; font-size: 16px; }
+    .vw-lv { font-size: 11px; font-weight: 600; border-radius: 4px; padding: 0 5px; background: var(--pk-fill); color: var(--pk-ink-2); vertical-align: 2px; }
+    .vw-part { font-size: 11px; color: var(--pk-ink-3); font-weight: 400; }
+    .vw-main p { margin: 6px 0; }
+    .vw-lvtag { float: right; margin-left: 8px; }
+    .vw-hidden { font-size: 12px; color: var(--pk-ink-3); border: 1px dashed var(--pk-line); border-radius: 8px; padding: 6px 10px; margin: 10px 0; }
+    .vw-table { border-collapse: collapse; font-size: 12.5px; margin: 6px 0; }
+    .vw-table td, .vw-table th { border: 1px solid var(--pk-line); padding: 3px 7px; text-align: left; vertical-align: top; }
+    .vw-code { background: #22201c; color: #eee; padding: 8px 10px; border-radius: 8px; font-size: 12px; overflow: auto; }
+    .vw-list { margin: 4px 0; padding-left: 20px; }
+    .vw-check { list-style: none; margin-left: -18px; }
+    .vw-check.open { color: var(--pk-bad); }
+    .vw-banner { border: 1.5px solid #c9a227; background: #fbf3dc; border-radius: 10px; padding: 9px 12px; margin: 0 0 12px; font-size: 13.5px; }
+    .vw-canvas { border-left: 3px solid var(--pk-k-transform, #b39ddb); padding-left: 10px; opacity: .85; }
+    .vw-history { border-left: 3px solid #c9a227; padding-left: 10px; opacity: .8; }
+    .vw-row { display: grid; grid-template-columns: 26px 200px 90px 1fr; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--pk-line); font-size: 13px; align-items: baseline; }
+    .vw-group { margin: 14px 0 2px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--pk-ink-3); }
+    .vw-pager { display: flex; justify-content: space-between; margin-top: 18px; border-top: 1px solid var(--pk-line); padding-top: 8px; font-size: 13px; }
+    .mp-labels { position: relative; }
+    .mp-labels .lb { position: absolute; font-size: 11px; transform: translate(-50%, -100%); white-space: nowrap; background: rgba(255,255,255,.8); padding: 0 3px; border-radius: 3px; }
+    .gm td.y { color: var(--pk-ok); font-weight: 600; } .gm td.n { color: var(--pk-bad); } .gm td.p { color: #b7791f; }
+    .sc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .sc-grid .ex-card b { font-size: 22px; display: block; color: var(--pk-ink); font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+<script src="kit/kit.js"></script>
+<script>
+P.init({
+  title: "Anaxi viewer",
+  lens: "gedanken",
+  question: "Which views should anaxi watch ship first so a team can triage the design at a glance, and read any item or the whole design at the depth they need, without scrolling forever?",
+  seed: 7,
+  start: "frame",
+  model: () => ({ at: null, canvas: false, history: false }),
+  capture: { width: 1180, height: 620 },
+});
+</script>
+<script src="kit/graph.js"></script>
+<script src="kit/charts.js"></script>
+<script src="kit/space.js"></script>
+<script src="data.js"></script>
+<script src="model.js"></script>
+<!--SHAPE-->
+<script>
+const PR = VM.project(window.ANAXI);
+const esc = Kit.esc;
+const ICON = { blocked: "⛔", later: "⏸️", trim: "✂️", gap: "⬇️", open: "❓", enough: "🎯", none: "❓", superseded: "↪️", retired: "⏹️", archived: "🗄️" };
+const WORD = { blocked: "blocked", later: "later", trim: "over-designed", gap: "go deeper", open: "open questions", enough: "enough", none: "no target", superseded: "superseded", retired: "retired", archived: "archived" };
+const COLOR = { blocked: "#c0392b", gap: "#d4870f", trim: "#8e44ad", enough: "#2e8b57", later: "#7f8c8d", open: "#d4870f", none: "#999", superseded: "#b8a46a", retired: "#aaa", archived: "#b8a46a" };
+const slugOf = (it) => (it.id ? it.id.slice(1) : it.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+const name = (it) => it.id || it.title;
+const byKey = (k) => PR.byKey.get(k);
+const pageOf = (it) => `#/item-${slugOf(it)}`;
+const link = (it) => it ? `<button data-pk-hash="${pageOf(it)}">${esc(name(it))}</button>` : "";
+// @ids in rendered markdown become in-app links
+const linkify = (h) => h.replace(/<a class="vw-at" data-at="(@[\w-]+)">@[\w-]+<\/a>/g, (m, id) => (byKey(id) ? link(byKey(id)) : `<span title="not an item">${id}</span>`));
+const ORDER = ["blocked", "gap", "open", "trim", "later", "none", "enough"];
+
+/* ============ 1. FRAME ============ */
+P.state("frame", { title: "Framing", group: "Gedanken", render: () => `
+  <h1>What kind of problem is "seeing the design"?</h1>
+  <p class="pk-lede">${esc(P.cfg.question)}</p>
+  <div class="ex-cards">
+    <div class="ex-card"><h3>Framing 1 · a picture</h3><p>Pick the most telling image of the project (graph, 3D stack, city). Measures: what you can tell without clicking.</p></div>
+    <div class="ex-card"><h3>Framing 2 · a document</h3><p>Render the docs well (badges, links). Measures: how fast you find and read the right section.</p></div>
+    <div class="ex-card"><h3>Framing 3 · a reading budget</h3><p>Depth is how much you need to read for a decision. Zoom out = less depth, zoom in = deeper text. Measures: words shown at each depth, items legible at each zoom.</p></div>
+    <div class="ex-card pick"><h3>Framing 4 · a glance and a read ✓</h3><p>Two jobs on one model: <b>triage</b> (pre-attentive: ready, blocked by what, gap, over-designed, superseded) and <b>reading at a depth</b> (linked pages, never one endless scroll). A picture is only as good as the reading it leads to. <b>This is the one to model.</b></p></div>
+  </div>
+  <div class="ex-cards">
+    <div class="ex-card"><h3>Core tension</h3><p>Overview density vs readable detail; and a memorable metaphor vs an accurate one (a tall building looks better, but more depth than needed is a smell).</p></div>
+    <div class="ex-card"><h3>Invariants</h3><p>Every view shows the checker's statuses, never its own. Each current item appears once per view. Superseded items never count. Deeper never shows less text.</p></div>
+    <div class="ex-card"><h3>Extremes</h3><p>1 item: every picture works, a picture adds nothing over the page. 150 items: no flat picture can label them, so the top zoom must group (topics).</p></div>
+  </div>
+  <button data-pk-hash="#/reader-overview" style="color:var(--pk-accent);font-weight:600">→ the reader</button> ·
+  <button data-pk-hash="#/map-2d" style="color:var(--pk-accent);font-weight:600">→ the maps</button> ·
+  <button data-pk-hash="#/scale" style="color:var(--pk-accent);font-weight:600">→ the scale test</button>` });
+
+/* ============ 2. THE READER: linked pages over the same model ============ */
+const shell = (crumbs, nav, main, rail) => `<div class="vw"><nav class="vw-nav">${nav}</nav><div class="vw-main"><div class="vw-crumb">${crumbs}</div>${main}</div><aside class="vw-rail">${rail}</aside></div>`;
+const crumbs = (parts) => parts.map((p) => (p.hash ? `<button data-pk-hash="${p.hash}">${esc(p.label)}</button>` : esc(p.label))).join(" › ");
+const topicNav = (active) => {
+  const topics = [...new Set(PR.items.map((it) => it.topic))].sort();
+  return `<h4>Project</h4><button class="o" data-pk-hash="#/reader-overview">Overview</button><button class="o" data-pk-hash="#/map-2d">Map</button>
+    <h4>Topics</h4>${topics.map((t) => `<button class="o" ${t === active ? 'style="font-weight:700"' : ""} data-pk-hash="#/topic-${t}">${esc(t)} · ${PR.items.filter((i) => i.topic === t).length}</button>`).join("")}
+    <h4>History</h4>${PR.inactive.map((it) => `<button class="o dim" data-pk-hash="${pageOf(it)}">${ICON[it.status]} ${esc(name(it))}</button>`).join("")}${PR.deleted.map((d) => `<span class="o dim">✕ ${esc(d.id)}</span>`).join("")}`;
+};
+const row = (it) => `<div class="vw-row"><span>${ICON[it.status]}</span><span>${link(it)} <span style="color:var(--pk-ink-3)">${esc(it.title)}</span></span><span>${esc(it.depth || "—")} → ${esc(it.target || "—")}</span><span>${it.blockedBy.length ? `blocked by ${it.blockedBy.map((k) => link(byKey(k))).join(", ")}` : esc(WORD[it.status])}${it.usedBy.length ? ` · used by ${it.usedBy.map((k) => link(byKey(k))).join(", ")}` : ""}</span></div>`;
+
+P.state("reader-overview", { title: "Reader · project overview", group: "Reader", render: () => {
+  const groups = ORDER.map((s) => [s, PR.items.filter((it) => it.status === s)]).filter(([, l]) => l.length);
+  const ready = PR.items.filter((it) => it.status === "enough").length;
+  const main = `<h1>TaskFlow design</h1>
+    <div class="vw-badges"><span class="vw-b">${PR.model.settings.profile} profile</span><span class="vw-b">stage: ${PR.model.settings.stage}</span><span class="vw-b">${PR.items.length} items · ${ready} enough · ${PR.items.filter((i) => i.status === "blocked").length} blocked</span><span class="vw-b">${PR.inactive.length + PR.deleted.length} in history</span></div>
+    <p>Sorted by what needs attention first. Each row opens the item's page; nothing here is a copy of the docs.</p>
+    ${groups.map(([s, l]) => `<div class="vw-group">${ICON[s]} ${WORD[s]} · ${l.length}</div>${l.map(row).join("")}`).join("")}
+    <div class="vw-group">↪️ superseded, retired, deleted</div>
+    ${PR.inactive.map((it) => `<div class="vw-row"><span>${ICON[it.status]}</span><span>${link(it)}</span><span>${esc(it.depth)}</span><span>${esc(it.supersededBy ? `superseded by ${it.supersededBy.id}` : "retired")}${it.successor ? ` → ${link(byKey(it.successor))}` : ""}</span></div>`).join("")}
+    ${PR.deleted.map((d) => `<div class="vw-row"><span>✕</span><span>${esc(d.id)}</span><span>${esc(d.date || "")}</span><span>deleted: ${esc(d.why || "")} (in git history)</span></div>`).join("")}`;
+  const rail = `<h4>Read the whole design</h4><p style="margin:2px 0">One page per item, in <code>uses:</code> order, at one depth: start at ${link(PR.items.find((i) => !i.uses.length))} and follow "next".</p>
+    <h4>Nudges</h4>${PR.nudges.filter((n) => n.code !== "N04" && n.severity !== "info").slice(0, 6).map((n) => `<div class="n">${esc(n.code)} ${link(byKey(n.item))}: ${esc(n.message.slice(0, 80))}</div>`).join("")}`;
+  return shell(crumbs([{ label: "TaskFlow" }]), topicNav(), main, rail);
+} });
+
+// one page per item, in uses: order (what you use first), so "next" reads the design bottom-up, one page at a time
+const L = VM.layout(PR.items);
+const reading = [...PR.items].sort((a, b) => L.pos.get(a.key).col - L.pos.get(b.key).col || L.topics.indexOf(a.topic) - L.topics.indexOf(b.topic));
+function itemPage(it, ctx) {
+  const m = ctx.model;
+  const dflt = Math.max(VM.lvN(it.depth), 0);
+  const at = m.at == null ? dflt : Math.min(m.at, 4);
+  const bs = VM.blocks(PR, it);
+  const shown = bs.filter((b) => b.kind !== "title" && b.kind !== "mark" && VM.visible(b, at, { canvas: m.canvas, history: m.history }));
+  const hidden = bs.filter((b) => b.kind !== "title" && b.kind !== "mark" && !VM.visible(b, at, { canvas: m.canvas, history: m.history }));
+  const hiddenLv = [...new Set(hidden.map((b) => b.level))];
+  const body = shown.map((b) => {
+    const h = linkify(VM.html(b, esc));
+    const tag = b.kind !== "heading" && b.lead ? `<span class="vw-lv vw-lvtag lv-${b.level}">${b.level}</span>` : "";
+    return b.level === "canvas" ? `<div class="vw-canvas">${h}</div>` : b.level === "history" ? `<div class="vw-history">${h}</div>` : tag + h;
+  }).join("");
+  const life = it.status === "superseded" || it.status === "archived" || it.status === "retired";
+  const banner = life ? `<div class="vw-banner">${ICON[it.status]} <b>${it.supersededBy ? `Superseded by ${esc(it.supersededBy.id)}` : "Retired"}</b>${it.supersededBy?.reason ? `: ${esc(it.supersededBy.reason)}` : it.retired?.reason ? `: ${esc(it.retired.reason)}` : ""}. ${it.successor ? `Read ${link(byKey(it.successor))} instead; this page explains what came before.` : "Kept for its reasoning; it doesn't count."}${it.status === "archived" ? " (archived)" : ""}</div>` : "";
+  const depthCtl = `<div class="vw-depth">${VM.LEVELS.map((l, i) => `<button data-act="at:${i}" class="${i === at ? "on" : ""} ${i > (VM.lvN(it.target) >= 0 ? VM.lvN(it.target) : 4) ? "past" : ""}" title="${i > VM.lvN(it.target) ? "beyond the target" : ""}">${l}</button>`).join("")}</div>
+    <button data-act="canvas" style="font-size:12px;color:var(--pk-accent);background:none;border:0;cursor:pointer">${m.canvas ? "hide" : "show"} canvas</button>${bs.some((b) => b.level === "history") ? ` · <button data-act="history" style="font-size:12px;color:var(--pk-accent);background:none;border:0;cursor:pointer">${m.history ? "hide" : "show"} decision log</button>` : ""}`;
+  const outline = bs.filter((b) => b.kind === "heading" || b.lead).map((b) => {
+    const label = b.kind === "heading" ? b.text[0].replace(/`[^`]*`/g, "") : b.text[0].match(/^\*\*([A-Za-z]+)/)[1];
+    return `<span class="o ${VM.visible(b, at, { canvas: m.canvas, history: m.history }) ? "" : "dim"}">${b.level ? `<span class="vw-lv">${esc(b.level)}</span> ` : ""}${esc(label)}</span>`;
+  }).join("");
+  const i = reading.indexOf(it);
+  const pager = life ? "" : `<div class="vw-pager"><span>${i > 0 ? `← ${link(reading[i - 1])}` : ""}</span><span style="color:var(--pk-ink-3)">${i + 1} of ${reading.length} · reading at ${VM.LEVELS[at]}</span><span>${i < reading.length - 1 ? `${link(reading[i + 1])} →` : ""}</span></div>`;
+  const main = `${banner}<h1>${esc(it.title)}</h1>
+    <div class="vw-badges"><span class="vw-b">${esc(name(it))}</span><span class="vw-b st-${it.status}">${ICON[it.status]} ${WORD[it.status]}</span><span class="vw-b">depth ${esc(it.depth || "—")} · target ${esc(it.target || "—")}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ""}</span>${it.risk ? `<span class="vw-b">risk ${it.risk.join("·")}</span>` : ""}<span class="vw-b">${esc(it.file)}:${it.line}</span></div>
+    ${depthCtl}${body}
+    ${hidden.length ? `<div class="vw-hidden">${hidden.length} block${hidden.length > 1 ? "s" : ""} deeper than ${VM.LEVELS[at]} hidden (${hiddenLv.map((x) => esc(x)).join(", ")}): ${VM.words(hidden)} words. Raise the depth to read them.</div>` : ""}${pager}`;
+  const g = it.nudges.filter((n) => n.code !== "N04");
+  const rail = `<h4>Status</h4><div class="n">${it.blockedBy.length ? `⛔ blocked by ${it.blockedBy.map((k) => link(byKey(k))).join(", ")}` : `${ICON[it.status]} ${WORD[it.status]}`}</div>
+    <h4>Nudges</h4>${g.length ? g.map((n) => `<div class="n"><b>${esc(n.code)}</b> ${esc(n.message)}</div>`).join("") : life ? "<div class='n'>not counted: history</div>" : "<div class='n'>none: designed enough</div>"}
+    <h4>Uses</h4>${it.uses.length ? it.uses.map((u) => `<div class="n">${byKey(u.id) ? link(byKey(u.id)) : esc(u.raw)} <span style="color:var(--pk-ink-3)">${esc(u.actual || "")} of ${esc(u.required || "")}</span></div>`).join("") : "<div class='n'>nothing</div>"}
+    <h4>Used by</h4>${it.usedBy.length ? it.usedBy.map((k) => `<div class="n">${link(byKey(k))}</div>`).join("") : "<div class='n'>nobody</div>"}
+    ${it.parts?.length ? `<h4>Parts (shown inline)</h4>${it.parts.map((p) => `<div class="n">${esc(p.title)} · ${esc(p.file)}</div>`).join("")}` : ""}
+    ${(it.supersedes || []).length ? `<h4>Replaced</h4>${it.supersedes.map((s) => `<div class="n">${byKey(s) ? link(byKey(s)) : esc(s)}</div>`).join("")}` : ""}
+    <h4>On this page</h4>${outline || "<span class='o dim'>no levelled sections</span>"}`;
+  return shell(crumbs([{ label: "TaskFlow", hash: "#/reader-overview" }, { label: it.topic, hash: `#/topic-${it.topic}` }, { label: name(it) }]), topicNav(it.topic), main, rail);
+}
+for (const it of PR.all) P.state(`item-${slugOf(it)}`, { title: `Reader · ${name(it)}`, group: "Reader", render: (ctx) => itemPage(it, ctx) });
+P.action("at", (m, a) => { m.at = +a; });
+P.action("canvas", (m) => { m.canvas = !m.canvas; });
+P.action("history", (m) => { m.history = !m.history; });
+P.fixture("item-recurring-at-d1", "item-recurring", { title: "Reader · @recurring read at D1", model: (m) => ({ ...m, at: 1 }) });
+P.fixture("item-task-api-log", "item-task-api", { title: "Reader · @task-api with its decision log", model: (m) => ({ ...m, history: true }) });
+
+for (const t of [...new Set(PR.items.map((it) => it.topic))]) P.state(`topic-${t}`, { title: `Reader · topic ${t}`, group: "Reader", render: () => {
+  const mine = PR.items.filter((it) => it.topic === t);
+  const outside = [...new Set(mine.flatMap((it) => it.uses.map((u) => u.id)).filter((k) => byKey(k) && byKey(k).topic !== t))];
+  const main = `<h1>${esc(t)}</h1><p>${mine.length} item${mine.length > 1 ? "s" : ""}, and what they depend on outside the topic. One step deeper than the project, one step shallower than an item.</p>
+    ${ORDER.flatMap((s) => mine.filter((it) => it.status === s)).map(row).join("")}
+    <div class="vw-group">depends on, outside ${esc(t)}</div>${outside.length ? outside.map((k) => row(byKey(k))).join("") : "<p>nothing</p>"}`;
+  return shell(crumbs([{ label: "TaskFlow", hash: "#/reader-overview" }, { label: t }]), topicNav(t), main, `<h4>Map of this topic</h4><p>${mine.length} items: small enough for any picture (see the scale test).</p>`);
+} });
+
+/* ============ 3. MAPS: three pictures, the same example data, the same layout ============ */
+const MP = { W: 1100, H: 470 };
+const cut = () => (P.params.cut == null ? 4 : P.params.cut);
+P.param("cut", { label: "Show depth up to (maps)", min: 0, max: 4, step: 1, value: 4 });
+
+P.state("map-2d", { title: "Map · 2D graph with depth bars", group: "Maps", render: () => `<h1>2D graph with depth bars</h1><p style="font-size:13px"><button data-pk-hash="#/map-2d" style="color:var(--pk-accent)">2D</button> · <button data-pk-hash="#/map-3d" style="color:var(--pk-accent)">3D stack</button> · <button data-pk-hash="#/map-city" style="color:var(--pk-accent)">city</button> · <button data-pk-hash="#/scale" style="color:var(--pk-accent)">scale test</button> · <button data-pk-hash="#/glance" style="color:var(--pk-accent)">glance matrix</button> · <button data-pk-hash="#/checks" style="color:var(--pk-accent)">checks</button></p>
+  <p class="pk-lede">Columns: what an item uses is to its left. Each card's bar: filled to its depth, outlined to its target; purple past the target (over-designed). Red edges block. History sits below, pointing at successors.</p><div class="mp2"></div>`,
+  after: (ctx) => {
+    const els = ctx.el.querySelector(".mp2"), cw = MP.W / L.ncols, ch = 74, H = Math.max(L.nrows * ch + 40, 260) + 90;
+    const pos = (it) => { const p = L.pos.get(it.key); return { x: 16 + p.col * cw, y: 16 + p.row * ch }; };
+    let s = `<svg width="${MP.W}" height="${H}" viewBox="0 0 ${MP.W} ${H}" style="max-width:100%;background:#fbfaf8;border-radius:12px;font-family:system-ui;font-size:12px">`;
+    for (const it of PR.items) for (const u of it.uses) { const d = byKey(u.id); if (!d || !L.pos.has(d.key)) continue;
+      const a = pos(it), b = pos(d), bad = it.blockedBy.includes(d.key);
+      s += `<path d="M${a.x} ${a.y + 28} C ${a.x - 40} ${a.y + 28}, ${b.x + cw - 10} ${b.y + 28}, ${b.x + cw - 30} ${b.y + 28}" fill="none" stroke="${bad ? "#c0392b" : "#c9c4bb"}" stroke-width="${bad ? 2.5 : 1.3}"/>`; }
+    for (const it of PR.items) { const { x, y } = pos(it), d = VM.lvN(it.depth), t = VM.lvN(it.target), w = cw - 30;
+      s += `<g><rect x="${x}" y="${y}" width="${w}" height="56" rx="9" fill="#fff" stroke="${COLOR[it.status]}" stroke-width="1.6"/>
+        <text x="${x + 9}" y="${y + 18}" font-weight="600">${ICON[it.status]} ${esc(name(it))}</text><text x="${x + 9}" y="${y + 32}" fill="#888" font-size="11">${esc(WORD[it.status])}${it.blockedBy.length ? ` by ${esc(it.blockedBy.join(", "))}` : ""}</text>`;
+      for (let l = 0; l <= 4; l++) { if (l > cut()) break; const bx = x + 9 + l * 22, filled = l <= d, over = filled && l > t, needed = l <= t;
+        s += `<rect x="${bx}" y="${y + 39}" width="19" height="9" rx="2" fill="${over ? "#8e44ad" : filled ? COLOR[it.status === "blocked" ? "gap" : it.status] : "none"}" stroke="${needed || filled ? "#555" : "#ddd"}" stroke-dasharray="${needed && !filled ? "2 2" : ""}"/>`; }
+      s += `</g>`; }
+    const hy = H - 70;
+    s += `<text x="16" y="${hy}" fill="#888">history</text>`;
+    PR.inactive.forEach((it, i) => { const x = 80 + i * 260; const sc = it.successor && byKey(it.successor);
+      s += `<rect x="${x}" y="${hy - 16}" width="200" height="40" rx="8" fill="#f6f1e2" stroke="#b8a46a" stroke-dasharray="4 3"/><text x="${x + 8}" y="${hy + 2}" fill="#8a7a4a">${ICON[it.status]} ${esc(name(it))}</text><text x="${x + 8}" y="${hy + 16}" fill="#aaa" font-size="11">${sc ? `→ ${esc(name(sc))}` : "retired"}</text>`;
+      if (sc && L.pos.has(sc.key)) { const b = pos(sc); s += `<path d="M${x + 100} ${hy - 16} L ${b.x + 40} ${b.y + 58}" stroke="#b8a46a" stroke-dasharray="4 3" fill="none"/>`; } });
+    els.innerHTML = s + "</svg>";
+  } });
+
+P.state("map-3d", { title: "Map · 3D layer stack", group: "Maps", render: () => `<h1>3D layer stack</h1><p style="font-size:13px"><button data-pk-hash="#/map-2d" style="color:var(--pk-accent)">2D</button> · <button data-pk-hash="#/map-3d" style="color:var(--pk-accent)">3D stack</button> · <button data-pk-hash="#/map-city" style="color:var(--pk-accent)">city</button> · <button data-pk-hash="#/scale" style="color:var(--pk-accent)">scale test</button> · <button data-pk-hash="#/glance" style="color:var(--pk-accent)">glance matrix</button> · <button data-pk-hash="#/checks" style="color:var(--pk-accent)">checks</button></p>
+  <p class="pk-lede">D0–D4 are stacked planes. Each item is a column rising to its depth; the wireframe shows the target. Same layout as the 2D graph, seen from an angle. The slider cuts the stack.</p><div class="mp-labels"><div class="sp-host"></div></div>`,
+  after: (ctx) => {
+    const host = ctx.el.querySelector(".sp-host"), wrap = ctx.el.querySelector(".mp-labels");
+    const S = 2.2, yOf = (l) => l * 1.1, world = (it) => { const p = L.pos.get(it.key); return [(p.col - (L.ncols - 1) / 2) * S * 1.6, (p.row - (L.nrows - 1) / 2) * S]; };
+    const r = Space.three(host, { width: MP.W, height: MP.H, camera: { pos: [10, 11, 15], look: [0, 1.6, 0], fov: 42 }, build: (THREE, scene) => {
+      for (let l = 0; l <= Math.min(4, cut()); l++) {
+        const g = new THREE.Mesh(new THREE.PlaneGeometry(L.ncols * S * 1.6 + 2, L.nrows * S + 2), new THREE.MeshBasicMaterial({ color: 0x8aa4c8, transparent: true, opacity: 0.06 + l * 0.015, side: THREE.DoubleSide }));
+        g.rotation.x = -Math.PI / 2; g.position.y = yOf(l); scene.add(g);
+      }
+      for (const it of PR.items) {
+        const [x, z] = world(it), d = Math.min(VM.lvN(it.depth), cut()), t = Math.min(VM.lvN(it.target), cut());
+        const hd = yOf(d + 1) - 0.05, ht = yOf(t + 1) - 0.05;
+        const col = new THREE.Mesh(new THREE.BoxGeometry(1, hd, 1), new THREE.MeshLambertMaterial({ color: new THREE.Color(COLOR[it.status]) }));
+        col.position.set(x, hd / 2, z); scene.add(col);
+        const ghost = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.15, ht, 1.15)), new THREE.LineBasicMaterial({ color: 0x333333 }));
+        ghost.position.set(x, ht / 2, z); scene.add(ghost);
+        for (const u of it.uses) { const dep = byKey(u.id); if (!dep || !L.pos.has(dep.key)) continue; const [x2, z2] = world(dep);
+          const pts = [new THREE.Vector3(x, 0.02, z), new THREE.Vector3(x2, 0.02, z2)];
+          scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: it.blockedBy.includes(dep.key) ? 0xc0392b : 0xaaaaaa }))); }
+      }
+    } });
+    for (const it of PR.items) { const [x, z] = world(it); const v = new THREE.Vector3(x, yOf(Math.max(VM.lvN(it.target), VM.lvN(it.depth)) + 1) + 0.3, z).project(r.camera);
+      const lb = document.createElement("div"); lb.className = "lb"; lb.textContent = `${ICON[it.status]} ${name(it)}`;
+      lb.style.left = `${((v.x + 1) / 2) * 100}%`; lb.style.top = `${((1 - v.y) / 2) * 100}%`; wrap.appendChild(lb); }
+  } });
+
+P.state("map-city", { title: "Map · city", group: "Maps", render: () => `<h1>City</h1><p style="font-size:13px"><button data-pk-hash="#/map-2d" style="color:var(--pk-accent)">2D</button> · <button data-pk-hash="#/map-3d" style="color:var(--pk-accent)">3D stack</button> · <button data-pk-hash="#/map-city" style="color:var(--pk-accent)">city</button> · <button data-pk-hash="#/scale" style="color:var(--pk-accent)">scale test</button> · <button data-pk-hash="#/glance" style="color:var(--pk-accent)">glance matrix</button> · <button data-pk-hash="#/checks" style="color:var(--pk-accent)">checks</button></p>
+  <p class="pk-lede">Items are buildings; floors are levels. Solid floors are written, scaffolding is still to write (to the target), purple floors are past the target. Streets are <code>uses:</code>, red where blocked. A 🎯 flag when enough. Rows are topics (districts). History is a grey lot at the edge.</p><div class="sp-host"></div>`,
+  after: (ctx) => Space.canvas(ctx.el.querySelector(".sp-host"), { width: MP.W, height: MP.H + 40, draw: (g) => {
+    const cell = 92, fh = 15, ox = MP.W / 2 - 40, oy = 120;
+    const iso = (c, r) => [ox + (c - r) * cell * 0.62, oy + (c + r) * cell * 0.34];
+    const at = (it) => { const p = L.pos.get(it.key); return iso(p.col * 1.4, p.row); };
+    // districts
+    L.topics.forEach((t, i) => { const rows = PR.items.filter((it) => it.topic === t).map((it) => L.pos.get(it.key).row); });
+    // streets
+    for (const it of PR.items) for (const u of it.uses) { const d = byKey(u.id); if (!d || !L.pos.has(d.key)) continue; const [x1, y1] = at(it), [x2, y2] = at(d);
+      g.strokeStyle = it.blockedBy.includes(d.key) ? "#c0392b" : "#d6d1c7"; g.lineWidth = it.blockedBy.includes(d.key) ? 4 : 3; g.beginPath(); g.moveTo(x1, y1 + 6); g.lineTo(x2, y2 + 6); g.stroke(); }
+    const items = [...PR.items].sort((a, b) => { const pa = L.pos.get(a.key), pb = L.pos.get(b.key); return (pa.col + pa.row) - (pb.col + pb.row); });
+    for (const it of items) {
+      const [x, y] = at(it), d = VM.lvN(it.depth), t = VM.lvN(it.target), w = 40;
+      g.fillStyle = "#e9e5dd"; g.beginPath(); g.ellipse(x, y + 6, w * 0.8, w * 0.32, 0, 0, Math.PI * 2); g.fill();
+      for (let l = 0; l <= Math.max(d, t) && l <= cut(); l++) {
+        const fy = y - (l + 1) * fh; const built = l <= d, over = built && l > t;
+        g.fillStyle = over ? "#8e44ad" : built ? COLOR[it.status === "blocked" ? "gap" : it.status] : "rgba(0,0,0,0)";
+        g.strokeStyle = built ? "#444" : "#888"; g.setLineDash(built ? [] : [3, 3]); g.lineWidth = 1;
+        g.fillRect(x - w / 2, fy, w, fh - 2); g.strokeRect(x - w / 2, fy, w, fh - 2); g.setLineDash([]);
+      }
+      const top = y - (Math.min(Math.max(d, t), cut()) + 1) * fh - 6;
+      if (it.status === "enough") { g.fillStyle = "#2e8b57"; g.fillRect(x + 4, top - 14, 2, 14); g.fillRect(x + 6, top - 14, 10, 7); }
+      g.fillStyle = "#333"; g.font = "600 12px system-ui"; g.textAlign = "center"; g.fillText(`${name(it)}`, x, y + 26);
+      g.fillStyle = "#888"; g.font = "11px system-ui"; g.fillText(`${it.depth}→${it.target} ${WORD[it.status]}`, x, y + 39);
+    }
+    g.textAlign = "left"; g.fillStyle = "#aaa"; g.font = "12px system-ui"; g.fillText("history:", 24, MP.H + 10);
+    PR.inactive.forEach((it, i) => { g.fillStyle = "#ddd6c4"; g.fillRect(90 + i * 200, MP.H - 4, 30, 14); g.fillStyle = "#8a7a4a"; g.fillText(`${ICON[it.status]} ${name(it)} → ${it.successor || "—"}`, 128 + i * 200, MP.H + 8); });
+  } }) });
+
+/* ============ 4. THE SCALE TEST: the same seeded projects for every picture ============ */
+P.param("n", { label: "Items in the project", min: 1, max: 200, step: 1, value: 40 });
+P.param("zoom", { label: "Semantic zoom (1 = topic level)", min: 0, max: 1, step: 1, value: 0 });
+P.preset("example", { n: 7, zoom: 0 }, "Example-sized project (7)");
+P.preset("team", { n: 40, zoom: 0 }, "One team (40), flat");
+P.preset("team-zoom", { n: 40, zoom: 1 }, "One team (40), by topic");
+P.preset("org", { n: 150, zoom: 0 }, "Several teams (150), flat");
+P.preset("org-zoom", { n: 150, zoom: 1 }, "Several teams (150), by topic");
+const KINDS = [["2d", "2D graph"], ["3d", "3D stack"], ["city", "City"]];
+const measure = (p) => { const items = VM.synthetic(p.n, p.seed ?? 7); return KINDS.map(([k, label]) => ({ k, label, ...(p.zoom ? VM.zoomed(items, k) : VM.metrics(items, k)) })); };
+P.chart("legible", { title: "Items you can read at a glance (share), by project size", spec: { height: 200, mark: { type: "line", point: true, strokeWidth: 2.5 },
+  encoding: { x: { field: "n", type: "quantitative", title: "items in the project" }, y: { field: "share", type: "quantitative", title: null, axis: { format: "%" } }, color: { field: "view", type: "nominal", title: null }, strokeDash: { field: "zoom", type: "nominal", title: null } } } });
+const curve = () => [5, 10, 20, 40, 70, 100, 150, 200].flatMap((n) => [0, 1].flatMap((z) => measure({ n, zoom: z, seed: 7 }).map((r) => ({ n, view: r.label, zoom: z ? "by topic" : "flat", share: +r.legibleShare.toFixed(2) }))));
+P.state("scale", { title: "Scale test · flat vs by topic", group: "Simulate", presets: true, render: () => {
+  const p = P.params, rs = measure(p);
+  return `<h1>Does each picture still work as the project grows?</h1><p style="font-size:13px"><button data-pk-hash="#/map-2d" style="color:var(--pk-accent)">2D</button> · <button data-pk-hash="#/map-3d" style="color:var(--pk-accent)">3D stack</button> · <button data-pk-hash="#/map-city" style="color:var(--pk-accent)">city</button> · <button data-pk-hash="#/scale" style="color:var(--pk-accent)">scale test</button> · <button data-pk-hash="#/glance" style="color:var(--pk-accent)">glance matrix</button> · <button data-pk-hash="#/checks" style="color:var(--pk-accent)">checks</button></p><p class="pk-lede">${p.n} seeded items (seed ${p.seed ?? 7}), ${p.zoom ? "seen one topic at a time (the largest topic is measured)" : "all at once"}. Same items, same layout, same 1100×620 canvas for every picture.</p>
+    <div class="sc-grid">${rs.map((r) => `<div class="ex-card ${r.legibleShare === Math.max(...rs.map((x) => x.legibleShare)) ? "pick" : ""}"><h3>${r.label}</h3><b>${r.legible}/${r.n}</b>items readable · ${r.occluded} hidden behind others · ${r.labelPx}px label space${r.topics ? ` · ${r.topics} topics, largest ${r.topicSize}` : ""}</div>`).join("")}</div>
+    <div class="cx-legible" style="margin-top:14px"></div>
+    <p style="font-size:12.5px;color:var(--pk-ink-3)">Readable = label space ≥ 90 px and less than half covered by a nearer item. Geometry of bounding boxes, not pixels; 3D and the city are fitted to the canvas as a camera would. A real 3D view can rotate, which trades occlusion for interaction: a glance is one frame.</p>`;
+}, after: (ctx) => Chart.render(ctx.el.querySelector(".cx-legible"), "legible", { data: curve() }) });
+
+P.state("glance", { title: "Glance matrix · which questions each view answers", group: "Simulate", render: () => {
+  const Q = [
+    ["What's ready to build?", "y", "p", "y", "y", "icon + colour; 3D: colour only, labels collide"],
+    ["What blocks it, and by what?", "y", "p", "y", "y", "a red edge needs both ends visible: 3D hides one at 40+"],
+    ["How far is each from its target?", "y", "y", "y", "y", "bar length (2D), column vs wireframe (3D), floors vs scaffolding (city)"],
+    ["What's over-designed?", "y", "p", "y", "y", "colour past the target; in 3D it's inside the wireframe"],
+    ["What was superseded, by what?", "y", "n", "p", "y", "2D: dashed arrow to the successor; the reader: a banner and history list"],
+    ["What does the doc actually say, at D2?", "n", "n", "n", "y", "only text answers this: maps must open the reader"],
+    ["Readable at the example's 7 items?", "y", "p", "p", "y", "3D hides @recurring; the city covers two labels"],
+    ["Still readable at 150 items?", "p", "n", "n", "y", "only by topic (see the scale test); the reader pages by topic too"],
+  ];
+  const c = (v) => `<td class="${v}">${v === "y" ? "yes" : v === "n" ? "no" : "partly"}</td>`;
+  return `<h1>What can you tell without clicking?</h1><p class="pk-lede">Judged from the renders above on the example data, and the scale test. A judgment, recorded as assumed.</p>
+    <table class="vw-table gm" style="font-size:13.5px"><tr><th>Question</th><th>2D graph</th><th>3D stack</th><th>City</th><th>Reader</th><th>Why</th></tr>${Q.map((q) => `<tr><td>${q[0]}</td>${c(q[1])}${c(q[2])}${c(q[3])}${c(q[4])}<td style="color:var(--pk-ink-3)">${q[5]}</td></tr>`).join("")}</table>`;
+} });
+
+/* ============ sanity checks ============ */
+P.check("every current item appears exactly once in the map layout; history items never do", () => {
+  const ks = [...L.pos.keys()];
+  return { ok: ks.length === PR.items.length && new Set(ks).size === ks.length && !PR.inactive.some((it) => L.pos.has(it.key)), detail: `${ks.length} placed, ${PR.inactive.length} in history` };
+});
+P.check("statuses come from the checker (no view computes its own)", () => ({ ok: PR.items.every((it) => it.status === window.ANAXI.model.items.find((x) => (x.id || `${x.file}#${x.line}`) === it.key).status), detail: PR.items.map((it) => it.status).join(" ") }));
+P.check("deeper never shows less: words visible at D0 ≤ D1 ≤ … ≤ D4, for every item", () => {
+  const bad = PR.all.filter((it) => { const bs = VM.blocks(PR, it); const w = [0, 1, 2, 3, 4].map((d) => VM.words(bs.filter((b) => VM.visible(b, d)))); return w.some((x, i) => i && x < w[i - 1]); });
+  return { ok: !bad.length, detail: bad.map(name).join(", ") || "all monotonic" };
+});
+P.check("no text lost: splitting at lead-ins keeps every word (D4 + canvas + history = all)", () => {
+  const bad = PR.all.filter((it) => { const bs = VM.blocks(PR, it).filter((b) => b.kind !== "mark" && b.kind !== "title"); return VM.words(bs.filter((b) => VM.visible(b, 4, { canvas: true, history: true }))) !== VM.words(bs); });
+  return { ok: !bad.length, detail: bad.map(name).join(", ") || "none lost" };
+});
+P.check("lead-ins give the depth control something to filter on most items", () => {
+  const withLv = PR.all.filter((it) => VM.blocks(PR, it).filter((b) => /^D/.test(b.level || "")).length >= 2);
+  return { ok: withLv.length >= PR.all.length - 2, detail: `${withLv.length}/${PR.all.length} items have ≥2 levelled blocks (headings alone: ${PR.all.filter((it) => (it.sections || []).filter((s) => /^D/.test(s.level || "")).length >= 2).length})` };
+});
+P.check("synthetic projects: blocked exactly when a used item is short of its target", (p) => {
+  const items = VM.synthetic(p.n, p.seed ?? 7), byK = new Map(items.map((i) => [i.key, i]));
+  return { ok: items.every((it) => (it.status === "blocked") === it.uses.some((u) => VM.lvN(byK.get(u.id).depth) < VM.lvN(byK.get(u.id).target))), detail: `${items.filter((i) => i.status === "blocked").length} blocked of ${items.length}` };
+});
+P.check("extreme: one item is readable in every picture", () => { const rs = KINDS.map(([k]) => VM.metrics(VM.synthetic(1, 7), k)); return { ok: rs.every((r) => r.legible === 1 && r.occluded === 0), detail: rs.map((r) => r.legible).join("/") }; });
+P.check("the ranking isn't luck: across 20 seeds at 40 items by topic, 2D reads at least as many items as 3D and the city", () => {
+  const worse = []; for (let s = 1; s <= 20; s++) { const items = VM.synthetic(40, s); const [a, b, c] = KINDS.map(([k]) => VM.zoomed(items, k).legible); if (a < b || a < c) worse.push(s); }
+  return { ok: !worse.length, detail: worse.length ? `seeds ${worse.join(",")}` : "20/20 seeds" };
+});
+P.state("checks", { title: "Sanity checks", group: "Simulate", presets: true, render: () => `<h1>Sanity checks</h1><p class="pk-lede">Run for these parameters; every preset is checked at capture.</p>${Kit.checks()}` });
+
+/* ============ 5. DECIDE ============ */
+P.decision("Reader first: anaxi watch ships the docs as linked pages (overview → topic → item), each item one page with a depth control, an outline, parts inline, uses/used-by, nudges and the gate; 'next' walks the design in uses: order. Never one endless scroll.", "made");
+P.decision("The 2D graph with depth bars is the default map, and it zooms by topic: the project level shows topics (counts and worst status), a topic shows its items. Readable at 7, 40 and 150 items by topic (scale test, 20 seeds).", "made");
+P.decision("No city in v1: it is the most memorable picture, but its labels already collide at the example's 7 items (2 of 7 hidden: @scheduler and Upgrade policy in the render) and a third at 40; by topic it holds to ~11 items. Keep it as a later, optional view over the same layout.", "made");
+P.decision("No 3D layer stack: @recurring is already hidden behind @multi-calendar at 7 items, and at 40 flat it hides 17 of 40 columns with no label readable; depth is already a length in the 2D bar, so height adds nothing.", "made");
+P.decision("Levels come from headings AND from paragraph lead-ins named after the levels (Why, What, Shape, Contract, Build), split mid-paragraph: headings alone give the depth control nothing on 6 of 8 example items.", "made", { level: "D2" });
+P.decision("Readability measured on bounding-box geometry, not pixels or people; a rotatable 3D view could recover some occlusion at the cost of interaction.", "assumed");
+P.decision("The glance matrix is a judgment from the renders, not a user test.", "assumed");
+P.question("Should the checker emit blocks (section and lead-in levels, line ranges) in the JSON, so the reader never re-parses markdown?", { level: "D3" });
+P.question("A topic above ~25 items stops fitting the 2D map too (the curve fades past 150 items): split it by folder or sub-topic, or fall back to the overview list?", { level: "D2" });
+P.question("Topic for an item without about: — its folder, or 'unsorted'?", { level: "D2" });
+P.question("Does the live reload need per-file granularity (SSE with the changed paths) or is a full model refresh fast enough (~0.07 s)?", { level: "D3" });
+P.entity("ViewModel", { desc: "what the page gets: anaxi-check status --json (anaxi/1) plus blocks", fields: [["items", "Item[]", "current, with status, uses, parts, sections"], ["inactive", "Item[]", "superseded, retired, archived, with successor"], ["deleted", "{id,date,why,successor,commit}[]", "RETIRED.md"], ["nudges", "Nudge[]", ""], ["blocks", "{item, file, line, kind, level}[]", "proposed: from the checker"]] });
+P.route({ method: "GET", path: "/", summary: "overview page" });
+P.route({ method: "GET", path: "/item/:id?at=D2", summary: "an item's page at a depth" });
+P.route({ method: "GET", path: "/topic/:topic", summary: "a topic page" });
+P.route({ method: "GET", path: "/map?topic=&cut=", summary: "the 2D map, by topic" });
+P.route({ method: "GET", path: "/api/model", summary: "the ViewModel JSON" });
+P.route({ method: "EVENT", path: "/events", summary: "server-sent: model changed after a save" });
+P.shape({
+  approach: "anaxi watch: a read-only local reader of linked pages (overview → topic → item, depth control, outline, parts inline, superseded banner, next/previous in uses: order) with a 2D depth-bar map that zooms by topic; all from one ViewModel; a city view possible later over the same layout",
+  rejected: [{ approach: "City (for v1)", why: "labels collide at 7 items (2/7 hidden), a third at 40; memorable but not readable; a later optional view" },
+    { approach: "3D layer stack", why: "17/40 columns hidden and no readable labels at 40 items flat; depth-as-height duplicates the bar" },
+    { approach: "One continuous super-TDD document", why: "the example's @recurring alone is 439 words at D4; a project reads as pages with a depth control, and one document only for export" },
+    { approach: "Flat maps of the whole project", why: "no picture labels 150 items on one screen; the top zoom must be topics" }],
+  entities: ["ViewModel"], routes: true,
+  states: [
+    { id: "overview", title: "Project overview", group: "Reader", notes: "status groups, blocked-by, history and deleted ids; links only" },
+    { id: "topic", title: "Topic page", group: "Reader", notes: "a topic's items and what they use outside it" },
+    { id: "item", title: "Item page", group: "Reader", notes: "depth control D0–D4, outline, parts inline, uses/used-by, nudges, gate, next/previous" },
+    { id: "item-superseded", title: "Superseded item page", group: "Reader", notes: "banner with the successor; no pager" },
+    { id: "map", title: "2D map", group: "Map", notes: "depth bars, red blocking edges, history strip; project = topics, topic = items" },
+  ],
+  model: ["model.js"],
+});
+
+P.start();
+</script>
+</body>
+</html>

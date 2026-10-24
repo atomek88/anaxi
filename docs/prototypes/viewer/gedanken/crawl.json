@@ -1,0 +1,32 @@
+{
+  "clicks": 301,
+  "steps": 0,
+  "covered": 0,
+  "views": 24,
+  "reached": [
+    "frame",
+    "reader-overview",
+    "map-2d",
+    "scale",
+    "topic-api",
+    "topic-async",
+    "topic-data",
+    "topic-infra",
+    "topic-integration",
+    "topic-shared",
+    "topic-ui",
+    "item-polling-sync",
+    "item-recurring",
+    "item-scheduler",
+    "item-multi-calendar",
+    "item-settings",
+    "item-stack",
+    "item-task-api",
+    "item-upgrade-policy",
+    "map-3d",
+    "map-city",
+    "glance",
+    "checks"
+  ],
+  "problems": []
+}

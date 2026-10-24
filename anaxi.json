@@ -1,4 +1,11 @@
 {
-  "docs": ["**/*.md"],
-  "ignore": ["templates/**", "archive/**"]
+  "docs": [
+    "**/*.md"
+  ],
+  "ignore": [
+    "templates/**",
+    "archive/**",
+    "prototype/**",
+    "docs/prototypes/**"
+  ]
 }

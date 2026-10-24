@@ -1,0 +1,200 @@
+{
+  "schema": "proto-shape/1",
+  "question": "Which views should anaxi watch ship first so a team can triage the design at a glance, and read any item or the whole design at the depth they need, without scrolling forever?",
+  "anaxi": null,
+  "approach": "anaxi watch: a read-only local reader of linked pages (overview → topic → item, depth control, outline, parts inline, superseded banner, next/previous in uses: order) with a 2D depth-bar map that zooms by topic; all from one ViewModel; a city view possible later over the same layout",
+  "rejected": [
+    {
+      "approach": "City (for v1)",
+      "why": "labels collide at 7 items (2/7 hidden), a third at 40; memorable but not readable; a later optional view"
+    },
+    {
+      "approach": "3D layer stack",
+      "why": "17/40 columns hidden and no readable labels at 40 items flat; depth-as-height duplicates the bar"
+    },
+    {
+      "approach": "One continuous super-TDD document",
+      "why": "the example's @recurring alone is 439 words at D4; a project reads as pages with a depth control, and one document only for export"
+    },
+    {
+      "approach": "Flat maps of the whole project",
+      "why": "no picture labels 150 items on one screen; the top zoom must be topics"
+    }
+  ],
+  "entities": {
+    "ViewModel": {
+      "name": "ViewModel",
+      "desc": "what the page gets: anaxi-check status --json (anaxi/1) plus blocks",
+      "fields": [
+        {
+          "name": "items",
+          "type": "Item[]",
+          "note": "current, with status, uses, parts, sections",
+          "key": ""
+        },
+        {
+          "name": "inactive",
+          "type": "Item[]",
+          "note": "superseded, retired, archived, with successor",
+          "key": ""
+        },
+        {
+          "name": "deleted",
+          "type": "{id,date,why,successor,commit}[]",
+          "note": "RETIRED.md",
+          "key": ""
+        },
+        {
+          "name": "nudges",
+          "type": "Nudge[]",
+          "note": "",
+          "key": ""
+        },
+        {
+          "name": "blocks",
+          "type": "{item, file, line, kind, level}[]",
+          "note": "proposed: from the checker",
+          "key": ""
+        }
+      ]
+    }
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "summary": "overview page"
+    },
+    {
+      "method": "GET",
+      "path": "/item/:id?at=D2",
+      "summary": "an item's page at a depth"
+    },
+    {
+      "method": "GET",
+      "path": "/topic/:topic",
+      "summary": "a topic page"
+    },
+    {
+      "method": "GET",
+      "path": "/map?topic=&cut=",
+      "summary": "the 2D map, by topic"
+    },
+    {
+      "method": "GET",
+      "path": "/api/model",
+      "summary": "the ViewModel JSON"
+    },
+    {
+      "method": "EVENT",
+      "path": "/events",
+      "summary": "server-sent: model changed after a save"
+    }
+  ],
+  "states": [
+    {
+      "id": "overview",
+      "title": "Project overview",
+      "group": "Reader",
+      "notes": "status groups, blocked-by, history and deleted ids; links only"
+    },
+    {
+      "id": "topic",
+      "title": "Topic page",
+      "group": "Reader",
+      "notes": "a topic's items and what they use outside it"
+    },
+    {
+      "id": "item",
+      "title": "Item page",
+      "group": "Reader",
+      "notes": "depth control D0–D4, outline, parts inline, uses/used-by, nudges, gate, next/previous"
+    },
+    {
+      "id": "item-superseded",
+      "title": "Superseded item page",
+      "group": "Reader",
+      "notes": "banner with the successor; no pager"
+    },
+    {
+      "id": "map",
+      "title": "2D map",
+      "group": "Map",
+      "notes": "depth bars, red blocking edges, history strip; project = topics, topic = items"
+    }
+  ],
+  "model": [
+    "model.js"
+  ],
+  "graphs": {},
+  "decisions": [
+    {
+      "text": "Reader first: anaxi watch ships the docs as linked pages (overview → topic → item), each item one page with a depth control, an outline, parts inline, uses/used-by, nudges and the gate; 'next' walks the design in uses: order. Never one endless scroll.",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "The 2D graph with depth bars is the default map, and it zooms by topic: the project level shows topics (counts and worst status), a topic shows its items. Readable at 7, 40 and 150 items by topic (scale test, 20 seeds).",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "No city in v1: it is the most memorable picture, but its labels already collide at the example's 7 items (2 of 7 hidden: @scheduler and Upgrade policy in the render) and a third at 40; by topic it holds to ~11 items. Keep it as a later, optional view over the same layout.",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "No 3D layer stack: @recurring is already hidden behind @multi-calendar at 7 items, and at 40 flat it hides 17 of 40 columns with no label readable; depth is already a length in the 2D bar, so height adds nothing.",
+      "status": "made",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "Levels come from headings AND from paragraph lead-ins named after the levels (Why, What, Shape, Contract, Build), split mid-paragraph: headings alone give the depth control nothing on 6 of 8 example items.",
+      "status": "made",
+      "level": "D2",
+      "answers": null
+    },
+    {
+      "text": "Readability measured on bounding-box geometry, not pixels or people; a rotatable 3D view could recover some occlusion at the cost of interaction.",
+      "status": "assumed",
+      "level": null,
+      "answers": null
+    },
+    {
+      "text": "The glance matrix is a judgment from the renders, not a user test.",
+      "status": "assumed",
+      "level": null,
+      "answers": null
+    }
+  ],
+  "questions": [
+    {
+      "text": "Should the checker emit blocks (section and lead-in levels, line ranges) in the JSON, so the reader never re-parses markdown?",
+      "level": "D3",
+      "id": "qm408jh",
+      "refines": null
+    },
+    {
+      "text": "A topic above ~25 items stops fitting the 2D map too (the curve fades past 150 items): split it by folder or sub-topic, or fall back to the overview list?",
+      "level": "D2",
+      "id": "qd2dx74",
+      "refines": null
+    },
+    {
+      "text": "Topic for an item without about: — its folder, or 'unsorted'?",
+      "level": "D2",
+      "id": "q164hlmg",
+      "refines": null
+    },
+    {
+      "text": "Does the live reload need per-file granularity (SSE with the changed paths) or is a full model refresh fast enough (~0.07 s)?",
+      "level": "D3",
+      "id": "qnzbrw8",
+      "refines": null
+    }
+  ]
+}
