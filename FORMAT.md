@@ -94,6 +94,11 @@ Inside an item, the tools work out which level each section belongs to, in this 
 3. **Otherwise the section above:** an unmapped heading takes the level of the nearest mapped heading above
    it. If there isn't one, the section is *unclassified*: it is shown at every level and counts for nothing.
 
+**The claim needs its levels written.** Levels are cumulative, so the script counts an item only up to the
+first level, from D0, with nothing written under it (fewer than `nudges.levelWords` words, default 10).
+`depth: D4` over a why, a what and a build paragraph counts as D1, and the status says "D1 (claims D4)" (N05).
+Write the missing level or lower the claim. Items with no levelled text at all aren't measured.
+
 | Level | Heading names that map to it |
 |---|---|
 | D0 | Summary, Overview, TL;DR, Context, Background, Problem, Motivation, Goals, Non-goals, Success metrics, Why |

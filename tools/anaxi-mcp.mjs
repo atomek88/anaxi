@@ -36,7 +36,7 @@ function find(model, q) {
   if (!it) throw new Error(`no item "${q}"`);
   return it;
 }
-const brief = (it) => ({ id: it.id, title: it.title, file: it.file, line: it.line, depth: it.depth, target: LV(it.targetN), effective: LV(it.effectiveN),
+const brief = (it) => ({ id: it.id, title: it.title, file: it.file, line: it.line, depth: it.depth, shown: LV(it.depthN), target: LV(it.targetN), effective: LV(it.effectiveN),
   status: it.status, open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
   ...(it.lifecycle && it.lifecycle !== 'current' ? { lifecycle: it.lifecycle, successor: it.successor?.id || null } : {}) });
 

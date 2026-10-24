@@ -53,13 +53,15 @@ const pad = (s, n) => { s = String(s); const w = [...s].length; return w >= n ? 
 const json = (o) => console.log(JSON.stringify(o, null, 2));
 const itemJson = (it) => ({
   id: it.id, title: it.title, file: it.file, line: it.line, declared: it.declared, parent: it.parent?.key || null,
-  depth: it.depth, target: LV(it.targetN), effective: LV(it.effectiveN), targetFrom: it.targetSrc, status: it.status,
+  depth: it.depth, shown: LV(it.depthN), levelWords: it.levelWords, target: LV(it.targetN), effective: LV(it.effectiveN), targetFrom: it.targetSrc, status: it.status,
   risk: it.risk, about: it.about, focus: it.focus || 'now', parts: it.parts || [],
-  uses: it.uses.map((u) => ({ id: u.item ? u.item.key : null, raw: u.raw, path: u.item?.file || u.path, required: u.level || LV(u.item?.targetN), actual: u.item?.depth || null })),
+  uses: it.uses.map((u) => ({ id: u.item ? u.item.key : null, raw: u.raw, path: u.item?.file || u.path, required: u.level || LV(u.item?.targetN), actual: u.item ? LV(u.item.depthN) : null })),
   open: it.openList, caveats: it.caveats, later: it.later.map((l) => ({ text: l.text, trigger: l.trigger ? { id: l.trigger.id, level: l.trigger.level } : null })),
   skip: it.skip, sections: it.sections, lifecycle: it.lifecycle,
   supersededBy: it.supersededBy, supersedes: it.supersedes, retired: it.retired, successor: it.successor?.key || null,
 });
+// "D1 (D4?)": the text shows D1 of a claimed D4 (N05)
+const depthText = (it) => (!it.depth ? '—' : it.depthN < it.claimedN ? `${it.depthN < 0 ? '—' : LV(it.depthN)} (${it.depth}?)` : it.depth);
 const header = () => `${cfg.profile} profile · stage: ${cfg.stage} · ${model.items.length} items · ${cfg.file ? path.relative(process.cwd(), cfg.file) || 'anaxi.json' : 'no anaxi.json (defaults)'}`;
 
 // Human output: colour on a terminal (off with NO_COLOR or when piped), wrapped to the window.
@@ -67,7 +69,7 @@ const tty = process.stdout.isTTY && !process.env.NO_COLOR;
 const paint = (code) => (s) => (tty ? `\x1b[${code}m${s}\x1b[0m` : s);
 const bold = paint(1), dim = paint(2), red = paint(31), yellow = paint(33), green = paint(32), cyan = paint(36);
 const SEV = { block: red, warn: yellow, info: dim };
-const LABEL = { N05: 'not written', N01: 'go deeper', N02: 'blocked', N03: 'open', N04: 'enough', N06: 'trim', N10: 'revisit', N13: 'untagged',
+const LABEL = { N05: 'not written', N01: 'go deeper', N02: 'blocked', N03: 'open', N04: 'enough', N06: 'trim', N22: 'claims less', N10: 'revisit', N13: 'untagged',
   N14: 'no target', N15: 'dangling' };
 const WIDTH = Math.min(process.stdout.columns || 100, 110);
 function wrap(text, indent, first = indent) {
@@ -88,6 +90,8 @@ function nextStep(it, mine) {
   if (mine.some((n) => n.empty)) steps.push(`write the why and the non-goals${it.risk?.every((x) => x === 0) ? ', and score the risk factors' : ''}`);
   if (has('N14')) steps.push('score its risk so it gets a target, or write depth: Dn → Dt');
   if (has('N15')) steps.push('fix the reference, or create the shared item at D0');
+  const ns = mine.find((n) => n.code === 'N05' && n.missing);
+  if (ns) steps.push(ns.lower ? `lower the claim to depth: ${ns.shown}` : `write ${ns.missing[0]}, or lower the claim to ${ns.shown || 'D0'}`);
   const b = has('N02', 'block');
   if (b) steps.push(`wait for ${b.uses}, or help take it deeper`);
   if (has('N03')) steps.push('answer the open questions, or move them to later: with a trigger');
@@ -108,7 +112,7 @@ function printNudges(list) {
     const it = model.all.find((x) => x.key === g.key);
     if (it) {
       console.log(`\n${icon(it.status)}  ${bold(name(it))}  ${it.title}`);
-      console.log(dim(`    ${it.file}:${it.line} · depth ${it.depth} · target ${targetText(it)}${it.risk ? ` · risk ${it.risk.join('·')}` : ''}${it.parts ? ` · parts in ${[...new Set(it.parts.map((p) => p.file))].join(', ')}` : ''}`));
+      console.log(dim(`    ${it.file}:${it.line} · depth ${depthText(it)} · target ${targetText(it)}${it.risk ? ` · risk ${it.risk.join('·')}` : ''}${it.parts ? ` · parts in ${[...new Set(it.parts.map((p) => p.file))].join(', ')}` : ''}`));
     } else console.log(`\n${bold('Untagged headings')}`);
     for (const n of g.list) {
       const word = n.code === 'N02' && n.severity === 'info' ? (n.uses ? 'waits on' : 'waited on') : LABEL[n.code] || n.code;
@@ -144,11 +148,12 @@ switch (cmd) {
       break;
     }
     console.log(header());
-    console.log(`\n   ${pad('Item', 34)} ${pad('Depth', 6)} ${pad('Target', 12)} ${pad('Open', 5)} Uses`);
+    console.log(`\n   ${pad('Item', 34)} ${pad('Depth', 8)} ${pad('Target', 12)} ${pad('Open', 5)} Uses`);
     for (const it of items) {
       const title = `${it.parent ? '↳ ' : ''}${it.id ? it.id + ' ' : ''}${it.title}`;
-      console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(it.depth || '—', 6)} ${pad(targetText(it), 12)} ${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}`);
+      console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(depthText(it), 8)} ${pad(targetText(it), 12)} ${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}`);
     }
+    if (items.some((it) => it.depthN < it.claimedN)) console.log(dim('\nD1 (D4?): the text shows D1 of the D4 it claims; levels count only up to the first one with nothing written (N05)'));
     const past = model.inactive.filter((it) => !it.parent || it.parent.lifecycle === 'current');
     if (past.length && flag('all')) {
       console.log('');
@@ -180,7 +185,7 @@ switch (cmd) {
     const it = find(positional[0]);
     const g = gate(model, it);
     if (flag('json')) json({ format: 'anaxi/1', item: it.key, ready: g.ready, why: g.why });
-    else console.log(g.ready ? `N09 READY    ${name(it)} — ${it.depth} 🎯, nothing open, every use deep enough`
+    else console.log(g.ready ? `N09 READY    ${name(it)} — ${LV(it.depthN)} 🎯, nothing open, every use deep enough`
       : `N09 BLOCKED  ${name(it)} — ${g.why.join(' · ')}`);
     process.exitCode = g.ready ? 0 : 1;
     break;
@@ -281,7 +286,7 @@ switch (cmd) {
     const c = context(model, it, { at: opt('at'), history: flag('history') });
     c.gate = gate(model, it.successor && !flag('history') && it.lifecycle !== 'current' ? it.successor : it);
     if (flag('json')) { json(c); break; }
-    const head = (x) => `# ${x.id || x.title} · ${x.title} · read at ${x.at} (depth ${x.depth || '—'}, target ${x.target || '—'}) · ${x.file}:${x.line}`;
+    const head = (x) => `# ${x.id || x.title} · ${x.title} · read at ${x.at} (depth ${x.shown && x.shown !== x.depth ? `${x.shown}, claims ${x.depth}` : x.depth || '—'}, target ${x.target || '—'}) · ${x.file}:${x.line}`;
     if (c.note) console.log(`> ${c.note}\n`);
     console.log(`${head(c.item)}\n\n${c.item.markdown}`);
     for (const u of c.uses) console.log(`\n---\n\n${head(u)} · used by ${u.via}${u.replaces ? ` (replaces ${u.replaces})` : ''}\n\n${u.markdown}`);

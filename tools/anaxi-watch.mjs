@@ -23,9 +23,9 @@ function build() {
     const cfg = loadConfig(dir);
     const model = evaluate(cfg);
     const item = (it) => ({ key: it.key, id: it.id, title: it.title, file: it.file, line: it.line, declared: it.declared,
-      parent: it.parent?.key || null, depth: it.depth, target: LV(it.targetN), effective: LV(it.effectiveN), status: it.status,
+      parent: it.parent?.key || null, depth: it.depth, shown: LV(it.depthN), levelWords: it.levelWords, minWords: it.minWords, target: LV(it.targetN), effective: LV(it.effectiveN), status: it.status,
       risk: it.risk, about: it.about, focus: it.focus || 'now', caveats: it.caveats, later: it.later.map((l) => l.text),
-      uses: it.uses.map((u) => ({ key: u.item?.key || null, raw: u.raw, level: u.level, actual: u.item?.depth || null, required: u.level || LV(u.item?.targetN) })),
+      uses: it.uses.map((u) => ({ key: u.item?.key || null, raw: u.raw, level: u.level, actual: u.item ? LV(u.item.depthN) : null, required: u.level || LV(u.item?.targetN) })),
       parts: it.parts || [], open: it.openList || [], lifecycle: it.lifecycle, supersededBy: it.supersededBy, supersedes: it.supersedes,
       retired: it.retired, successor: it.successor?.key || null, gate: gate(model, it),
       blocks: blocks(model, it).map(({ kind, level, text, file, line, depth, lead, part }) => ({ kind, level, text, file, line, depth, lead, part })) });

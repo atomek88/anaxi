@@ -91,8 +91,9 @@ For the item's next level, up to its effective target:
    **missing**. Answers can be anywhere in the item, in any form. **Ignore the canvas** when deciding what is
    answered.
 3. Check the level's "done when" (`QUESTIONS.md §3`) as a final test.
-4. The *supported* depth is the highest level where nothing is missing at that level or above it. If it differs
-   from the claimed depth, report N05 and propose the corrected mark.
+4. The *supported* depth is the highest level where nothing is missing at that level or any level before it
+   (levels are cumulative). If it differs from the claimed depth, report N05 and propose the corrected mark. The
+   script already reports levels with nothing written; you judge whether written levels are answered.
 5. Check `uses:` (N02), open questions and unchecked boxes (N03), depth against the effective target (N01,
    N06), out of focus (N08), over-engineering (N07), and canvas content that something relies on (N17). For N07,
    N08 and N17, quote the text.

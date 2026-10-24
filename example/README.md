@@ -10,7 +10,7 @@ every way of marking up an item ([../FORMAT.md](../FORMAT.md)):
 | [shared/scheduler.md](shared/scheduler.md) | @scheduler | **tag line** | go deeper, open question, a project question unanswered; two items wait on it |
 | [shared/task-api.md](shared/task-api.md) | @task-api | **tag line** | enough: D3 🎯, with caveats and a `later:` |
 | [shared/stack.md](shared/stack.md) | @stack, and a sub-item | **tag line**, and a **heading badge** on the sub-item | where libraries and frameworks are documented; a sub-item inheriting its parent's answers |
-| [features/settings-screen.md](features/settings-screen.md) | @settings | **HTML comment** | over-documented for its risk |
+| [features/settings-screen.md](features/settings-screen.md) | @settings | **HTML comment** | over-documented for its risk; claims D4 with nothing at D2 and D3, so it counts as D1 |
 | [features/multi-calendar.md](features/multi-calendar.md) | @multi-calendar | **tag line** | over-documented for the plan (`focus: later`) |
 | [features/APPENDIX.md](features/APPENDIX.md) | part of @recurring | **`part-of:`** tag line | detail kept out of the TDD, counted as @recurring's own |
 | [archive/polling-sync.md](archive/polling-sync.md) | @polling-sync | **front matter**, `superseded-by: @scheduler` | an archived design: readable, linked from its successor, never counted |
@@ -24,6 +24,7 @@ real script output, followed by what the skill adds after reading the content.
 
 ```
 $ node ../tools/anaxi-check.mjs nudges
+
 ⏸️  @multi-calendar  Multiple calendars
     features/multi-calendar.md:3 · depth D3 · target D4 (now D1) · risk 2·1·2·2
     waits on    uses @scheduler, which is at D2 of its target D3 (N02)
@@ -36,6 +37,8 @@ $ node ../tools/anaxi-check.mjs nudges
     open        2 to answer (N03):
                 • D2 · Do paused series still count toward the daily nudge cap?
                 • D3 · Which time zone does a recurrence follow when the user travels?
+    claims less has content through D3 but claims D2: raise its depth if those questions are
+                answered (N22)
     go deeper   D2 → D3. Answer these for D3 (N01):
                 • D3.contracts · For every boundary, what crosses it, in exactly what shape, and
                   what must stay compatible?
@@ -44,9 +47,12 @@ $ node ../tools/anaxi-check.mjs nudges
       them to later: with a trigger.
 
 ✂️  @settings  Settings screen
-    features/settings-screen.md:3 · depth D4 · target D1 · risk 0·0·1·0
-    trim        at D4, but risk 0·0·1·0 gives target D1: over-documented (N06)
-    → Next: stop writing; trim back to the target, or re-score if the risk is higher.
+    features/settings-screen.md:3 · depth D1 (D4?) · target D1 · risk 0·0·1·0
+    not written claims D4, but D2 and D3 have nothing written: it shows D1. Lower the claim to D1:
+                that's all it needs (N05)
+    trim        has D4 content, but risk 0·0·1·0 gives target D1: over-documented (N06)
+    → Next: lower the claim to depth: D1; then stop writing; trim back to the target, or re-score if
+      the risk is higher.
 
 ⬇️  @scheduler  Scheduler
     shared/scheduler.md:3 · depth D2 · target D3 · risk 2·1·1·1
@@ -98,6 +104,8 @@ The skill then reads the content and adds the nudges that need judgment:
   `D1.offline` and `D1.in-progress` (it does). Scheduler is `about: integration`, so it gets the calendar
   quota question (it doesn't answer it yet).
 - **Upgrade policy** is a two-line sub-item with only a badge. It inherits its why and scope from @stack.
+- **Settings screen** claims D4, but only its why, what and build are written. Levels are cumulative, so the script
+  counts it at D1 (N05): ready at its D1 target, and the build detail is over-documentation (N06).
 
 ## Gates
 
@@ -108,6 +116,8 @@ $ node ../tools/anaxi-check.mjs gate @recurring
 N09 BLOCKED  @recurring — D2 → D3 · 2 open · @scheduler at D2 of D3
 $ node ../tools/anaxi-check.mjs gate @multi-calendar
 N09 BLOCKED  @multi-calendar — D3 → D4 (the full target applies to the gate) · @scheduler at D2 of D3
+$ node ../tools/anaxi-check.mjs gate @settings
+N09 READY    @settings — D1 🎯, nothing open, every use deep enough
 ```
 
 ## What the team does next

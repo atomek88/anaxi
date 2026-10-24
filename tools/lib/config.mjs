@@ -43,7 +43,7 @@ export const DEFAULTS = {
     focus: { now: null, next: 'D2', later: 'D1' },
     stage: { discovery: 'D1', shaping: 'D2' },
   },
-  nudges: { off: [], severity: {}, untaggedWords: 80 },
+  nudges: { off: [], severity: {}, untaggedWords: 80, levelWords: 10 },
   hooks: { sessionStart: true, afterEdit: false }, // the Claude Code plugin's hooks
 };
 

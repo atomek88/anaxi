@@ -123,10 +123,10 @@ export function context(model, start, { at, history = false, read } = {}) {
     note = `${it.id || it.title} is ${it.lifecycle}${it.successor ? `; showing its successor ${it.successor.id || it.successor.title}` : ' and has no successor'}`;
     if (it.successor) it = it.successor;
   }
-  const level = at != null ? (typeof at === 'string' ? lv(at) : at) : it.targetN ?? it.depthN ?? top();
+  const level = at != null ? (typeof at === 'string' ? lv(at) : at) : it.targetN ?? it.claimedN ?? top();
   const take = (x, l) => {
     const bs = blocks(model, x, read).filter((b) => b.kind !== 'title' && visible(b, l, { history }));
-    return { id: x.id, title: x.title, file: x.file, line: x.line, depth: x.depth, target: LEVELS[x.targetN] ?? null,
+    return { id: x.id, title: x.title, file: x.file, line: x.line, depth: x.depth, shown: LEVELS[x.depthN] ?? null, target: LEVELS[x.targetN] ?? null,
       status: x.status, at: LEVELS[Math.min(l, top())], words: words(bs), markdown: asMarkdown(bs) };
   };
   const main = take(it, level);
@@ -136,7 +136,7 @@ export function context(model, start, { at, history = false, read } = {}) {
       const d = u.item && (u.item.lifecycle && u.item.lifecycle !== 'current' && !history && u.item.successor ? u.item.successor : u.item);
       if (!d || seen.has(d)) continue;
       seen.add(d);
-      uses.push({ ...take(d, u.level ? lv(u.level) : d.targetN ?? d.depthN ?? 0), via: x.id || x.title, ...(d !== u.item ? { replaces: u.item.id } : {}) });
+      uses.push({ ...take(d, u.level ? lv(u.level) : d.targetN ?? d.claimedN ?? 0), via: x.id || x.title, ...(d !== u.item ? { replaces: u.item.id } : {}) });
       walk(d);
     }
   };

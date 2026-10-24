@@ -58,11 +58,14 @@ audience.
 Rules:
 
 - **Levels are cumulative.** D3 means D0–D3 are all answered. The five levels are the default ladder; a
-  project can rename, drop or add levels (§0).
+  project can rename, drop or add levels (§0). A claim counts only as far as the text backs it without a gap:
+  build detail under a D4 heading doesn't make an item D4 when nothing is written at D2 and D3. The script
+  counts it at the highest level reached with every level before it written (N05), and judges over-documentation
+  by the deepest content (N06). Whether each level is *well* answered is still read, not counted.
 - **Each level has principles and questions** ([QUESTIONS.md](QUESTIONS.md)): principles (aim, bounds,
   done-when) that hold everywhere; a small *core* of questions; the project's own questions
   (`anaxi-questions.md`); and the item's own questions, a checklist written by whoever works on it. A level
-  is reached when every required, applicable question at that level and above is **answered** or **skipped
+  is reached when every required, applicable question at that level and every level before it is **answered** or **skipped
   with a reason**, and the level's "done when" holds.
 - **Not everything has to answer a question.** Each item can have a **canvas** for the shape of the idea,
   sketches, visuals and anything unbound. It doesn't count toward depth and no nudge polices it

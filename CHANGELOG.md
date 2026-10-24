@@ -5,6 +5,14 @@ Newest first. Format: `date · area · change · why`.
 
 ## 0.9 · unreleased
 
+- method · **A claim counts only as far as the text backs it without a gap.** The script measures each level's
+  words (headings and lead-ins, parts included); `depth:` is capped at the highest level with every level before
+  it written (`nudges.levelWords`, default 10; 0 = off). Structural N05 names the empty levels; status, targets
+  and the gate use the capped depth; N06 also fires for content past the target; new N22 (info) when the text
+  goes deeper than the claim · @settings claimed D4 from one build paragraph with nothing at D2–D3, and the
+  checker took the claim at its word.
+- tooling · `status`, the index and the reader show "D1 (claims D4)"; the reader's depth bars grey out levels
+  written past a gap and outline empty claimed levels in red; JSON gains `shown` and `levelWords`.
 - format · **Lifecycle marks:** `superseded-by:`, `supersedes:`, `retired:`, an `archive` folder with
   `RETIRED.md`, and `Decision log` sections that are kept but never counted (FORMAT.md §10, METHOD.md §6.1) ·
   replaced designs must stay readable without reading as current, especially to agents.

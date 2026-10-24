@@ -4,10 +4,11 @@ import path from 'node:path';
 import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile } from './config.mjs';
 import { parseFile, SECTION_NAMES, slug } from './parse.mjs';
 import { questionSet, questionsFor } from './questions.mjs';
+import { blocks } from './read.mjs';
 
 const ICON = { blocked: '⛔', later: '⏸️', trim: '✂️', gap: '⬇️', open: '❓', enough: '🎯', none: '❓',
   superseded: '↪️', retired: '⏹️', archived: '🗄️' };
-const ORDER = ['N09', 'N02', 'N18', 'N15', 'N19', 'N21', 'N03', 'N05', 'N01', 'N08', 'N07', 'N06', 'N14', 'N12', 'N10',
+const ORDER = ['N09', 'N02', 'N18', 'N15', 'N19', 'N21', 'N03', 'N05', 'N22', 'N01', 'N08', 'N07', 'N06', 'N14', 'N12', 'N10',
   'N11', 'N13', 'N16', 'N17', 'N20', 'N04'];
 
 /**
@@ -119,9 +120,18 @@ export function evaluate(cfg, { read, files } = {}) {
   // raised by `uses: @this (Dn)`
   for (const it of items) for (const u of it.uses) if (u.item && u.level && u.item.targetN != null) u.item.targetN = Math.max(u.item.targetN, lv(u.level));
 
+  // what the text shows (SPEC §4.1): levels are cumulative, so only the highest level reached without a gap counts
+  for (const it of items) evidence(cfg, it, read);
+  for (const it of items) { // a sub-item leans on its parent's levels
+    if (!it.parent?.levelWords || !it.minWords || it.depth == null) continue;
+    const min = it.minWords, own = it.levelWords || it.parent.levelWords.map(() => 0);
+    it.levelWords = own.map((w, i) => (w >= min ? w : Math.max(w, it.parent.levelWords[i])));
+    Object.assign(it, reach(it.levelWords, min));
+  }
   for (const it of items) {
     const c = it.cfg;
-    it.depthN = lv(it.depth);
+    it.claimedN = lv(it.depth);
+    it.depthN = it.shownN == null || it.claimedN == null ? it.claimedN : Math.min(it.claimedN, it.shownN);
     const caps = [it.targetN, lv(c.caps.focus?.[it.focus || 'now']), lv(c.caps.stage?.[c.stage])].filter((x) => x != null && x >= 0);
     it.effectiveN = it.targetN == null ? null : Math.min(...caps);
     if (it.enough && it.targetN != null && it.depthN < it.targetN) {
@@ -181,7 +191,7 @@ function nudges(model) {
       const need = u.level ? lv(u.level) : u.item.targetN;
       if (need == null || u.item.depthN >= need) continue;
       const late = it.focus === 'later';
-      add('N02', late ? 'info' : 'block', it, `uses ${name(u.item)}, which is at ${u.item.depth} of ${u.level ? 'the ' + u.level + ' asked for' : 'its target ' + LV(need)}`, { uses: u.item.key });
+      add('N02', late ? 'info' : 'block', it, `uses ${name(u.item)}, which is at ${at(u.item)} of ${u.level ? 'the ' + u.level + ' asked for' : 'its target ' + LV(need)}`, { uses: u.item.key });
       if (!waiters.has(u.item)) waiters.set(u.item, []);
       waiters.get(u.item).push(`${name(it)} (${it.focus || 'now'})`);
     }
@@ -194,10 +204,19 @@ function nudges(model) {
       add('N03', 'warn', it, `${it.openList.length} open: ${it.openList.map((q) => (q.level ? `${q.text} (${q.level})` : q.text)).join(' · ')}`,
         { details: it.openList.map((q) => `${q.level ? q.level + ' · ' : ''}${q.text}`) });
     }
+    if (it.depthN < it.claimedN) {
+      const missing = it.levelWords.slice(0, it.claimedN + 1).map((w, i) => (w < it.minWords ? LV(i) : null)).filter(Boolean);
+      const list = missing.length > 1 ? `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)} have` : `${missing[0]} has`;
+      const enough = it.effectiveN != null && it.shownN >= it.effectiveN;
+      add('N05', 'warn', it, `claims ${it.depth}, but ${list} nothing written: it shows ${it.shownN < 0 ? 'no level yet' : LV(it.shownN)}. ${enough ? `Lower the claim to ${LV(it.shownN)}: that's all it needs` : `Write ${missing[0]}, or lower the claim`}`,
+        { claimed: it.depth, shown: LV(it.shownN), missing, lower: enough });
+    } else if (it.shownN > it.claimedN) {
+      add('N22', 'info', it, `has content through ${LV(it.shownN)} but claims ${it.depth}: raise its depth if those questions are answered`);
+    }
     if (it.targetN == null) { add('N14', 'warn', it, 'has no target. Score its risk, or write depth: Dn → Dt'); continue; }
     const capped = it.effectiveN < it.targetN;
     const d0 = it.sections.filter((s) => s.level === 'D0');
-    if (it.depthN === 0 && d0.length && d0.every((s) => s.words === 0)) {
+    if (it.claimedN === 0 && d0.length && d0.every((s) => s.words === 0)) {
       const qs = it.questions.filter((q) => q.level === 'D0' && !q.skipped);
       add('N05', 'warn', it, `claims D0, but its ${d0.map((s) => `"${s.heading}"`).join(' and ')} section${d0.length > 1 ? 's are' : ' is'} empty`,
         { next: 'D0', empty: true, details: qs.map((q) => `${q.id} · ${q.text}`) });
@@ -206,13 +225,13 @@ function nudges(model) {
       const ids = it.questions.filter((q) => q.level === next && !q.skipped && !q.optional).map((q) => q.id);
       const own = it.checklist.filter((q) => !q.checked && q.level === next).length;
       const qs = it.questions.filter((q) => q.level === next && !q.skipped && !q.optional);
-      add('N01', 'warn', it, `${it.depth} → ${LV(it.effectiveN)}${capped ? ` (full target ${LV(it.targetN)})` : ''}. ${ids.length || own ? `Questions for ${next}: ${ids.join(', ') || '—'}` : `No questions for ${next} yet${it.cfg.levels[next]?.done ? `; it's reached when ${it.cfg.levels[next].done}` : ''}`}${own ? ` + ${own} of its own` : ''}`,
+      add('N01', 'warn', it, `${at(it)} → ${LV(it.effectiveN)}${capped ? ` (full target ${LV(it.targetN)})` : ''}. ${ids.length || own ? `Questions for ${next}: ${ids.join(', ') || '—'}` : `No questions for ${next} yet${it.cfg.levels[next]?.done ? `; it's reached when ${it.cfg.levels[next].done}` : ''}`}${own ? ` + ${own} of its own` : ''}`,
         { next, details: qs.map((q) => `${q.id} · ${q.text}`) });
-    } else if (it.depthN > it.effectiveN) {
+    } else if (Math.max(it.depthN, it.deepestN ?? -1) > it.effectiveN) {
       const why = !capped ? `risk ${it.risk ? it.risk.join('·') : '—'} gives target ${LV(it.targetN)}`
         : it.focus && it.focus !== 'now' && lv(it.cfg.caps.focus[it.focus]) === it.effectiveN ? `focus: ${it.focus} caps it at ${LV(it.effectiveN)} for now`
           : `stage ${it.cfg.stage} caps it at ${LV(it.effectiveN)} for now`;
-      add('N06', 'warn', it, `at ${it.depth}, but ${why}: over-documented`);
+      add('N06', 'warn', it, `${it.deepestN > it.depthN ? `has ${LV(it.deepestN)} content` : `at ${it.depth}`}, but ${why}: over-documented`);
     }
   }
   for (const [it, who] of waiters) {
@@ -223,7 +242,7 @@ function nudges(model) {
   for (const it of items) {
     if (it.targetN == null) continue;
     const mine = out.filter((x) => x.item === it.key && x.severity !== 'info');
-    if (!mine.length && it.depthN === it.effectiveN) {
+    if (!mine.length && it.depthN >= it.effectiveN) {
       const capped = it.effectiveN < it.targetN;
       add('N04', 'info', it, `${it.depth} 🎯 enough${capped ? ` for now (full target ${LV(it.targetN)})` : ''}${it.caveats ? `. Caveats: ${it.caveats}` : ''}`);
     }
@@ -238,6 +257,38 @@ function nudges(model) {
 }
 
 const name = (it) => it.id || `"${it.title}"`;
+/** "D1", or "D1 (claims D4)" when the text doesn't back the claim. */
+export const at = (it) => (it.depthN == null ? '—' : it.depthN < 0 ? `nothing (claims ${it.depth})`
+  : it.depthN < it.claimedN ? `${LV(it.depthN)} (claims ${it.depth})` : LV(it.depthN));
+
+/**
+ * Words written at each level (headings, lead-ins; parts count for their host), and the levels they reach:
+ * shownN, the highest level with every level up to it written (≥ nudges.levelWords words; -1: not even D0), and
+ * deepestN, the deepest level with any. No levelled text at all, or levelWords 0: null (nothing to measure).
+ */
+function evidence(cfg, it, read) {
+  const min = it.cfg.nudges.levelWords ?? 10;
+  it.minWords = min;
+  it.levelWords = null; it.shownN = null; it.deepestN = null;
+  if (!min || it.depth == null) return;
+  let bs;
+  try { bs = blocks({ cfg }, it, read); } catch { return; }
+  const w = Array(top() + 1).fill(0);
+  let any = false;
+  for (const b of bs) {
+    if (b.kind === 'title' || b.kind === 'heading' || b.kind === 'mark' || b.level == null || lv(b.level) < 0) continue;
+    any = true;
+    w[lv(b.level)] += b.text.join(' ').replace(/\*\*[^*]+\.\*\*/, '').split(/\s+/).filter(Boolean).length;
+  }
+  if (!any) return;
+  it.levelWords = w;
+  Object.assign(it, reach(w, min));
+}
+const reach = (w, min) => {
+  let shownN = -1;
+  while (shownN + 1 < w.length && w[shownN + 1] >= min) shownN++;
+  return { shownN, deepestN: w.reduce((d, x, i) => (x >= min ? i : d), -1) };
+};
 
 /** "superseded by @new", "retired 2026-11-02 (why)", "archived". */
 export function lifeText(it) {
@@ -298,14 +349,14 @@ export function gate(model, it) {
   const why = [];
   if (it.lifecycle && it.lifecycle !== 'current') return { ready: false, why: [`${lifeText(it)}${it.successor ? `: gate ${name(it.successor)} instead` : ''}`] };
   if (it.targetN == null) why.push('no target');
-  else if (it.depthN < it.targetN) why.push(`${it.depth} → ${LV(it.targetN)}${it.effectiveN < it.targetN ? ' (the full target applies to the gate)' : ''}`);
+  else if (it.depthN < it.targetN) why.push(`${at(it)} → ${LV(it.targetN)}${it.effectiveN < it.targetN ? ' (the full target applies to the gate)' : ''}`);
   if (it.allOpen.length) why.push(`${it.allOpen.length} open`);
   for (const u of it.uses) {
     if (!u.item) why.push(`${u.raw} doesn't resolve`);
     else if (u.item.lifecycle !== 'current') why.push(`uses ${name(u.item)}, which is ${lifeText(u.item)}`);
     else {
       const need = u.level ? lv(u.level) : u.item.targetN;
-      if (need != null && u.item.depthN < need) why.push(`${name(u.item)} at ${u.item.depth} of ${LV(need)}`);
+      if (need != null && u.item.depthN < need) why.push(`${name(u.item)} at ${at(u.item)} of ${LV(need)}`);
     }
   }
   for (const n of model.nudges) if (n.item === it.key && n.severity === 'block' && n.code !== 'N02') why.push(`${n.code}: ${n.message}`);
@@ -343,9 +394,9 @@ export function renderIndex(model, indexPath) {
   const rows = order.map((it) => {
     const uses = it.uses.map((u) => (u.item ? `[${name(u.item)}](${path.posix.relative(dir, u.item.file)}${u.item.anchor ? '#' + u.item.anchor : ''})` : u.raw));
     const parts = (it.parts || []).map((p) => `[${p.title.replace(/[[\]|]/g, '')}](${path.posix.relative(dir, p.file)}${p.anchor ? '#' + p.anchor : ''})`);
-    return `| ${icon(it.status)} | ${it.parent ? '↳ ' : ''}${link(it)}${it.id ? ` \`${it.id}\`` : ''}${parts.length ? ` · parts: ${parts.join(', ')}` : ''} | ${it.depth || '—'} | ${targetText(it)} | ${uses.join(', ') || '—'} | ${usedBy(it).join(', ') || '—'} | ${it.openList.length} |`;
+    return `| ${icon(it.status)} | ${it.parent ? '↳ ' : ''}${link(it)}${it.id ? ` \`${it.id}\`` : ''}${parts.length ? ` · parts: ${parts.join(', ')}` : ''} | ${it.depth ? at(it) : '—'} | ${targetText(it)} | ${uses.join(', ') || '—'} | ${usedBy(it).join(', ') || '—'} | ${it.openList.length} |`;
   });
-  const NI = { N02: '⛔', N15: '⛔', N03: '❓', N01: '⬇️', N06: '✂️', N14: '❓', N10: '⏸️', N13: 'ℹ️' };
+  const NI = { N02: '⛔', N15: '⛔', N03: '❓', N01: '⬇️', N05: '⚠️', N06: '✂️', N14: '❓', N10: '⏸️', N13: 'ℹ️' };
   const nud = model.nudges.filter((n) => n.code !== 'N04' && !(n.code === 'N02' && n.severity === 'info'))
     .map((n) => `- ${NI[n.code] || 'ℹ️'} **${n.title}** ${n.message}`);
   const later = items.flatMap((it) => it.later.map((l) => `- **${it.title}**: ${l.text}`));

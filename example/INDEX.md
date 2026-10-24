@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|---|
 | ⏸️ | [Multiple calendars](features/multi-calendar.md#multiple-calendars) `@multi-calendar` | D3 | D4 (now D1) | [@scheduler](shared/scheduler.md#scheduler) | — | 0 |
 | ⛔ | [Recurring tasks](features/recurring-tasks.md) `@recurring` · parts: [Recurring tasks: series record](features/APPENDIX.md#recurring-tasks-series-record-d3) | D2 | D3 | [@task-api](shared/task-api.md#task-api), [@scheduler](shared/scheduler.md#scheduler), [@stack](shared/stack.md#stack) | — | 2 |
-| ✂️ | [Settings screen](features/settings-screen.md#settings-screen) `@settings` | D4 | D1 | — | — | 0 |
+| ✂️ | [Settings screen](features/settings-screen.md#settings-screen) `@settings` | D1 (claims D4) | D1 | — | — | 0 |
 | ⬇️ | [Scheduler](shared/scheduler.md#scheduler) `@scheduler` | D2 | D3 | [@task-api](shared/task-api.md#task-api) | @multi-calendar, @recurring | 1 |
 | 🎯 | [Stack](shared/stack.md#stack) `@stack` | D2 | D2 | — | @recurring, @task-api | 0 |
 | 🎯 | ↳ [Upgrade policy](shared/stack.md#upgrade-policy-d2-) | D2 | D2 | — | — | 0 |
@@ -17,8 +17,10 @@
 - ✂️ **Multiple calendars** at D3, but focus: later caps it at D1 for now: over-documented
 - ⛔ **Recurring tasks** uses @scheduler, which is at D2 of its target D3
 - ❓ **Recurring tasks** 2 open: Do paused series still count toward the daily nudge cap? (D2) · Which time zone does a recurrence follow when the user travels? (D3)
+- ℹ️ **Recurring tasks** has content through D3 but claims D2: raise its depth if those questions are answered
 - ⬇️ **Recurring tasks** D2 → D3. Questions for D3: D3.contracts, D3.failure + 1 of its own
-- ✂️ **Settings screen** at D4, but risk 0·0·1·0 gives target D1: over-documented
+- ⚠️ **Settings screen** claims D4, but D2 and D3 have nothing written: it shows D1. Lower the claim to D1: that's all it needs
+- ✂️ **Settings screen** has D4 content, but risk 0·0·1·0 gives target D1: over-documented
 - ❓ **Scheduler** 1 open: what the planner does with a task whose deadline has already passed
 - ⬇️ **Scheduler** D2 → D3. Questions for D3: D3.contracts, D3.failure · 2 items wait on it: @multi-calendar (later), @recurring (now)
 

@@ -5,4 +5,7 @@
 
 **Why.** Some users keep work and personal calendars apart and want both counted as busy.
 
-(a full sync contract follows, written before anything in focus: now is ready)
+**What.** Connect a second calendar in settings; events from every connected calendar block time in the plan.
+**Shape.** One `CalendarSource` per account, polled by the scheduler and merged into a single busy list.
+
+**Contract.** (a full sync contract follows, written before anything in focus: now is ready)

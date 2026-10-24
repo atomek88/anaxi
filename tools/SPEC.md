@@ -147,13 +147,15 @@ lines (`reword:`, `skip-all:`), and `## Principles` (shown by the skill, not che
 | target | `target:` if present; else the sum of `risk:` through the thresholds (after `rubric.floors`); else `Dt` from `Dn → Dt`, or `Dn` from `Dn enough`. Then raised by `targets.min` and matching `rules`, lowered by `targets.max`, and raised to n if any item has `uses: @this (Dn)`. If `risk:` and the written `→ Dt` disagree, `check` warns |
 | effective | min(target, focus cap, stage cap) ([METHOD §3.1](../METHOD.md#31-effective-target-what-is-needed-now)) |
 | open | `open:` entries, plus unchecked checklist lines at a level ≤ effective. Lines with no level always count |
+| current | the claimed `depth:`, capped at **shown**: the highest level n with every level 0…n written. A level is written when the item's blocks at that level (its headings' sections and `**Why.**`-style lead-ins, parts included, headings and marks not counted) hold at least `nudges.levelWords` words (default 10; 0 turns this off). A sub-item uses its parent's words for a level it doesn't write itself. An item with no levelled text isn't measured: current = the claim. **deepest** is the deepest written level, gaps allowed |
 | N01 | current < effective |
 | N02 | for each `uses:` ref: required = the `(Dn)` given, else the target's full target; fires when current(target) < required. `block`, or `info` when this item is `focus: later`. The used item gets an info line listing who waits |
 | N03 | open is not empty |
 | N04 | current = effective, nothing open, no N02. Says "for now" when effective < target |
-| N06 | current > effective (canvas never counts toward current) |
-| N05 (structural part) | the item claims D0 but every D0-mapped section is empty (HTML comments don't count). The rest of N05 is the agent's |
-| N09 | gate fails when depth < the **full** target, anything is open (any level), a `uses:` item isn't deep enough or doesn't resolve, or there is any other `block` nudge |
+| N06 | max(current, deepest) > effective (canvas and history never count) |
+| N22 | shown > claimed: info, content past the claim |
+| N05 (structural part) | shown < claimed: the message names each level up to the claim with nothing written; or the item claims D0 and every D0-mapped section is empty (HTML comments don't count). The rest of N05 (is it *answered*, not just written) is the agent's |
+| N09 | gate fails when current < the **full** target, anything is open (any level), a `uses:` item isn't deep enough or doesn't resolve, or there is any other `block` nudge |
 | N10 | a `later:` trigger `when @x reaches Dn` where current(@x) ≥ Dn |
 | N11 | git: the last commit touching @x's section is newer than the commit that set this item's `enough` |
 | N13 | a heading inside `docs` with more than 80 words and no item above it (`nudges.untaggedWords` in `anaxi.json`) |

@@ -11,6 +11,17 @@
   const SMALL = 12; // up to this many items, the map shows items; above it, topics first
 
   const lvN = (l) => (M.levels.findIndex((x) => x.id === l));
+  // depth as the text shows it: levels count up to the first one with nothing written (N05)
+  const unbacked = (it) => it.shown !== it.depth && it.depth;
+  const depthWord = (it) => (unbacked(it) ? `${it.shown || 'nothing'} (claims ${it.depth})` : it.depth || '—');
+  const written = (it, i) => (it.levelWords ? it.levelWords[i] >= it.minWords : i <= lvN(it.depth));
+  /** One level's cell in a depth bar: counted, written past a gap, claimed but empty, or still needed. */
+  function cell(it, i) {
+    const d = lvN(it.shown ?? it.depth), c = lvN(it.depth), t = lvN(it.target), w = written(it, i), need = t >= 0 && i <= t;
+    const fill = w && t >= 0 && i > t ? 'var(--trim)' : i <= d ? COLOR[it.status === 'blocked' ? 'gap' : it.status] : w ? 'var(--ink3)' : 'none';
+    return { fill, opacity: i <= d || !w ? 1 : 0.45, stroke: !w && i <= c ? 'var(--bad)' : need || i <= d ? 'var(--ink3)' : 'var(--line)', dash: need && i > d && !w,
+      title: `${M.levels[i].id}: ${i <= d ? 'written' : w ? (i > c ? 'written, past the claimed depth' : 'written, but not counted: a level below it is empty') : i <= c ? 'claimed, nothing written' : need ? 'needed' : 'not needed'}` };
+  }
   const all = () => [...M.items, ...M.inactive];
   const byKey = (k) => all().find((it) => it.key === k);
   const name = (it) => it.id || it.title;
@@ -68,7 +79,7 @@
   const nav = (active) => `<h4>Topics</h4>${topics().map((t) => `<button class="o ${t === active ? 'on' : ''}" ${go(`#/topic/${encodeURIComponent(t)}`)}>${esc(t)} · ${M.items.filter((i) => topicOf(i) === t).length}</button>`).join('')}
     ${M.inactive.length || M.deleted.length ? `<h4>History</h4>${M.inactive.map((it) => `<button class="o dim" ${go(itemHash(it))}>${ICON[it.status]} ${esc(name(it))}</button>`).join('')}${M.deleted.map((d) => `<span class="o dim" title="${esc(d.why || '')}">✕ ${esc(d.id)}</span>`).join('')}` : ''}`;
   const row = (it) => { const bb = blockedBy(it), ub = usedBy(it);
-    return `<div class="row"><span>${ICON[it.status]}</span><span>${link(it)} <span class="t">${esc(it.title)}</span></span><span>${esc(it.depth || '—')} → ${esc(it.target || '—')}</span><span>${bb.length ? `blocked by ${bb.map(link).join(', ')}` : esc(WORD[it.status])}${ub.length ? ` · used by ${ub.map(link).join(', ')}` : ''}</span></div>`; };
+    return `<div class="row"><span>${ICON[it.status]}</span><span>${link(it)} <span class="t">${esc(it.title)}</span></span><span>${esc(unbacked(it) ? `${it.shown || '—'} (${it.depth}?)` : it.depth || '—')} → ${esc(it.target || '—')}</span><span>${bb.length ? `blocked by ${bb.map(link).join(', ')}` : esc(WORD[it.status])}${ub.length ? ` · used by ${ub.map(link).join(', ')}` : ''}</span></div>`; };
   // reading order: what an item uses comes first, so "next" reads the design bottom-up
   function rankOf() {
     const rank = new Map(), r = (it, seen = new Set()) => {
@@ -117,14 +128,14 @@
     const body = shown.map((b) => (b.level === 'canvas' ? `<div class="canvas">${html(b)}</div>` : b.level === 'history' ? `<div class="history">${html(b)}</div>` : html(b))).join('');
     const succ = it.successor && byKey(it.successor);
     const banner = life(it) ? `<div class="banner">${ICON[it.status]} <b>${it.supersededBy ? `Superseded by ${esc(it.supersededBy.id)}` : 'Retired'}</b>${it.supersededBy?.reason ? `: ${esc(it.supersededBy.reason)}` : it.retired?.reason ? `: ${esc(it.retired.reason)}` : ''}. ${succ ? `Read ${link(succ)} instead; this page explains what came before.` : "Kept for its reasoning; it doesn't count."}${it.lifecycle === 'archived' ? ' (archived)' : ''}</div>` : '';
-    const depthCtl = `<span class="depth">${M.levels.map((l, i) => `<button ${go(itemHash(it, qs({ at: i })))} class="${i === at ? 'on' : ''} ${tgt >= 0 && i > tgt ? 'past' : ''}" title="${esc(l.name || '')}${tgt >= 0 && i > tgt ? ' · beyond the target' : ''}">${esc(l.id)}</button>`).join('')}</span>
+    const depthCtl = `<span class="depth">${M.levels.map((l, i) => `<button ${go(itemHash(it, qs({ at: i })))} class="${i === at ? 'on' : ''} ${tgt >= 0 && i > tgt ? 'past' : ''} ${it.levelWords && !written(it, i) ? 'empty' : ''}" title="${esc(l.name || '')}${tgt >= 0 && i > tgt ? ' · beyond the target' : ''}${it.levelWords && !written(it, i) ? ' · nothing written' : ''}">${esc(l.id)}</button>`).join('')}</span>
       ${it.blocks.some((b) => b.level === 'canvas') ? `<button class="toggle" ${go(itemHash(it, qs({ canvas: opts.canvas ? 0 : 1 })))}>${opts.canvas ? 'hide' : 'show'} canvas</button>` : ''}
       ${it.blocks.some((b) => b.level === 'history') ? `<button class="toggle" ${go(itemHash(it, qs({ history: opts.history ? 0 : 1 })))}>${opts.history ? 'hide' : 'show'} decision log</button>` : ''}`;
     const order = reading(), i = order.findIndex((x) => x.key === it.key);
     const pager = i < 0 ? '' : `<div class="pager"><span>${i > 0 ? `← <button ${go(itemHash(order[i - 1], `?at=${at}`))}>${esc(name(order[i - 1]))}</button>` : ''}</span><span class="mid">${i + 1} of ${order.length} · reading at ${esc(M.levels[at].id)}</span><span>${i < order.length - 1 ? `<button ${go(itemHash(order[i + 1], `?at=${at}`))}>${esc(name(order[i + 1]))}</button> →` : ''}</span></div>`;
     const lvTitle = (l) => { const d = M.levels.find((x) => x.id === l); return d?.name ? `${l} ${d.name}` : l; };
     const main = `${banner}<h1>${esc(it.title)}</h1>
-      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span><span class="b">depth ${esc(it.depth || '—')} · target ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
+      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span><span class="b${unbacked(it) ? ' st-gap' : ''}" title="${unbacked(it) ? `claims ${esc(it.depth)}, but a level below it has nothing written` : ''}">${unbacked(it) ? `claims ${esc(it.depth)} · shows ${esc(it.shown || 'nothing')}` : `depth ${esc(it.depth || '—')}`} · needs ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
       ${depthCtl}${body}
       ${hidden.length ? `<div class="hidden-note">${hidden.length} block${hidden.length > 1 ? 's' : ''} hidden (${[...new Set(hidden.map((b) => b.level))].map(esc).join(', ')}): ${words(hidden)} words. ${at < M.levels.length - 1 ? `<button ${go(itemHash(it, qs({ at: at + 1 })))}>Read to ${esc(lvTitle(M.levels[at + 1].id))}</button>` : ''}</div>` : ''}
       ${it.caveats ? `<p><b>Caveats.</b> ${inline(it.caveats, it.file)}</p>` : ''}${it.later.length ? `<p><b>Later.</b> ${it.later.map((l) => inline(l, it.file)).join(' · ')}</p>` : ''}${pager}`;
@@ -147,9 +158,8 @@
 
   // ---------- the map: 2D depth bars; by topic above SMALL items ----------
   function bars(it) {
-    const d = lvN(it.depth), t = lvN(it.target);
-    return `<span class="bar">${M.levels.map((l, i) => { const f = i <= d, over = f && t >= 0 && i > t, need = t >= 0 && i <= t;
-      return `<i style="background:${over ? 'var(--trim)' : f ? COLOR[it.status === 'blocked' ? 'gap' : it.status] : 'transparent'};${need || f ? '' : 'opacity:.35'};${need && !f ? 'border-style:dashed' : ''}"></i>`; }).join('')}</span>`;
+    return `<span class="bar">${M.levels.map((l, i) => { const c = cell(it, i);
+      return `<i title="${esc(c.title)}" style="background:${c.fill === 'none' ? 'transparent' : c.fill};opacity:${c.opacity};border-color:${c.stroke};${c.dash ? 'border-style:dashed' : ''}"></i>`; }).join('')}</span>`;
   }
   function mapPage(q) {
     const t = q.get('topic');
@@ -172,11 +182,12 @@
     for (const it of items) for (const u of it.uses) { const d = u.key && keys.has(u.key) && byKey(u.key); if (!d) continue;
       const a = pos.get(it.key), b = pos.get(d.key), bad = blockedBy(it).some((x) => x.key === d.key);
       s += `<path d="M${a.x} ${a.y + 28} C ${a.x - 40} ${a.y + 28}, ${b.x + cw - 10} ${b.y + 28}, ${b.x + cw - 30} ${b.y + 28}" fill="none" stroke="${bad ? 'var(--bad)' : 'var(--line)'}" stroke-width="${bad ? 2.5 : 1.4}"/>`; }
-    for (const it of items) { const { x, y } = pos.get(it.key), d = lvN(it.depth), tg = lvN(it.target), bb = blockedBy(it);
+    for (const it of items) { const { x, y } = pos.get(it.key), bb = blockedBy(it);
       s += `<g ${go(itemHash(it))} style="cursor:pointer"><rect x="${x}" y="${y}" width="${cw - 30}" height="58" rx="9" fill="var(--bg)" stroke="${COLOR[it.status]}" stroke-width="1.6"/>
         <text x="${x + 9}" y="${y + 18}" font-weight="600" fill="var(--ink)">${ICON[it.status]} ${esc(name(it)).slice(0, 28)}</text><text x="${x + 9}" y="${y + 32}" fill="var(--ink3)" font-size="11">${esc(WORD[it.status])}${bb.length ? ` by ${esc(bb.map(name).join(', ')).slice(0, 30)}` : ''}</text>`;
-      M.levels.forEach((l, i) => { const f = i <= d, over = f && tg >= 0 && i > tg, need = tg >= 0 && i <= tg;
-        s += `<rect x="${x + 9 + i * 22}" y="${y + 40}" width="19" height="9" rx="2" fill="${over ? 'var(--trim)' : f ? COLOR[it.status === 'blocked' ? 'gap' : it.status] : 'none'}" stroke="${need || f ? 'var(--ink3)' : 'var(--line)'}" ${need && !f ? 'stroke-dasharray="2 2"' : ''}/>`; });
+      M.levels.forEach((l, i) => { const c = cell(it, i);
+        s += `<rect x="${x + 9 + i * 22}" y="${y + 40}" width="19" height="9" rx="2" fill="${c.fill}" fill-opacity="${c.opacity}" stroke="${c.stroke}" ${c.dash ? 'stroke-dasharray="2 2"' : ''}><title>${esc(c.title)}</title></rect>`; });
+      if (unbacked(it)) s += `<text x="${x + 9 + M.levels.length * 22 + 4}" y="${y + 48}" fill="var(--gap)" font-size="11">claims ${esc(it.depth)}</text>`;
       s += '</g>'; }
     if (hist.length) {
       const hy = rows * ch + 50;
@@ -186,7 +197,7 @@
         if (sc && pos.has(sc.key)) { const b = pos.get(sc.key); s += `<path d="M${x + 105} ${hy - 16} L ${b.x + 40} ${b.y + 58}" stroke="var(--hist)" stroke-dasharray="4 3" fill="none"/>`; } });
     }
     return `<div class="map"><div class="crumb">${crumbs([{ label: M.root, hash: '#/' }, { label: 'map', hash: t ? '#/map' : '' }, ...(t ? [{ label: t }] : [])])}</div><h1>Map${t ? ` · ${esc(t)}` : ''}</h1>
-      <p class="legend">What an item uses is to its left. Bars: filled to the depth, dashed to the target, purple past it. Red lines block. Click an item to read it.</p>${s}</svg></div>`;
+      <p class="legend">What an item uses is to its left. Bars: filled to the depth the text shows, dashed to the target, purple past it; grey where a level is written past an empty one, red outline where a claimed level is empty. Red lines block. Click an item to read it.</p>${s}</svg></div>`;
   }
 
   // ---------- routing and live reload ----------
