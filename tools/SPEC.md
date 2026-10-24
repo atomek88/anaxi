@@ -64,7 +64,7 @@ node anaxi-render.mjs @id | @a,@b | --file GLOB | --about T | --focus F | --supe
                        [--md | --html | --json] [--out FILE]
 ```
 
-Selection and output order: [TOOLING.md §4.3](../TOOLING.md#43-a-rendered-document-anaxi-render-optional-not-built-yet).
+Selection and output order: [TOOLING.md §4.4](../TOOLING.md#44-a-rendered-document-anaxi-render-optional-not-built-yet).
 
 ## 3. Parsing
 

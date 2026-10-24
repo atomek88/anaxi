@@ -220,7 +220,7 @@ still used, as the Strata files were in 0.8.
 ### 7. Smaller things
 
 - `anaxi render` to a single file, for people who want one to attach; the reader's super-TDD covers reading
-  ([TOOLING.md §4.3](TOOLING.md#43-a-rendered-document-anaxi-render-optional-not-built-yet)).
+  ([TOOLING.md §4.4](TOOLING.md#44-a-rendered-document-anaxi-render-optional-not-built-yet)).
 - N11, recheck after a shared item changes, from git history.
 - Folder-level `anaxi.json` for monorepos.
 - Editor support: badges, hovers and diagnostics through a small language server.
