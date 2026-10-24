@@ -50,7 +50,7 @@ if [ "$VENDOR" = 1 ]; then
   if [ -e tools/anaxi ]; then say "kept     tools/anaxi (already there; replace it to upgrade)"
   else
     mkdir -p tools/anaxi
-    (cd "$METHOD" && tar cf - --exclude ./example --exclude .DS_Store .) | (cd tools/anaxi && tar xf -)
+    (cd "$METHOD" && tar cf - --exclude ./example --exclude ./.git --exclude ./prototype --exclude ./docs --exclude ./archive --exclude .DS_Store .) | (cd tools/anaxi && tar xf -)
     say "created  tools/anaxi (the method, scripts and skill)"
   fi
   RUN="tools/anaxi"

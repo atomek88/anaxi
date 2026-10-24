@@ -15,5 +15,5 @@ quiet(async () => {
   const lines = out.split('\n');
   const shown = lines.length > 40 ? [...lines.slice(0, 40), `… ${lines.length - 40} more lines: run /anaxi:status`] : lines;
   console.log(`Anaxi project (design depth, from ${path.relative(cwd, cfg.file) || 'anaxi.json'}):\n${shown.join('\n')}\n` +
-    'Use the anaxi skill before designing or building a marked item. Commands: /anaxi:status, /anaxi:assess <file|@id>, /anaxi:gate @id, /anaxi:init.');
+    'Use the anaxi skill before designing or building a marked item. Commands: /anaxi:status, /anaxi:assess <file|@id>, /anaxi:gate @id, /anaxi:watch, /anaxi:init. MCP tools: anaxi_context (what to read before building), anaxi_gate, anaxi_status.');
 });

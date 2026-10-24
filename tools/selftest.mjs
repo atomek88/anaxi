@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { loadConfig } from './lib/config.mjs';
 import { evaluate, gate } from './lib/engine.mjs';
 import { transition } from './lib/lifecycle.mjs';
+import { blocks, visible, words, context } from './lib/read.mjs';
+import { spawn, execFileSync } from 'node:child_process';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 let fails = 0;
@@ -137,6 +139,39 @@ fs.writeFileSync(path.join(lc, 'f', 'a.md'), A);
 ok(m().nudges.some((n) => n.code === 'N21' && n.item === '@a'), 'N21: a deleted id used again');
 fs.rmSync(lc, { recursive: true });
 fs.rmSync(dir, { recursive: true });
+
+// reading at a depth (tools/lib/read.mjs): levels from headings and lead-ins, deeper never shows less, nothing lost
+for (const it of ex.all) {
+  const bs = blocks(ex, it), w = [0, 1, 2, 3, 4].map((d) => words(bs.filter((b) => visible(b, d))));
+  ok(w.every((x, i) => !i || x >= w[i - 1]), `read: ${it.id || it.title} shows more at each depth (${w.join('/')})`);
+  ok(words(bs.filter((b) => visible(b, 4, { canvas: true, history: true }))) === words(bs.filter((b) => b.kind !== 'mark')), `read: ${it.id || it.title} loses no text`);
+}
+const settings = blocks(ex, ex.byId.get('@settings'));
+ok(settings.some((b) => b.level === 'D0' && /^\*\*Why/.test(b.text[0])) && settings.some((b) => b.level === 'D1' && /^\*\*What/.test(b.text[0])), 'read: a paragraph with two lead-ins is split into two levels');
+ok(!blocks(ex, ex.byId.get('@recurring')).some((b) => b.kind === 'para' && /^day; deleting/.test(b.text[0])), 'read: a wrapped list item stays in its item');
+ok(blocks(ex, ex.byId.get('@recurring')).some((b) => b.file === 'features/APPENDIX.md' && b.level === 'D3'), 'read: parts are read inline, at their level');
+const cx = context(ex, ex.byId.get('@polling-sync'));
+ok(cx.item.id === '@scheduler' && /successor/.test(cx.note), 'context: a superseded item is replaced by its successor');
+ok(context(ex, ex.byId.get('@polling-sync'), { history: true }).item.id === '@polling-sync', 'context: history reads the old item itself');
+const rc = context(ex, ex.byId.get('@recurring'), { at: 'D1' });
+ok(rc.item.at === 'D1' && rc.uses.map((u) => u.id).sort().join() === '@scheduler,@stack,@task-api' && rc.item.words < context(ex, ex.byId.get('@recurring')).item.words, 'context: the item at a depth, plus each use once');
+
+// the MCP server answers over stdio, and the reader serves the model (both from the example)
+const mcp = execFileSync('node', [path.join(HERE, 'anaxi-mcp.mjs'), '--dir', path.join(HERE, '..', 'example')], { encoding: 'utf8', input: [
+  { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18' } }, { jsonrpc: '2.0', method: 'notifications/initialized' },
+  { jsonrpc: '2.0', id: 2, method: 'tools/list' }, { jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'anaxi_gate', arguments: { id: '@recurring' } } },
+  { jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'anaxi_gate', arguments: { id: '@nope' } } }].map((m) => JSON.stringify(m)).join('\n') + '\n' })
+  .trim().split('\n').map((l) => JSON.parse(l));
+ok(mcp.length === 4 && mcp[0].result.serverInfo.name === 'anaxi', 'mcp: initialize (and no reply to a notification)');
+ok(mcp[1].result.tools.some((t) => t.name === 'anaxi_context'), 'mcp: tools/list has anaxi_context');
+ok(JSON.parse(mcp[2].result.content[0].text).ready === false, 'mcp: anaxi_gate answers');
+ok(mcp[3].result.isError && /no item/.test(mcp[3].result.content[0].text), 'mcp: a bad id is a tool error, not a crash');
+const watch = spawn('node', [path.join(HERE, 'anaxi-watch.mjs'), '--dir', path.join(HERE, '..', 'example'), '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
+const url = await new Promise((res) => { let out = ''; watch.stdout.on('data', (d) => { out += d; const m = out.match(/http:\/\/[^\s]+/); if (m) res(m[0]); }); setTimeout(() => res(null), 5000); });
+const api = url && await fetch(`${url}api/model`).then((r) => r.json()).catch(() => null);
+ok(api?.items?.length === ex.items.length && api.items.every((i) => Array.isArray(i.blocks)) && api.inactive.some((i) => i.id === '@polling-sync'), 'watch: /api/model serves the items with their blocks');
+ok(url && (await fetch(url).then((r) => r.text())).includes('/app.js'), 'watch: serves the reader page');
+watch.kill();
 
 console.log(fails ? `${fails} failed` : 'selftest ok');
 process.exit(fails ? 1 : 0);

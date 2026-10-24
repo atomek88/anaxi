@@ -15,6 +15,7 @@
 //   anaxi-check restore   @id                                      back to current (and out of the archive)
 //   anaxi-check delete    @id [--force]                            remove an archived file; RETIRED.md keeps its id
 //   (the five lifecycle commands take --dry-run)
+//   anaxi-check context   @id [--at Dn] [--history] [--json]       the item at a depth + what it uses, for building
 //
 // Every command takes --dir DIR (default: the current folder); anaxi.json is found by searching upward.
 import fs from 'node:fs';
@@ -23,12 +24,13 @@ import { execFileSync } from 'node:child_process';
 import { loadConfig, globRe, LV, lv, top as topLevel, METHOD_DIR } from './lib/config.mjs';
 import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText } from './lib/engine.mjs';
 import { transition } from './lib/lifecycle.mjs';
+import { context } from './lib/read.mjs';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0] && !argv[0].startsWith('--') ? argv.shift() : 'status';
 const flag = (n) => argv.includes(`--${n}`);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--json', '--all', '--check', '--path', '--repeated', '--skips', '--small', '--force', '--dry-run'].includes(argv[i - 1])));
+const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--json', '--all', '--check', '--path', '--repeated', '--skips', '--small', '--force', '--dry-run', '--history'].includes(argv[i - 1])));
 
 function die(msg, code = 2) { console.error(`anaxi-check: ${msg}`); process.exit(code); }
 
@@ -273,6 +275,20 @@ switch (cmd) {
     break;
   }
 
+  case 'context': {
+    const it = find(positional[0]);
+    if (opt('at') && lv(opt('at')) < 0) die(`--at ${opt('at')}: this project's levels are ${LV(0)}–${LV(topLevel())}`);
+    const c = context(model, it, { at: opt('at'), history: flag('history') });
+    c.gate = gate(model, it.successor && !flag('history') && it.lifecycle !== 'current' ? it.successor : it);
+    if (flag('json')) { json(c); break; }
+    const head = (x) => `# ${x.id || x.title} · ${x.title} · read at ${x.at} (depth ${x.depth || '—'}, target ${x.target || '—'}) · ${x.file}:${x.line}`;
+    if (c.note) console.log(`> ${c.note}\n`);
+    console.log(`${head(c.item)}\n\n${c.item.markdown}`);
+    for (const u of c.uses) console.log(`\n---\n\n${head(u)} · used by ${u.via}${u.replaces ? ` (replaces ${u.replaces})` : ''}\n\n${u.markdown}`);
+    console.log(`\n---\n${c.gate.ready ? 'N09 READY' : `N09 BLOCKED: ${c.gate.why.join(' · ')}`}`);
+    break;
+  }
+
   case 'supersede': case 'retire': case 'archive': case 'restore': case 'delete': {
     try {
       const r = transition(model, cmd, { item: find(positional[0]), by: opt('by') && find(opt('by')), why: opt('why'),
@@ -284,5 +300,5 @@ switch (cmd) {
   }
 
   default:
-    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new, supersede, retire, archive, restore, delete`);
+    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new, context, supersede, retire, archive, restore, delete`);
 }
