@@ -13,7 +13,7 @@ code { background: var(--fill); padding: 0 4px; border-radius: 4px; font-size: .
 .top .live.off { color: var(--ink3); }
 .loading, .err { padding: 30px; color: var(--ink3); }
 .err { color: var(--bad); }
-.vw { display: grid; grid-template-columns: 200px minmax(0, 1fr) 260px; gap: 26px; padding: 18px 22px 60px; max-width: 1400px; }
+.vw { display: grid; grid-template-columns: 240px minmax(0, 1fr) 290px; gap: 26px; padding: 18px 22px 60px; max-width: 1400px; }
 @media (max-width: 980px) { .vw { grid-template-columns: 1fr; } .vw-nav, .vw-rail { border: 0 !important; padding: 0 !important; } }
 .vw-nav { font-size: 13.5px; border-right: 1px solid var(--line); padding-right: 14px; }
 .vw-rail { font-size: 13.5px; border-left: 1px solid var(--line); padding-left: 14px; }
@@ -65,3 +65,45 @@ li.check { list-style: none; margin-left: -20px; } li.check.open { color: var(--
 .topic .c { font-size: 12.5px; color: var(--ink3); }
 .bar { display: inline-flex; gap: 2px; vertical-align: middle; }
 .bar i { width: 14px; height: 7px; border-radius: 2px; border: 1px solid var(--ink3); display: inline-block; }
+/* item page: file tree with connection lines, folded levels, related chips, minimap, peek */
+.tree { position: relative; font-size: 12.5px; }
+.tree-lines { position: absolute; left: 0; top: 0; overflow: visible; }
+.tr { display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr.dir { color: var(--ink3); font-size: 11.5px; }
+.tr.file { cursor: pointer; color: var(--ink2); padding-left: 8px; border-radius: 4px; }
+.tr.file:hover { background: var(--fill); }
+.tr.file.here { font-weight: 700; color: var(--ink); background: var(--fill); }
+.tr.file.rel { color: var(--ink); }
+.tr.file.dim { opacity: .55; }
+.tr .t { color: var(--ink3); font-size: 10.5px; margin-left: 5px; }
+.tree-key { font-size: 10.5px; margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+.related { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 10px; font-size: 13px; align-items: center; }
+.chips { display: inline-flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.chips > .t { color: var(--ink3); font-size: 11.5px; }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: 12.5px; color: var(--ink); }
+.chip:hover { border-color: var(--accent); }
+.chip.bad { border-color: var(--bad); }
+.chip .t { color: var(--ink3); font-size: 11px; }
+.readbar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.readbar > .t { font-size: 11.5px; color: var(--ink3); margin-bottom: 8px; }
+.fold { display: block; width: 100%; margin: 6px 0; padding: 6px 10px; border: 1px dashed var(--line); border-radius: 8px; font-size: 13px; color: var(--ink2); }
+.fold:hover { border-color: var(--accent); color: var(--ink); background: var(--fill); }
+.fold.on { border-style: solid; border-color: transparent; background: none; padding: 2px 0; margin: 10px 0 0; color: var(--ink3); font-size: 12px; }
+.fold .t { color: var(--ink3); }
+.fold.gapline { cursor: default; border-color: var(--bad); color: var(--bad); background: none; }
+.tr.dir .t { margin-left: 6px; font-size: 10.5px; color: var(--accent); }
+.vw-nav h4 .t { float: right; text-transform: none; letter-spacing: 0; font-size: 11px; }
+.run.unfolded { border-left: 3px solid var(--accent); padding-left: 12px; margin-left: -15px; }
+.run.canvas.unfolded { border-left-color: #b39ddb; } .run.history.unfolded { border-left-color: var(--hist); }
+.mini { display: block; margin: 4px 0 6px; overflow: visible; }
+.mini g[data-peek]:hover rect, .mini g[data-jump]:hover rect { stroke: var(--accent); }
+.vw-rail h4 .t { float: right; text-transform: none; letter-spacing: 0; font-size: 11px; }
+.peek { position: fixed; z-index: 10; width: 320px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.16); padding: 10px 12px; font-size: 13px; pointer-events: none; }
+.peek .t { color: var(--ink3); }
+.pk-m { font-size: 12px; color: var(--ink2); margin: 4px 0; display: flex; align-items: center; gap: 6px; }
+.pk-r { font-size: 12px; color: var(--accent); margin-bottom: 4px; }
+.pk-b { font-size: 12.5px; line-height: 1.45; color: var(--ink2); }
+.pk-f { font-size: 11px; color: var(--ink3); margin-top: 6px; }
+@media (min-width: 981px) { .vw-nav, .vw-rail { position: sticky; top: 52px; align-self: start; max-height: calc(100vh - 60px); overflow-y: auto; } }
+@media (max-width: 980px) { .tree-key { display: none; } }

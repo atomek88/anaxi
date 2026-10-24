@@ -1,5 +1,5 @@
 // anaxi watch · the reader (served by tools/anaxi-watch.mjs). Read-only, no dependencies.
-// Routes: #/ overview · #/topic/<t> · #/item/<key>?at=2&canvas=1&history=1 · #/map[?topic=<t>]
+// Routes: #/ overview · #/topic/<t> · #/item/<key>?at=2 · #/map[?topic=<t>]
 (() => {
   const app = document.getElementById('app');
   let M = null; // the model from /api/model
@@ -29,7 +29,7 @@
   const life = (it) => it.lifecycle && it.lifecycle !== 'current';
   const go = (h) => `data-go="${esc(h)}"`;
   const itemHash = (it, q = '') => `#/item/${encodeURIComponent(it.key)}${q}`;
-  const link = (it) => (it ? `<button ${go(itemHash(it))}>${esc(name(it))}</button>` : '');
+  const link = (it) => (it ? `<button ${go(itemHash(it))} data-peek="${esc(it.key)}">${esc(name(it))}</button>` : '');
   const usedBy = (it) => M.items.filter((o) => o.uses.some((u) => u.key === it.key));
   const blockedBy = (it) => M.nudges.filter((n) => n.item === it.key && n.code === 'N02' && n.severity === 'block')
     .map((n) => it.uses.map((u) => byKey(u.key)).find((d) => d && n.message.includes(name(d)))).filter(Boolean);
@@ -120,41 +120,186 @@
     return shell(crumbs([{ label: M.root, hash: '#/' }, { label: t }]), nav(t), main, '');
   }
 
+  // ---------- the item page: a file tree with its connections (left), the doc with levels folded inline (middle),
+  // and a minimap of its levels and neighbours (right). Hovering anything with data-peek previews it in place.
+  const TREE_MAX = 25; // above this many files the tree shows only this item's connected files, until asked
+  let treeAll = false;
+  const open = new Set(); // "key|level" levels unfolded past the reading depth, kept across live reloads
+  const REL = { uses: 'uses', 'used-by': 'used by', mentions: 'mentions', 'mentioned-by': 'mentioned by', supersedes: 'replaces',
+    'superseded-by': 'replaced by', inside: 'inside', contains: 'contains' };
+  const RELCOLOR = { uses: 'var(--ink2)', 'used-by': 'var(--accent)', mentions: 'var(--ink3)', 'mentioned-by': 'var(--ink3)',
+    supersedes: 'var(--hist)', 'superseded-by': 'var(--hist)', inside: 'var(--ink3)', contains: 'var(--ink3)', part: 'var(--trim)' };
+  const lvName = (l) => { const d = M.levels.find((x) => x.id === l); return d?.name || (l === 'canvas' ? 'canvas' : l === 'history' ? 'decision log' : ''); };
+  const relOf = (it) => (it.related || []).map((r) => ({ ...r, item: byKey(r.key) })).filter((r) => r.item);
+  const miniBar = (it, w = 9, h = 5, gap = 1.5, x0 = 0, y0 = 0) => M.levels.map((l, i) => { const c = cell(it, i);
+    return `<rect x="${x0 + i * (w + gap)}" y="${y0}" width="${w}" height="${h}" rx="1" fill="${c.fill}" fill-opacity="${c.opacity}" stroke="${c.stroke}" stroke-width=".8"/>`; }).join('');
+
+  /** Contiguous blocks at one level form a run; a run deeper than the reading depth folds into one line. */
+  function runs(it) {
+    const out = [];
+    for (const b of it.blocks) {
+      if (b.kind === 'mark' || b.kind === 'title') continue;
+      const k = b.level === 'canvas' || b.level === 'history' || lvN(b.level) >= 0 ? b.level : null;
+      const last = out[out.length - 1];
+      if (last && last.level === k) last.blocks.push(b); else out.push({ level: k, blocks: [b] });
+    }
+    return out;
+  }
+  const runLabel = (r) => { const h = r.blocks.find((b) => b.kind === 'heading'), l = r.blocks.find((b) => b.lead);
+    const t = h ? h.text[0].replace(/`[^`]*`/g, '').trim() : l ? (l.text[0].match(/^\*\*([^*.]+)/) || [])[1] : '';
+    return t && t.toLowerCase() !== lvName(r.level).toLowerCase() ? t : ''; };
+  const isOpen = (it, level, at) => (level == null ? true : level === 'canvas' || level === 'history' ? open.has(`${it.key}|${level}`) : lvN(level) <= at || open.has(`${it.key}|${level}`));
+
+  function docBody(it, at) {
+    let seen = new Set();
+    const rs = runs(it), upto = Math.max(lvN(it.depth), lvN(it.target));
+    for (let i = 0; i <= upto; i++) { // a level the claim or the target needs, with nothing written: say so where it would be
+      const l = M.levels[i].id; if (written(it, i) || !it.levelWords) continue;
+      const k = rs.findIndex((r) => lvN(r.level) > i);
+      rs.splice(k < 0 ? rs.length : k, 0, { level: l, blocks: [], empty: true, claimed: i <= lvN(it.depth) });
+    }
+    return rs.map((r) => {
+      if (r.empty) return `<div class="fold gapline"${seen.has(r.level) ? '' : ` id="lv-${esc(r.level)}"`}><span class="lv">${esc(r.level)}</span> <b>${esc(lvName(r.level))}</b> · nothing written yet${r.claimed ? ` <span class="t">— the claim of ${esc(it.depth)} counts only up to ${esc(it.shown || 'nothing')}</span>` : ' <span class="t">— needed for the target</span>'}</div>`;
+      const first = !seen.has(r.level); seen.add(r.level);
+      const anchor = first && r.level ? ` id="lv-${esc(r.level)}"` : '';
+      const lvTag = r.level ? `<span class="lv">${esc(r.level)}</span>` : '';
+      const part = r.blocks.find((b) => b.part)?.part, partTag = part ? `<span class="partof">part · ${esc(r.blocks.find((b) => b.part).file)}</span>` : '';
+      const cls = r.level === 'canvas' ? 'canvas' : r.level === 'history' ? 'history' : '';
+      if (!isOpen(it, r.level, at)) {
+        return `<button class="fold"${anchor} data-fold="${esc(r.level)}" title="Show this ${esc(r.level)} part here">▸ ${lvTag} <b>${esc(lvName(r.level))}</b>${runLabel(r) ? ` · ${esc(runLabel(r))}` : ''} <span class="t">· ${words(r.blocks)} words</span>${partTag}</button>`;
+      }
+      const deeper = r.level && (r.level === 'canvas' || r.level === 'history' || lvN(r.level) > at);
+      const head = deeper ? `<button class="fold on" data-fold="${esc(r.level)}" title="Fold it again">▾ ${lvTag} <b>${esc(lvName(r.level))}</b></button>` : '';
+      return `<section class="run ${cls} ${deeper ? 'unfolded' : ''}"${anchor} data-run="${esc(r.level || '')}">${head}${r.blocks.map(html).join('')}</section>`;
+    }).join('');
+  }
+
+  /** Left: every doc file, folders as rows; lines from this item's file to each file it's connected to. */
+  function fileTree(it) {
+    const files = [...new Set([...(M.files || []), ...all().map((x) => x.file)])].sort();
+    const relFiles = new Set([it.file, ...relOf(it).map((r) => r.item.file), ...(it.parts || []).map((p) => p.file)]);
+    const compact = files.length > TREE_MAX && !treeAll;
+    const dirOf = (f) => (f.includes('/') ? f.slice(0, f.lastIndexOf('/')) : '');
+    const rows = [];
+    let dir = null;
+    for (const f of files) { const d = dirOf(f);
+      if (d !== dir) { dir = d; const hid = compact ? files.filter((x) => dirOf(x) === d && !relFiles.has(x)).length : 0; if (d || hid) rows.push({ dir: d || '.', hid }); }
+      if (!compact || relFiles.has(f)) rows.push({ file: f, name: f.slice(f.lastIndexOf('/') + 1) }); }
+    const mainOf = (f) => (all().some((x) => x.file === f) ? null : all().find((x) => (x.parts || []).some((p) => p.file === f))) || all().filter((x) => x.file === f).sort((a, b) => (a.declared === 'front-matter' ? -1 : 0) - (b.declared === 'front-matter' ? -1 : 0) || (a.parent ? 1 : 0) - (b.parent ? 1 : 0))[0];
+    const rel = new Map();
+    const note = (f, kind, extra = {}) => { if (f === it.file && kind !== 'part') return; if (!rel.has(f)) rel.set(f, { kinds: new Set(), blocked: false }); const r = rel.get(f); r.kinds.add(kind); if (extra.blocked) r.blocked = true; };
+    for (const r of relOf(it)) note(r.item.file, r.kind, r);
+    for (const p of it.parts || []) note(p.file, 'part');
+    const RH = 22, G = 30;
+    const y = (i) => i * RH + RH / 2;
+    const me = rows.findIndex((r) => r.file === it.file);
+    let svg = '';
+    rows.forEach((r, i) => { if (!r.file || !rel.has(r.file) || r.file === it.file) return;
+      const x = rel.get(r.file), k = [...x.kinds][0], dy = Math.abs(i - me), bend = Math.max(3, G - 4 - Math.min(G - 8, dy * 3));
+      const color = x.blocked ? 'var(--bad)' : RELCOLOR[k];
+      svg += `<path d="M${G} ${y(me)} C ${bend} ${y(me)}, ${bend} ${y(i)}, ${G} ${y(i)}" fill="none" stroke="${color}" stroke-width="${x.blocked ? 2 : 1.3}" ${k.startsWith('mention') || k === 'inside' || k === 'contains' ? 'stroke-dasharray="3 3"' : ''}/><circle cx="${G}" cy="${y(i)}" r="2.5" fill="${color}"/>`; });
+    if (me >= 0 && rel.size) svg += `<circle cx="${G}" cy="${y(me)}" r="3.5" fill="var(--accent)"/>`;
+    const list = rows.map((r) => {
+      if (r.dir) return `<div class="tr dir" style="height:${RH}px">${esc(r.dir)}/${r.hid ? `<button class="t" data-tree="all">+${r.hid} unrelated</button>` : ''}</div>`;
+      const m = mainOf(r.file), x = rel.get(r.file), here = r.file === it.file;
+      const kinds = x ? [...x.kinds].map((k) => (k === 'part' ? 'part' : REL[k] || k)).join(', ') : m && m.file !== r.file ? `part of ${name(m)}` : '';
+      return `<div class="tr file ${here ? 'here' : ''} ${x ? 'rel' : ''} ${m && life(m) ? 'dim' : ''}" style="height:${RH}px" ${m ? `${go(itemHash(m))} data-peek="${esc(m.key)}"` : ''} title="${esc(r.file)}${kinds ? ` · ${esc(kinds)}` : ''}">${m ? ICON[m.status] : '·'} ${esc(r.name)}${kinds ? `<span class="t"> ${esc(kinds)}</span>` : ''}</div>`;
+    }).join('');
+    return `<h4>Files ${files.length > TREE_MAX ? `<button class="t" data-tree="${treeAll ? 'related' : 'all'}">${treeAll ? 'only connected' : `all ${files.length}`}</button>` : ''}</h4><div class="tree"><svg class="tree-lines" width="${G + 2}" height="${rows.length * RH}">${svg}</svg><div class="tree-rows" style="margin-left:${G + 4}px">${list}</div></div>
+      <div class="tree-key"><span style="color:var(--ink2)">─ uses</span> <span style="color:var(--accent)">─ used by</span> <span style="color:var(--ink3)">┄ mentions</span> <span style="color:var(--bad)">─ blocks</span></div>`;
+  }
+
+  /** Right: this item's levels as a stack, what it uses on the left, what uses it on the right, the rest below. */
+  function minimap(it, at) {
+    const W = 272, L = M.levels.length, sx = 101, sw = 70, rh = 26, top = 26;
+    const stackH = L * rh, cy = top + stackH / 2;
+    const rels = relOf(it), left = rels.filter((r) => r.kind === 'uses'), right = rels.filter((r) => r.kind === 'used-by'),
+      below = rels.filter((r) => r.kind !== 'uses' && r.kind !== 'used-by');
+    const nh = 34, ngap = 8, MAX = 6;
+    const col = (list) => { const shown = list.slice(0, list.length > MAX ? MAX - 1 : MAX), more = list.length - shown.length;
+      const h = shown.length * (nh + ngap) - ngap, y0 = Math.max(top, cy - h / 2); return { shown, more, y0 }; };
+    const lc = col(left), rc = col(right);
+    const sideH = Math.max(lc.y0 + lc.shown.length * (nh + ngap) + (lc.more ? 16 : 0), rc.y0 + rc.shown.length * (nh + ngap) + (rc.more ? 16 : 0));
+    const by = Math.max(top + stackH, sideH) + 28, bcols = 3, bw = (W - 8) / bcols;
+    const H = by + (below.length ? Math.ceil(below.length / bcols) * (nh + ngap) + 16 : 0) + 4;
+    let s = `<svg class="mini" viewBox="0 0 ${W} ${H}" width="100%" style="font:10.5px system-ui">`;
+    s += `<text x="${sx + sw / 2}" y="14" text-anchor="middle" font-weight="700" fill="var(--ink)">${esc(name(it)).slice(0, 18)}</text>`;
+    // the stack: one row per level, click to unfold that level in place
+    M.levels.forEach((l, i) => { const c = cell(it, i), y = top + i * rh, on = isOpen(it, l.id, at);
+      s += `<g data-jump="${esc(l.id)}" style="cursor:pointer"><title>${esc(c.title)}${it.blocks.some((b) => b.level === l.id) ? ' · click to read it here' : ''}</title>
+        <rect x="${sx}" y="${y}" width="${sw}" height="${rh - 4}" rx="4" fill="${c.fill === 'none' ? 'var(--bg)' : c.fill}" fill-opacity="${c.fill === 'none' ? 1 : Math.min(c.opacity, 0.85)}" stroke="${on ? 'var(--accent)' : c.stroke}" stroke-width="${on ? 2 : 1}" ${c.dash ? 'stroke-dasharray="3 2"' : ''}/>
+        <text x="${sx + 7}" y="${y + 15}" fill="${c.fill === 'none' || c.opacity < 1 ? 'var(--ink2)' : '#fff'}" font-weight="600">${esc(l.id)}</text>
+        <text x="${sx + 25}" y="${y + 15}" fill="${c.fill === 'none' || c.opacity < 1 ? 'var(--ink3)' : '#fff'}">${esc((l.name || '').slice(0, 8))}</text></g>`;
+      const part = (it.parts || []).length && it.blocks.find((b) => b.part && b.level === l.id);
+      if (part) s += `<text x="${sx + sw + 1}" y="${y + 15}" font-size="9" fill="var(--trim)"><title>part: ${esc(part.file)}</title>📎</text>`; });
+    if (lvN(it.target) >= 0) { const ty = top + (lvN(it.target) + 1) * rh - 3; s += `<line x1="${sx - 3}" x2="${sx + sw + 3}" y1="${ty}" y2="${ty}" stroke="var(--ink)" stroke-dasharray="2 2"><title>needs ${esc(it.target)}: everything above this line</title></line>`; }
+    const node = (r, x, y, w) => { const o = r.item;
+      return `<g ${go(itemHash(o))} data-peek="${esc(o.key)}" data-rel="${esc(REL[r.kind] || r.kind)}" style="cursor:pointer"><rect x="${x}" y="${y}" width="${w}" height="${nh}" rx="6" fill="var(--bg)" stroke="${r.blocked ? 'var(--bad)' : COLOR[o.status]}" stroke-width="1.3" ${life(o) ? 'stroke-dasharray="3 2"' : ''}/>
+        <text x="${x + 5}" y="${y + 13}" fill="var(--ink)" font-weight="600">${esc(name(o)).slice(0, Math.floor(w / 6.2))}</text>${miniBar(o, 7, 5, 1.5, x + 5, y + 21)}${r.level && (r.kind === 'uses' || r.kind === 'used-by') ? `<text x="${x + 5 + L * 8.5 + 3}" y="${y + 27}" font-size="9" fill="${r.blocked ? 'var(--bad)' : 'var(--ink3)'}">${r.kind === 'uses' ? `${esc(o.shown || o.depth || '—')} of ${esc(r.level)}` : `needs ${esc(r.level)}`}</text>` : ''}</g>`; };
+    const edge = (x1, y1, x2, y2, r) => `<path d="M${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}" fill="none" stroke="${r.blocked ? 'var(--bad)' : RELCOLOR[r.kind]}" stroke-width="${r.blocked ? 2 : 1.2}" ${r.kind.startsWith('mention') || r.kind === 'inside' || r.kind === 'contains' ? 'stroke-dasharray="3 3"' : ''}><title>${esc(REL[r.kind] || r.kind)}${r.level ? ` · needs ${esc(r.level)}` : ''}${r.blocked ? ' · not deep enough yet' : ''}</title></path>`;
+    // an edge from a used item meets the stack at the level that's needed of it, so you can see how deep it must go
+    const lvY = (l) => (lvN(l) >= 0 ? top + lvN(l) * rh + (rh - 4) / 2 : cy);
+    lc.shown.forEach((r, k) => { const y = lc.y0 + k * (nh + ngap); s += edge(93, y + nh / 2, sx, cy, r) + node(r, 1, y, 92); });
+    rc.shown.forEach((r, k) => { const y = rc.y0 + k * (nh + ngap); s += edge(sx + sw, lvY(r.level), W - 93, y + nh / 2, r) + node(r, W - 93, y, 92); });
+    if (lc.more) s += `<text x="4" y="${lc.y0 + lc.shown.length * (nh + ngap) + 10}" fill="var(--ink3)">+${lc.more} more uses</text>`;
+    if (rc.more) s += `<text x="${W - 93}" y="${rc.y0 + rc.shown.length * (nh + ngap) + 10}" fill="var(--ink3)">+${rc.more} more</text>`;
+    if (left.length) s += `<text x="2" y="${top - 8}" fill="var(--ink3)" font-size="9">USES</text>`;
+    if (right.length) s += `<text x="${W - 2}" y="${top - 8}" fill="var(--ink3)" font-size="9" text-anchor="end">USED BY</text>`;
+    if (below.length) {
+      s += `<text x="2" y="${by - 8}" fill="var(--ink3)" font-size="9">RELATED</text>`;
+      below.forEach((r, k) => { const x = 2 + (k % bcols) * bw, y = by + Math.floor(k / bcols) * (nh + ngap);
+        s += edge(sx + sw / 2, top + stackH - 4, x + (bw - 6) / 2, y, r) + node(r, x, y, bw - 6) + `<text x="${x + 4}" y="${y + nh + 7}" fill="var(--ink3)" font-size="8.5">${esc(REL[r.kind] || r.kind)}</text>`; });
+    }
+    if (!rels.length) s += `<text x="${W / 2}" y="${top + stackH + 18}" text-anchor="middle" fill="var(--ink3)">not connected to anything yet</text>`;
+    return `${s}</svg>`;
+  }
+
   function itemPage(it, q) {
-    const opts = { canvas: q.get('canvas') === '1', history: q.get('history') === '1' };
-    const tgt = lvN(it.target), at = q.has('at') ? Math.min(+q.get('at'), M.levels.length - 1) : Math.max(lvN(it.depth), 0);
-    const shown = it.blocks.filter((b) => visible(b, at, opts)), hidden = it.blocks.filter((b) => b.kind !== 'mark' && b.kind !== 'title' && !visible(b, at, opts));
-    const qs = (o) => { const p = new URLSearchParams({ at, ...(opts.canvas ? { canvas: 1 } : {}), ...(opts.history ? { history: 1 } : {}), ...o }); for (const [k, v] of [...p]) if (v === '0' && k !== 'at') p.delete(k); return `?${p}`; };
-    const body = shown.map((b) => (b.level === 'canvas' ? `<div class="canvas">${html(b)}</div>` : b.level === 'history' ? `<div class="history">${html(b)}</div>` : html(b))).join('');
+    const at = q.has('at') ? Math.min(+q.get('at'), M.levels.length - 1) : Math.max(lvN(it.depth), 0);
+    const tgt = lvN(it.target);
     const succ = it.successor && byKey(it.successor);
     const banner = life(it) ? `<div class="banner">${ICON[it.status]} <b>${it.supersededBy ? `Superseded by ${esc(it.supersededBy.id)}` : 'Retired'}</b>${it.supersededBy?.reason ? `: ${esc(it.supersededBy.reason)}` : it.retired?.reason ? `: ${esc(it.retired.reason)}` : ''}. ${succ ? `Read ${link(succ)} instead; this page explains what came before.` : "Kept for its reasoning; it doesn't count."}${it.lifecycle === 'archived' ? ' (archived)' : ''}</div>` : '';
-    const depthCtl = `<span class="depth">${M.levels.map((l, i) => `<button ${go(itemHash(it, qs({ at: i })))} class="${i === at ? 'on' : ''} ${tgt >= 0 && i > tgt ? 'past' : ''} ${it.levelWords && !written(it, i) ? 'empty' : ''}" title="${esc(l.name || '')}${tgt >= 0 && i > tgt ? ' · beyond the target' : ''}${it.levelWords && !written(it, i) ? ' · nothing written' : ''}">${esc(l.id)}</button>`).join('')}</span>
-      ${it.blocks.some((b) => b.level === 'canvas') ? `<button class="toggle" ${go(itemHash(it, qs({ canvas: opts.canvas ? 0 : 1 })))}>${opts.canvas ? 'hide' : 'show'} canvas</button>` : ''}
-      ${it.blocks.some((b) => b.level === 'history') ? `<button class="toggle" ${go(itemHash(it, qs({ history: opts.history ? 0 : 1 })))}>${opts.history ? 'hide' : 'show'} decision log</button>` : ''}`;
+    const depthCtl = `<span class="depth" title="How deep to read: keys 0–${M.levels.length - 1}, or [ and ]">${M.levels.map((l, i) => `<button ${go(itemHash(it, `?at=${i}`))} class="${i === at ? 'on' : ''} ${tgt >= 0 && i > tgt ? 'past' : ''} ${it.levelWords && !written(it, i) ? 'empty' : ''}" title="${esc(l.name || '')}${tgt >= 0 && i > tgt ? ' · beyond the target' : ''}${it.levelWords && !written(it, i) ? ' · nothing written' : ''}">${esc(l.id)}</button>`).join('')}</span>`;
+    const rels = relOf(it);
+    const chips = Object.keys(REL).map((k) => { const l = rels.filter((r) => r.kind === k); return l.length ? `<span class="chips"><span class="t">${esc(REL[k])}</span> ${l.map((r) => `<button class="chip ${r.blocked ? 'bad' : ''}" ${go(itemHash(r.item))} data-peek="${esc(r.item.key)}" data-rel="${esc(REL[k])}">${ICON[r.item.status]} ${esc(name(r.item))}${r.level && k === 'uses' ? ` <span class="t">${esc(r.level)}</span>` : ''}</button>`).join('')}</span>` : ''; }).join('');
+    const partChips = (it.parts || []).length ? `<span class="chips"><span class="t">parts</span> ${it.parts.map((p) => { const b = it.blocks.find((x) => x.file === p.file && x.level && lvN(x.level) >= 0); return `<button class="chip" ${b ? `data-jump="${esc(b.level)}"` : ''} title="${esc(p.file)}: shown inline${b ? ` at ${esc(b.level)}` : ''}">📎 ${esc(p.file.split('/').pop())}${b ? ` <span class="t">${esc(b.level)}</span>` : ''}</button>`; }).join('')}</span>` : '';
     const order = reading(), i = order.findIndex((x) => x.key === it.key);
-    const pager = i < 0 ? '' : `<div class="pager"><span>${i > 0 ? `← <button ${go(itemHash(order[i - 1], `?at=${at}`))}>${esc(name(order[i - 1]))}</button>` : ''}</span><span class="mid">${i + 1} of ${order.length} · reading at ${esc(M.levels[at].id)}</span><span>${i < order.length - 1 ? `<button ${go(itemHash(order[i + 1], `?at=${at}`))}>${esc(name(order[i + 1]))}</button> →` : ''}</span></div>`;
-    const lvTitle = (l) => { const d = M.levels.find((x) => x.id === l); return d?.name ? `${l} ${d.name}` : l; };
+    const pager = i < 0 ? '' : `<div class="pager"><span>${i > 0 ? `← <button ${go(itemHash(order[i - 1], `?at=${at}`))} data-peek="${esc(order[i - 1].key)}">${esc(name(order[i - 1]))}</button>` : ''}</span><span class="mid">${i + 1} of ${order.length} · reading at ${esc(M.levels[at].id)}</span><span>${i < order.length - 1 ? `<button ${go(itemHash(order[i + 1], `?at=${at}`))} data-peek="${esc(order[i + 1].key)}">${esc(name(order[i + 1]))}</button> →` : ''}</span></div>`;
     const main = `${banner}<h1>${esc(it.title)}</h1>
-      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span><span class="b${unbacked(it) ? ' st-gap' : ''}" title="${unbacked(it) ? `claims ${esc(it.depth)}, but a level below it has nothing written` : ''}">${unbacked(it) ? `claims ${esc(it.depth)} · shows ${esc(it.shown || 'nothing')}` : `depth ${esc(it.depth || '—')}`} · needs ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
-      ${depthCtl}${body}
-      ${hidden.length ? `<div class="hidden-note">${hidden.length} block${hidden.length > 1 ? 's' : ''} hidden (${[...new Set(hidden.map((b) => b.level))].map(esc).join(', ')}): ${words(hidden)} words. ${at < M.levels.length - 1 ? `<button ${go(itemHash(it, qs({ at: at + 1 })))}>Read to ${esc(lvTitle(M.levels[at + 1].id))}</button>` : ''}</div>` : ''}
+      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span><span class="b${unbacked(it) ? ' st-gap' : ''}">${unbacked(it) ? `claims ${esc(it.depth)} · shows ${esc(it.shown || 'nothing')}` : `depth ${esc(it.depth || '—')}`} · needs ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
+      ${chips || partChips ? `<div class="related">${chips}${partChips}</div>` : ''}
+      <div class="readbar">${depthCtl}<span class="t">▸ lines unfold one level in place · hover a name to preview it</span></div>
+      ${docBody(it, at)}
       ${it.caveats ? `<p><b>Caveats.</b> ${inline(it.caveats, it.file)}</p>` : ''}${it.later.length ? `<p><b>Later.</b> ${it.later.map((l) => inline(l, it.file)).join(' · ')}</p>` : ''}${pager}`;
     const nud = M.nudges.filter((n) => n.item === it.key && n.code !== 'N04');
-    const bb = blockedBy(it), ub = usedBy(it);
-    const outline = it.blocks.filter((b) => b.kind === 'heading' || b.lead).map((b) => {
-      const label = b.kind === 'heading' ? b.text[0].replace(/`[^`]*`/g, '') : (b.text[0].match(/^\*\*([^*.]+)/) || [])[1] || '';
-      return `<span class="o ${visible(b, at, opts) ? '' : 'dim'}">${b.level ? `<span class="lv">${esc(b.level)}</span> ` : ''}${esc(label)}</span>`;
-    }).join('');
-    const rail = `<h4>Ready to build?</h4><div class="n">${it.gate.ready ? '🎯 yes: at its target, nothing open' : `no: ${it.gate.why.map(esc).join(' · ')}`}</div>
-      ${bb.length ? `<div class="n">⛔ blocked by ${bb.map(link).join(', ')}</div>` : ''}
-      <h4>Nudges</h4>${nud.length ? nud.map((n) => `<div class="n"><b>${esc(n.code)}</b> ${esc(n.message)}</div>`).join('') : `<div class="n">${life(it) ? 'not counted: history' : 'none: designed enough'}</div>`}
-      <h4>Uses</h4>${it.uses.length ? it.uses.map((u) => `<div class="n">${u.key && byKey(u.key) ? link(byKey(u.key)) : esc(u.raw)} <span class="t">${esc(u.actual || '')}${u.required ? ` of ${esc(u.required)}` : ''}</span></div>`).join('') : '<div class="n">nothing</div>'}
-      <h4>Used by</h4>${ub.length ? ub.map((x) => `<div class="n">${link(x)}</div>`).join('') : '<div class="n">nobody</div>'}
-      ${it.parts.length ? `<h4>Parts, shown inline</h4>${it.parts.map((p) => `<div class="n">${esc(p.title)} · ${esc(p.file)}</div>`).join('')}` : ''}
-      ${(it.supersedes || []).length ? `<h4>Replaced</h4>${it.supersedes.map((s) => { const o = all().find((x) => x.id === s); return `<div class="n">${o ? link(o) : `${esc(s)} (deleted)`}</div>`; }).join('')}` : ''}
-      <h4>On this page</h4>${outline || '<span class="o dim">no levelled sections</span>'}`;
-    return shell(crumbs([{ label: M.root, hash: '#/' }, { label: topicOf(it), hash: `#/topic/${encodeURIComponent(topicOf(it))}` }, { label: name(it) }]), nav(topicOf(it)), main, rail);
+    const rail = `<h4>Connections <button class="t" ${go(`#/map?topic=${encodeURIComponent(topicOf(it))}`)}>full map →</button></h4>${minimap(it, at)}
+      <h4>Ready to build?</h4><div class="n">${it.gate.ready ? '🎯 yes: at its target, nothing open' : `no: ${it.gate.why.map(esc).join(' · ')}`}</div>
+      <h4>Nudges</h4>${nud.length ? nud.map((n) => `<div class="n"><b>${esc(n.code)}</b> ${esc(n.message)}</div>`).join('') : `<div class="n">${life(it) ? 'not counted: history' : 'none: designed enough'}</div>`}`;
+    return shell(crumbs([{ label: M.root, hash: '#/' }, { label: topicOf(it), hash: `#/topic/${encodeURIComponent(topicOf(it))}` }, { label: name(it) }]), fileTree(it), main, rail);
   }
+
+  // ---------- peek: a small preview of any item under the pointer, without leaving the page ----------
+  const peek = document.createElement('div');
+  peek.className = 'peek'; peek.hidden = true; document.body.appendChild(peek);
+  let peekTimer = null;
+  function showPeek(el) {
+    const it = byKey(el.getAttribute('data-peek')); if (!it) return;
+    const why = it.blocks.filter((b) => b.kind === 'para' && (b.level === 'D0' || b.level === 'D1')).slice(0, 2).map((b) => b.text.join(' ')).join(' ');
+    const short = why.split(/\s+/).slice(0, 48).join(' ') + (why.split(/\s+/).length > 48 ? '…' : '');
+    const rel = el.getAttribute('data-rel'), cur = location.hash.startsWith('#/item/') && byKey(decodeURIComponent(location.hash.slice(7).split('?')[0]));
+    const r = cur && relOf(cur).find((x) => x.key === it.key);
+    peek.innerHTML = `<div class="pk-h">${ICON[it.status]} <b>${esc(name(it))}</b> <span class="t">${esc(it.title)}</span></div>
+      <div class="pk-m"><svg width="${M.levels.length * 15}" height="9">${miniBar(it, 13, 8, 2)}</svg> ${esc(depthWord(it))} · needs ${esc(it.target || '—')} · ${esc(WORD[it.status])}</div>
+      ${r || rel ? `<div class="pk-r">${esc(cur ? name(cur) : '')} ${esc(rel || REL[r.kind])} it${r?.level && r.kind === 'uses' ? `, needs ${esc(r.level)}` : ''}${r?.blocked ? ' · <b style="color:var(--bad)">not deep enough yet</b>' : ''}</div>` : ''}
+      <div class="pk-b">${short ? inline(short, it.file) : '<i>no why or what written yet</i>'}</div><div class="pk-f">${esc(it.file)} · click to open</div>`;
+    peek.hidden = false;
+    const b = el.getBoundingClientRect(), pw = 320, ph = peek.offsetHeight;
+    const x = b.right + 10 + pw < innerWidth ? b.right + 10 : Math.max(8, b.left - pw - 10);
+    peek.style.left = `${x}px`; peek.style.top = `${Math.max(8, Math.min(innerHeight - ph - 8, b.top - 6))}px`;
+  }
+  document.addEventListener('mouseover', (e) => { const t = e.target.closest?.('[data-peek]'); clearTimeout(peekTimer);
+    if (t) peekTimer = setTimeout(() => showPeek(t), 160); else peek.hidden = true; });
+  document.addEventListener('scroll', () => { peek.hidden = true; }, true);
 
   // ---------- the map: 2D depth bars; by topic above SMALL items ----------
   function bars(it) {
@@ -217,8 +362,28 @@
     try { const r = await fetch('/api/model', { cache: 'no-store' }); const j = await r.json(); if (j.error) throw new Error(j.error); M = j; render(); }
     catch (e) { app.innerHTML = `<p class="err">Can't read the design: ${esc(e.message)}</p>`; }
   }
+  const current = () => { const m = location.hash.match(/^#\/item\/([^?]*)/); return m && byKey(decodeURIComponent(m[1])); };
+  const rerender = (then) => { const y = window.scrollY; render(); window.scrollTo(0, y); then?.(); };
+  document.addEventListener('click', (e) => {
+    const tr = e.target.closest('[data-tree]');
+    if (tr) { treeAll = tr.getAttribute('data-tree') === 'all'; rerender(); return; }
+    const f = e.target.closest('[data-fold]'), j = e.target.closest('[data-jump]'), it = current();
+    if (f && it) { const k = `${it.key}|${f.getAttribute('data-fold')}`; if (open.has(k)) open.delete(k); else open.add(k); rerender(); return; }
+    if (j && it) { // unfold that level (and nothing else changes), then bring it into view
+      const l = j.getAttribute('data-jump'), at = new URLSearchParams(location.hash.split('?')[1] || '').get('at') ?? Math.max(lvN(it.depth), 0);
+      for (let i = +at + 1; i <= lvN(l); i++) open.add(`${it.key}|${M.levels[i].id}`); // levels are cumulative: open the ones before it too
+      rerender(() => document.getElementById(`lv-${l}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })); return;
+    }
+  });
+  document.addEventListener('keydown', (e) => { // 0–4 set the reading depth, [ and ] step it, on an item page
+    const it = current(); if (!it || e.metaKey || e.ctrlKey || e.altKey || /input|textarea/i.test(e.target.tagName)) return;
+    const at = +(new URLSearchParams(location.hash.split('?')[1] || '').get('at') ?? Math.max(lvN(it.depth), 0)), n = M.levels.length - 1;
+    const to = /^\d$/.test(e.key) ? Math.min(+e.key, n) : e.key === ']' ? Math.min(at + 1, n) : e.key === '[' ? Math.max(at - 1, 0) : null;
+    if (to != null && to !== at) { location.hash = itemHash(it, `?at=${to}`); }
+  });
   document.addEventListener('click', (e) => { const t = e.target.closest('[data-go]'); if (t) { e.preventDefault(); const h = t.getAttribute('data-go'); if (h) { if (location.hash === h) render(); else location.hash = h; } } });
-  window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+  let lastItem = null;
+  window.addEventListener('hashchange', () => { peek.hidden = true; const it = current(); const same = it && lastItem === it.key; lastItem = it?.key || null; if (same) rerender(); else { render(); window.scrollTo(0, 0); } });
   const live = document.querySelector('.live');
   try {
     const es = new EventSource('/events');

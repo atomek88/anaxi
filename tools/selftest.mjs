@@ -193,6 +193,11 @@ const url = await new Promise((res) => { let out = ''; watch.stdout.on('data', (
 const api = url && await fetch(`${url}api/model`).then((r) => r.json()).catch(() => null);
 ok(api?.items?.length === ex.items.length && api.items.every((i) => Array.isArray(i.blocks)) && api.inactive.some((i) => i.id === '@polling-sync'), 'watch: /api/model serves the items with their blocks');
 ok(url && (await fetch(url).then((r) => r.text())).includes('/app.js'), 'watch: serves the reader page');
+const rel = (k) => api.items.concat(api.inactive).find((i) => i.key === k).related;
+ok(rel('@scheduler').some((r) => r.key === '@recurring' && r.kind === 'used-by' && r.blocked) && rel('@recurring').some((r) => r.key === '@scheduler' && r.kind === 'uses' && r.level === 'D3'), 'watch: uses and used-by, both ways, with the level needed and whether it blocks');
+ok(rel('@multi-calendar').some((r) => r.key === '@settings' && r.kind === 'mentions') && rel('@settings').some((r) => r.key === '@multi-calendar' && r.kind === 'mentioned-by'), 'watch: an @id in the text is a mention, both ways');
+ok(rel('@polling-sync').some((r) => r.key === '@scheduler' && r.kind === 'superseded-by'), 'watch: superseded-by is a relation');
+ok(api.files.includes('features/APPENDIX.md'), 'watch: the file list includes part files');
 watch.kill();
 
 console.log(fails ? `${fails} failed` : 'selftest ok');

@@ -11,6 +11,11 @@ Newest first. Format: `date · area · change · why`.
   and the gate use the capped depth; N06 also fires for content past the target; new N22 (info) when the text
   goes deeper than the claim · @settings claimed D4 from one build paragraph with nothing at D2–D3, and the
   checker took the claim at its word.
+- tooling · **The reader's item page has three panes** (TOOLING.md §4.3): a file tree with lines to every connected
+  file, the doc with deeper levels folded to one line each that unfold in place, and a minimap of the item's levels
+  with what it uses and what uses it as branches. Hovering any name previews it. `related` (uses, used by, mentions,
+  supersedes, sub-items, both ways) and `files` in `/api/model` · reading deeper or across to a related item took a
+  page load and a scroll each; now it's one click or a hover.
 - tooling · `status`, the index and the reader show "D1 (claims D4)"; the reader's depth bars grey out levels
   written past a gap and outline empty claimed levels in red; JSON gains `shown` and `levelWords`.
 - format · **Lifecycle marks:** `superseded-by:`, `supersedes:`, `retired:`, an `archive` folder with

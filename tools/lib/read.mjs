@@ -84,9 +84,10 @@ export function blocks(model, it, read) {
         out.push({ kind: title ? 'title' : 'heading', depth: hm[1].length, level: title ? null : level, text: [hm[2]], file: r.file, line: n, ...(r.part ? { part: r.part } : {}) });
         return;
       }
-      if (MARK.test(line)) {
+      const last = out[out.length - 1];
+      if (MARK.test(line) || (!cur && /^>/.test(line) && last?.kind === 'mark' && last.line + last.text.length === n)) { // a tag, or its wrapped next line
         flush();
-        if (cur?.kind === 'mark') cur.text.push(line); else out.push({ kind: 'mark', level: null, text: [line], file: r.file, line: n });
+        if (last?.kind === 'mark' && last.line + last.text.length === n) last.text.push(line); else out.push({ kind: 'mark', level: null, text: [line], file: r.file, line: n });
         return;
       }
       if (!line.trim()) { flush(); return; }

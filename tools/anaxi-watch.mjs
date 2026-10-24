@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadConfig, LV, LEVELS } from './lib/config.mjs';
+import { loadConfig, LV, LEVELS, docFiles } from './lib/config.mjs';
 import { evaluate, gate } from './lib/engine.mjs';
 import { blocks } from './lib/read.mjs';
 
@@ -22,17 +22,29 @@ function build() {
   try {
     const cfg = loadConfig(dir);
     const model = evaluate(cfg);
+    // what each item is connected to, both ways: uses / used by (dependencies), mentions / mentioned by (an @id in
+    // the text), parts, and supersedes / superseded by
+    const rel = new Map(model.all.map((it) => [it, []]));
+    const link = (a, b, kind, back, extra = {}) => { if (!a || !b || a === b) return;
+      if (!rel.get(a).some((r) => r.key === b.key && r.kind === kind)) rel.get(a).push({ key: b.key, kind, ...extra });
+      if (back && !rel.get(b).some((r) => r.key === a.key && r.kind === back)) rel.get(b).push({ key: a.key, kind: back, ...extra }); };
+    for (const it of model.all) {
+      for (const u of it.uses) link(it, u.item, 'uses', 'used-by', { level: u.level || LV(u.item?.targetN), blocked: !!u.item && u.item.lifecycle === 'current' && (u.level ? LEVELS.indexOf(u.level) : u.item.targetN ?? -1) > u.item.depthN });
+      for (const m of it.mentions) { const x = model.byId.get(m); if (x && !it.uses.some((u) => u.item === x) && !x.uses.some((u) => u.item === it) && x !== it.parent && x.parent !== it) link(it, x, 'mentions', 'mentioned-by'); }
+      if (it.supersededBy) link(it, model.byId.get(it.supersededBy.id), 'superseded-by', 'supersedes');
+      if (it.parent) link(it, it.parent, 'inside', 'contains');
+    }
     const item = (it) => ({ key: it.key, id: it.id, title: it.title, file: it.file, line: it.line, declared: it.declared,
       parent: it.parent?.key || null, depth: it.depth, shown: LV(it.depthN), levelWords: it.levelWords, minWords: it.minWords, target: LV(it.targetN), effective: LV(it.effectiveN), status: it.status,
       risk: it.risk, about: it.about, focus: it.focus || 'now', caveats: it.caveats, later: it.later.map((l) => l.text),
       uses: it.uses.map((u) => ({ key: u.item?.key || null, raw: u.raw, level: u.level, actual: u.item ? LV(u.item.depthN) : null, required: u.level || LV(u.item?.targetN) })),
       parts: it.parts || [], open: it.openList || [], lifecycle: it.lifecycle, supersededBy: it.supersededBy, supersedes: it.supersedes,
-      retired: it.retired, successor: it.successor?.key || null, gate: gate(model, it),
+      retired: it.retired, successor: it.successor?.key || null, gate: gate(model, it), related: rel.get(it) || [],
       blocks: blocks(model, it).map(({ kind, level, text, file, line, depth, lead, part }) => ({ kind, level, text, file, line, depth, lead, part })) });
     state = { version: state.version + 1, model, error: null, json: JSON.stringify({
       format: 'anaxi/1', root: path.basename(cfg.root), config: cfg.file ? path.relative(cfg.root, cfg.file) : null,
       settings: { profile: cfg.profile, stage: cfg.stage }, levels: LEVELS.map((l) => ({ id: l, ...(cfg.levels[l] || {}) })),
-      items: model.items.map(item), inactive: model.inactive.map(item), deleted: [...model.retired].map(([id, r]) => ({ id, ...r })),
+      files: docFiles(cfg), items: model.items.map(item), inactive: model.inactive.map(item), deleted: [...model.retired].map(([id, r]) => ({ id, ...r })),
       nudges: model.nudges.map(({ code, severity, item: k, message }) => ({ code, severity, item: k, message })), errors: model.errors,
       version: state.version + 1 }) };
   } catch (e) { state = { ...state, version: state.version + 1, error: e.message }; }

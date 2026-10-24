@@ -193,7 +193,8 @@ function nudges(model) {
       const late = it.focus === 'later';
       add('N02', late ? 'info' : 'block', it, `uses ${name(u.item)}, which is at ${at(u.item)} of ${u.level ? 'the ' + u.level + ' asked for' : 'its target ' + LV(need)}`, { uses: u.item.key });
       if (!waiters.has(u.item)) waiters.set(u.item, []);
-      waiters.get(u.item).push(`${name(it)} (${it.focus || 'now'})`);
+      const w = `${name(it)} (${it.focus || 'now'})`;
+      if (!waiters.get(u.item).includes(w)) waiters.get(u.item).push(w);
     }
     for (const l of it.later) {
       if (!l.trigger) continue;

@@ -235,7 +235,10 @@ transitively and once each, at the `(Dn)` asked for or that item's target, then 
 item is replaced by its successor, with a note, unless `--history`.
 
 **anaxi-watch.** `GET /` the page · `GET /api/model` the model (`anaxi/1`: items and inactive items with their
-blocks and gate, deleted ids, nudges, errors, levels) · `GET /events` server-sent `change` after a save
+blocks, gate, `shown` depth and `related` list, the doc `files`, deleted ids, nudges, errors, levels). `related` holds
+`{ key, kind, level?, blocked? }` for each connection, both ways: `uses`/`used-by` (with the level needed and whether it
+blocks), `mentions`/`mentioned-by` (an `@id` in the text that isn't already a use), `supersedes`/`superseded-by`, and
+`inside`/`contains` for sub-items · `GET /events` server-sent `change` after a save
 (`fs.watch`, debounced). Binds 127.0.0.1; GET only; never writes.
 
 **anaxi-mcp.** MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
