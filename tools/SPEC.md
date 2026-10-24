@@ -238,7 +238,8 @@ item is replaced by its successor, with a note, unless `--history`.
 blocks, gate, `shown` depth and `related` list, the doc `files`, deleted ids, nudges, errors, levels). `related` holds
 `{ key, kind, level?, blocked? }` for each connection, both ways: `uses`/`used-by` (with the level needed and whether it
 blocks), `mentions`/`mentioned-by` (an `@id` in the text that isn't already a use), `supersedes`/`superseded-by`, and
-`inside`/`contains` for sub-items · `GET /events` server-sent `change` after a save
+`inside`/`contains` for sub-items; and `role`: `feature`, `shared` (in `anaxi.json` `shared`) or `foundation` (shared, using
+nothing current) · `GET /events` server-sent `change` after a save
 (`fs.watch`, debounced). Binds 127.0.0.1; GET only; never writes.
 
 **anaxi-mcp.** MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,

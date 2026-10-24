@@ -13,6 +13,8 @@ Three parts, all working without the others:
 | **The checker** | `anaxi-check` and `anaxi-ci`: zero-dependency Node scripts that read the marks and compute targets, nudges, gates and `INDEX.md` | CI, pre-commit hooks, people at the terminal |
 | **The skill** | instructions that teach an agent the method, including the checks that need reading (N05, N07, N08…) | Claude Code and other agents |
 | **The plugin** | the skill, the checker, `/anaxi:*` commands and hooks in one Claude Code install | Claude Code users |
+| **The reader** | `anaxi watch`: the docs as linked pages, read to a depth, with what each item is connected to | anyone reading the design |
+| **The MCP server** | the engine as agent tools, `anaxi_context` above all | agents in any MCP client |
 
 ```
    markdown docs (the source of truth)
@@ -65,90 +67,48 @@ Still to do:
 - **Pin a version per project:** an optional `"requires": ">=0.8"` in `anaxi.json`; the checker warns when the
   plugin is a major version off.
 - **Publish the repo** (GitHub) so `claude plugin marketplace add <owner>/anaxi` works for a team.
-- **The MCP server (step 4)** goes in the same plugin as a `.mcp.json` entry.
+- [x] **The MCP server (step 4)** is in the same plugin, as a `.mcp.json` entry (0.9).
 
-### 3. Seeing the design: `anaxi watch` and a zoomable map · reader and 2D map built in 0.9
+### 3. Seeing the design: `anaxi watch` · built in 0.9
 
-Built: `tools/anaxi-watch.mjs` (`/anaxi:watch`) serves the reader and the 2D map below, from one model, reloading
-on save. Chosen by a throwaway exploration on the example's real data ([docs/prototypes/viewer/](docs/prototypes/viewer/gedanken/contact.html)):
-the reader as linked pages and a 2D depth-bar map that groups by topic past 12 items. The 3D stack was rejected
-(it hides an item already at 7 items, and 17 of 40 at 40); the city is kept as a later idea (its labels collide
-at 7). Not built yet: search, the per-item git history, the static export, and the "what changed since" view.
+`tools/anaxi-watch.mjs` (`/anaxi:watch`) serves a read-only reader and a 2D map from one model, reloading on save.
+It edits nothing: writing still happens in your editor, or through an agent. What each page shows:
+[TOOLING.md §4.3](TOOLING.md#43-the-reader-anaxi-watch).
 
-A small local server that watches the docs, re-evaluates on every save, and serves a read-only page. Started
-from Claude Code with `/anaxi:watch` (it prints the URL), or from a terminal. It edits nothing: writing still
-happens in your editor, and an agent writes through files as now.
+**Built:**
 
-It has two halves over one model: **the reader**, which shows the documentation itself, and **the map**, which
-shows where you are in it. The reader comes first: it's useful every day, and the map is a way into it.
+- [x] **The reader as linked pages**, never one endless scroll: overview → topic → item, next and previous in
+  `uses:` order. Marks become badges; `@id` and `[@id](path)` links open in the reader.
+- [x] **Reading at a depth with few clicks:** D0–D4 buttons (keys `0`–`4`, `[` `]`); every deeper level is one
+  line that unfolds in place; the canvas and decision log fold the same way; parts show inline at their level.
+- [x] **What it's connected to, on the same page:** a file tree with lines to every connected file (uses, used
+  by, mentions, parts; red where it blocks, only connected files above 25); a minimap of the item's levels with
+  what it uses and what uses it as branches; chips; a hover preview of any item. `related` and `files` in the JSON.
+- [x] **The claim against the text:** "claims D4 · shows D1"; empty levels shown as a red line (levels are cumulative,
+  [METHOD.md §2](METHOD.md#2-the-ladder)).
+- [x] **History:** superseded and retired items with a banner to their successor; deleted ids listed.
+- [x] **Shared items marked** 🔗 shared or 🧱 foundation, and listed after the features.
+- [x] **The build gate and nudges** beside each item; the gate hidden until asked for.
+- [x] **The 2D map:** a depth bar per item, `uses:` as edges, red where blocked, topics first above 12 items.
 
-#### 3.1 The reader: the docs themselves
+**Decided by an exploration** on the example's real data ([docs/prototypes/viewer/](docs/prototypes/viewer/gedanken/contact.html)):
+the reader plus a 2D map, not a picture first. The 3D layer stack was rejected (it hid an item already at 7
+items, and 17 of 40 at 40, with no readable labels); the city is kept as a later idea (its labels collided at 7).
 
-A markdown reader for the project's actual design docs, kept in step with them on every save. Why not GitHub's
-or the editor's preview: they show raw front matter and tag lines, can't hide what's deeper than you asked for,
-don't follow `@id` links or show who uses an item, and have no idea what's blocked.
+**Not built yet:**
 
-| It shows | How |
-|---|---|
-| **the doc as written** | GitHub-flavoured markdown: headings, tables, code, images, mermaid diagrams. Marks become badges (depth, target, status icon, `🎯`) instead of raw YAML |
-| **an item at a depth** | a depth control per item, and one for the page: "up to D2" hides sections at D3 and deeper (sections already carry levels). The canvas shows or hides with one toggle; it's always labelled |
-| **an item and its parts** | a part (`part-of:`, e.g. in `APPENDIX.md`) shows inline under its host's matching level, or collapsed with a link, never as a separate item |
-| **links that work** | `@id` and `[@id](path)` open in the reader; each item lists what it uses and what uses it (backlinks); a breadcrumb project → topic → item → level |
-| **the whole design, paged** | a project, epic or topic as linked pages, never one endless scroll: an overview page (status table and map), one page per item with its levels as sections and an outline beside it, next and previous in `uses:` order, at the chosen depth. One continuous document only for print or export (`anaxi render`) |
-| **what to do** | the item's nudges beside it, and the gate: ready, or what blocks it |
-| **what changed** | since a git ref (`--diff`): changed sections marked, new nudges listed. Per item, a short history from git: depth over time, last changed, by whom |
-| **what's no longer true** | superseded and retired items and sections (step 6) shown greyed with a banner pointing to what replaced them; hidden by default from the super-TDD |
+- [ ] **Search** over titles, `@id`s, headings and text.
+- [ ] **What changed** since a git ref (changed sections marked, new nudges listed), and a short per-item history
+  from git (depth over time, last changed, by whom).
+- [ ] **A static export** (`anaxi watch --export site/`) for people without the tool, or GitHub Pages.
+- [ ] **Open in editor** per section (`vscode://` or a file link).
+- [ ] **Images and mermaid** in the reader (vendored, loaded only by the page).
+- [ ] **A two-hop minimap** (what the things it uses depend on), faded, for the "why is this blocked" chain.
+- [ ] **Touch:** previews by long-press; today a tap opens the item.
 
-Read-only: each section has "open in editor" (a `vscode://` or file link), and writing still happens in files.
-Search covers titles, `@id`s, headings and text. The same renderer can write a **static site**
-(`anaxi watch --export site/`) for sharing or GitHub Pages, so people without the tool can read it.
-
-Building it: the checker stays dependency-free. The reader is one page that may vendor a single markdown renderer
-(e.g. markdown-it) and mermaid, loaded only by the viewer. The server is plain Node (`http`, `fs.watch`), and
-the page gets the model as JSON plus each file's raw markdown, so one engine decides depth everywhere.
-
-#### 3.2 The map: where you are
-
-**What it must answer, at a glance:** what's ready to build, what's blocked and by what, what's still a gap,
-and what's over-designed. Everything else is secondary. Clicking anything on the map opens it in the reader at
-that depth.
-
-**The one idea behind every view: zoom is depth.** Zooming out shows less depth; zooming in reads deeper, down to
-the text of one level of one item. The data is already in `anaxi-check status --json`: each item's depth and
-target, its status, `uses:` links, parts, `about:` topics and every section's level.
-
-| Zoom | You see | Opens |
-|---|---|---|
-| the project | every item, its depth against its target, the `uses:` links | |
-| a topic, epic or folder | its items and what they depend on outside it | |
-| an item | its levels stacked D0 up to its depth, faint up to its target; its parts beside it | the item's nudges |
-| a level of an item | the sections at that level, the open questions for it | the text, as written |
-
-**Candidate pictures** (compare them on the example project's real data before choosing one):
-
-| Picture | How depth shows | Good at | Risk |
-|---|---|---|---|
-| **2D graph with depth bars** | each item a node with a D0–D4 bar, filled to its depth, outlined to its target; edges are `uses:` | blocked chains, fast reading, works on any screen | flat; "how much is designed" reads less physically |
-| **3D layer stack** | D0–D4 are stacked planes; each item a column rising to its depth, ghosted to its target; `uses:` edges between columns; a slider cuts the stack at a level ("the project as designed to D2") | seeing the whole design's depth at once | 3D is slower to read and harder to click; needs WebGL |
-| **City** | items are buildings: floors are levels (D0 foundation … D4 finishing), built floors solid, target floors scaffolding; districts are topics or folders; roads are `uses:` links, red where blocked; a 🎯 flag on the roof when enough; floors above the target marked for trimming | a metaphor people get instantly; zooming city → district → building → floor → room maps exactly onto project → topic → item → level → section | the metaphor can mislead (tall isn't better); cost of building it |
-| **House, for one feature** | the same metaphor for one TDD: D0 foundation (why), D1 floor plan (what), D2 frame (shape), D3 utilities and connections to the neighbours (contracts), D4 fit-out (build steps) | reviewing one TDD with its team | doesn't scale to a project |
-
-The likely answer is two views over one model: a 2D graph for daily use, and the city (or the 3D stack) as the
-zoomable overview, both driven by the same JSON and the same depth slider as the reader. A throwaway prototype on
-the example project's real data decides, before any of it is built.
-
-#### 3.3 Letting it evolve
-
-- **The JSON is the contract** (`anaxi/1`, versioned). The reader and the map read only that and the raw
-  files, so new marks reach them through the checker, not through viewer code.
-- **Views are plugins of the page, not forks:** a new picture (another metaphor, a timeline) is one more view
-  over the same model and the same depth control.
-- **The example project is the test fixture:** every view must render it, including a superseded item and a
-  part, and the self-test checks the JSON it relies on.
-
-**Needed from the checker first:** `anaxi-check context @id --at D2` (an item's text up to a level, plus the
-contracts of what it uses: the same thing the MCP server's `anaxi_context` returns); a stable section id and
-line range in the JSON, so a view can open, hide or link to a section; and the lifecycle fields (step 6).
+**Letting it evolve:** the JSON is the contract (`anaxi/1`, versioned); views read only that and the raw files,
+so new marks reach them through the checker. The example project is the fixture every view must render; the
+self-test checks the JSON the reader relies on.
 
 ### 4. An MCP server: Anaxi as tools for agents · built in 0.9
 
@@ -169,6 +129,9 @@ The same engine, exposed so any agent can query the design instead of grepping i
 `anaxi_context` is the important one. It turns "read the design docs" into one bounded, depth-aware call, and
 it could run in the same process as `anaxi watch`.
 
+- [ ] **`anaxi_related(id)`**: the reader's `related` list (uses, used by, mentions, supersedes) for agents, so an
+  agent sees what else a change touches without reading every doc.
+
 ### 5. References and attribution
 
 So a reader (or an agent) can see where a design came from and check it against the source:
@@ -182,7 +145,7 @@ So a reader (or an agent) can see where a design came from and check it against 
 
 ### 6. Superseding and archiving design knowledge · built in 0.9
 
-Built as below, except `anaxi_context` (step 4) and the reader's banner (step 3), which come with those steps.
+Built as below in 0.9, including `anaxi_context` following a successor (step 4) and the reader's banner (step 3).
 Marks and commands: [FORMAT.md §10](FORMAT.md#10-superseded-retired-archived).
 
 Designs get replaced, and the old reasoning is still worth having, but a stale doc that reads as current is worse
@@ -217,7 +180,22 @@ what exists in the code.
 with a header saying why it's kept and what replaced it, and is deleted (git keeps it) once nothing in it is
 still used, as the Strata files were in 0.8.
 
-### 7. Smaller things
+### 7. Follow-ups from 0.9
+
+- [ ] **Release 0.9.0:** date the CHANGELOG entry, then `tools/release.sh 0.9.0 --push` (needs the GitHub remote,
+  step 2).
+- [ ] **Item roles beyond the folder.** Today an item is shared only because it lives in the `shared` folder, and
+  a foundation only because it uses nothing. Pilots may want an explicit `role:` mark (feature, shared,
+  foundation), and role-aware questions: a stack's D1 is "what it applies to", not user behaviour. The levels
+  stay the same; the questions per role come from the project's `anaxi-questions.md` (`when: role:foundation`).
+- [ ] **Calibrate the gap check** (`nudges.levelWords`, default 10) on pilot docs: how often a level with a few
+  real words is flagged, and whether N22 (content past the claim) helps or is noise.
+- [ ] **Explicit `related:`**, only if pilots find mentions too noisy or too sparse; mentions in the text are the
+  related links today.
+- [ ] **A browser check in CI** for the reader: open the example, unfold a level, hover a chip, follow a link
+  (Playwright), alongside the self-test.
+
+### 8. Smaller things
 
 - `anaxi render` to a single file, for people who want one to attach; the reader's super-TDD covers reading
   ([TOOLING.md §4.4](TOOLING.md#44-a-rendered-document-anaxi-render-optional-not-built-yet)).
@@ -230,8 +208,8 @@ still used, as the Strata files were in 0.8.
 
 After the pilot, ask:
 
-- Did people use the CLI, or only the agent? If only the agent, build the MCP server before the viewer.
-- Did anyone want to *see* the whole design? If yes, `anaxi watch` and the map (step 3).
+- Did people use the CLI, the reader, or only the agent? Put the next effort where they were.
+- Did anyone open `anaxi watch` more than once? If yes, search and "what changed" next (step 3); if not, why.
 - Did reviewers ask "where did this come from?" If yes, `refs:` (step 5).
 - Did a design change after something was built from it? Then superseding (step 6), before more docs pile up.
 - Is a second team asking to use it? Then package it (step 1) before anything else.

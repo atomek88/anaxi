@@ -66,6 +66,11 @@ li.check { list-style: none; margin-left: -20px; } li.check.open { color: var(--
 .bar { display: inline-flex; gap: 2px; vertical-align: middle; }
 .bar i { width: 14px; height: 7px; border-radius: 2px; border: 1px solid var(--ink3); display: inline-block; }
 /* item page: file tree with connection lines, folded levels, related chips, minimap, peek */
+.vw.item { grid-template-columns: 290px minmax(0, 1fr) 240px; }
+@media (max-width: 980px) { .vw.item { grid-template-columns: 1fr; } }
+.vw-nav h4.sep { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+.role { font-size: 11px; color: var(--ink3); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+.n.t { color: var(--ink3); font-size: 12.5px; }
 .tree { position: relative; font-size: 12.5px; }
 .tree-lines { position: absolute; left: 0; top: 0; overflow: visible; }
 .tr { display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

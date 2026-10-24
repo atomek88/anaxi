@@ -11,6 +11,9 @@ Newest first. Format: `date · area · change · why`.
   and the gate use the capped depth; N06 also fires for content past the target; new N22 (info) when the text
   goes deeper than the claim · @settings claimed D4 from one build paragraph with nothing at D2–D3, and the
   checker took the claim at its word.
+- tooling · Reader: the minimap sits under the file tree; the build gate is hidden until asked for (remembered per
+  browser); shared items are marked 🔗 shared or 🧱 foundation and listed after the features · a stack doc read like
+  one more feature, and the gate crowded the reading view.
 - tooling · **The reader's item page has three panes** (TOOLING.md §4.3): a file tree with lines to every connected
   file, the doc with deeper levels folded to one line each that unfold in place, and a minimap of the item's levels
   with what it uses and what uses it as branches. Hovering any name previews it. `related` (uses, used by, mentions,

@@ -22,6 +22,8 @@
     return { fill, opacity: i <= d || !w ? 1 : 0.45, stroke: !w && i <= c ? 'var(--bad)' : need || i <= d ? 'var(--ink3)' : 'var(--line)', dash: need && i > d && !w,
       title: `${M.levels[i].id}: ${i <= d ? 'written' : w ? (i > c ? 'written, past the claimed depth' : 'written, but not counted: a level below it is empty') : i <= c ? 'claimed, nothing written' : need ? 'needed' : 'not needed'}` };
   }
+  const ROLE = { shared: '🔗 shared', foundation: '🧱 foundation' };
+  const roleTag = (it) => (ROLE[it.role] ? `<span class="role" title="${it.role === 'foundation' ? 'shared, and builds on nothing: what features stand on' : 'shared: other items build on it'}">${ROLE[it.role]}</span>` : '');
   const all = () => [...M.items, ...M.inactive];
   const byKey = (k) => all().find((it) => it.key === k);
   const name = (it) => it.id || it.title;
@@ -73,13 +75,13 @@
   const words = (bs) => bs.reduce((s, b) => s + b.text.join(' ').split(/\s+/).filter(Boolean).length, 0);
 
   // ---------- shared pieces ----------
-  const shell = (crumbs, nav, main, rail) => `<div class="vw"><nav class="vw-nav">${nav}</nav><div class="main"><div class="crumb">${crumbs}</div>${main}</div><aside class="vw-rail">${rail}</aside></div>`;
+  const shell = (crumbs, nav, main, rail, kind = '') => `<div class="vw ${kind}"><nav class="vw-nav">${nav}</nav><div class="main"><div class="crumb">${crumbs}</div>${main}</div><aside class="vw-rail">${rail}</aside></div>`;
   const crumbs = (list) => list.map((c) => (c.hash ? `<button ${go(c.hash)}>${esc(c.label)}</button>` : esc(c.label))).join(' › ');
   const topics = () => [...new Set(M.items.map(topicOf))].sort();
   const nav = (active) => `<h4>Topics</h4>${topics().map((t) => `<button class="o ${t === active ? 'on' : ''}" ${go(`#/topic/${encodeURIComponent(t)}`)}>${esc(t)} · ${M.items.filter((i) => topicOf(i) === t).length}</button>`).join('')}
     ${M.inactive.length || M.deleted.length ? `<h4>History</h4>${M.inactive.map((it) => `<button class="o dim" ${go(itemHash(it))}>${ICON[it.status]} ${esc(name(it))}</button>`).join('')}${M.deleted.map((d) => `<span class="o dim" title="${esc(d.why || '')}">✕ ${esc(d.id)}</span>`).join('')}` : ''}`;
   const row = (it) => { const bb = blockedBy(it), ub = usedBy(it);
-    return `<div class="row"><span>${ICON[it.status]}</span><span>${link(it)} <span class="t">${esc(it.title)}</span></span><span>${esc(unbacked(it) ? `${it.shown || '—'} (${it.depth}?)` : it.depth || '—')} → ${esc(it.target || '—')}</span><span>${bb.length ? `blocked by ${bb.map(link).join(', ')}` : esc(WORD[it.status])}${ub.length ? ` · used by ${ub.map(link).join(', ')}` : ''}</span></div>`; };
+    return `<div class="row"><span>${ICON[it.status]}</span><span>${link(it)} <span class="t">${esc(it.title)}</span> ${roleTag(it)}</span><span>${esc(unbacked(it) ? `${it.shown || '—'} (${it.depth}?)` : it.depth || '—')} → ${esc(it.target || '—')}</span><span>${bb.length ? `blocked by ${bb.map(link).join(', ')}` : esc(WORD[it.status])}${ub.length ? ` · used by ${ub.map(link).join(', ')}` : ''}</span></div>`; };
   // reading order: what an item uses comes first, so "next" reads the design bottom-up
   function rankOf() {
     const rank = new Map(), r = (it, seen = new Set()) => {
@@ -97,12 +99,14 @@
 
   // ---------- pages ----------
   function overview() {
-    const groups = ORDER.map((s) => [s, M.items.filter((it) => it.status === s)]).filter(([, l]) => l.length);
+    const feats = M.items.filter((it) => !ROLE[it.role]), base = M.items.filter((it) => ROLE[it.role]).sort((a, b) => usedBy(b).length - usedBy(a).length);
+    const groups = ORDER.map((s) => [s, feats.filter((it) => it.status === s)]).filter(([, l]) => l.length);
     const first = reading()[0];
     const main = `<h1>${esc(M.root)}</h1>
       <div class="badges"><span class="b">${esc(M.settings.profile)} profile</span><span class="b">stage: ${esc(M.settings.stage)}</span><span class="b">${M.items.length} items · ${M.items.filter((i) => i.status === 'enough').length} enough · ${M.items.filter((i) => i.status === 'blocked').length} blocked</span>${M.inactive.length + M.deleted.length ? `<span class="b">${M.inactive.length + M.deleted.length} in history</span>` : ''}</div>
       ${M.errors.length ? `<p class="err">${M.errors.length} error(s): ${M.errors.slice(0, 3).map(esc).join(' · ')}</p>` : ''}
       ${groups.map(([s, l]) => `<div class="group">${ICON[s]} ${WORD[s]} · ${l.length}</div>${l.map(row).join('')}`).join('')}
+      ${base.length ? `<div class="group">🧱 shared: what the features build on · ${base.length}</div>${base.map(row).join('')}` : ''}
       ${M.inactive.length || M.deleted.length ? `<div class="group">↪️ superseded, retired, deleted</div>` : ''}
       ${M.inactive.filter((it) => !it.parent || !life(byKey(it.parent) || {})).map((it) => `<div class="row"><span>${ICON[it.status]}</span><span>${link(it)}</span><span>${esc(it.depth || '')}</span><span>${it.supersededBy ? `superseded by ${esc(it.supersededBy.id)}` : `retired ${esc(it.retired?.date || '')}`}${it.successor ? ` → ${link(byKey(it.successor))}` : ''}</span></div>`).join('')}
       ${M.deleted.map((d) => `<div class="row"><span>✕</span><span>${esc(d.id)}</span><span>${esc(d.date || '')}</span><span>deleted: ${esc(d.why || '')}${d.commit && d.commit !== '—' ? ` (git ${esc(d.commit)})` : ''}</span></div>`).join('')}`;
@@ -124,6 +128,7 @@
   // and a minimap of its levels and neighbours (right). Hovering anything with data-peek previews it in place.
   const TREE_MAX = 25; // above this many files the tree shows only this item's connected files, until asked
   let treeAll = false;
+  let showGate = (() => { try { return localStorage.getItem('anaxi.gate') === '1'; } catch { return false; } })(); // off by default
   const open = new Set(); // "key|level" levels unfolded past the reading depth, kept across live reloads
   const REL = { uses: 'uses', 'used-by': 'used by', mentions: 'mentions', 'mentioned-by': 'mentioned by', supersedes: 'replaces',
     'superseded-by': 'replaced by', inside: 'inside', contains: 'contains' };
@@ -223,7 +228,7 @@
     const by = Math.max(top + stackH, sideH) + 28, bcols = 3, bw = (W - 8) / bcols;
     const H = by + (below.length ? Math.ceil(below.length / bcols) * (nh + ngap) + 16 : 0) + 4;
     let s = `<svg class="mini" viewBox="0 0 ${W} ${H}" width="100%" style="font:10.5px system-ui">`;
-    s += `<text x="${sx + sw / 2}" y="14" text-anchor="middle" font-weight="700" fill="var(--ink)">${esc(name(it)).slice(0, 18)}</text>`;
+    s += `<text x="${sx + sw / 2}" y="14" text-anchor="middle" font-weight="700" fill="var(--ink)">${esc(name(it)).slice(0, 18)}${ROLE[it.role] ? ` ${ROLE[it.role].split(' ')[0]}` : ''}<title>${esc(ROLE[it.role] || 'feature')}</title></text>`;
     // the stack: one row per level, click to unfold that level in place
     M.levels.forEach((l, i) => { const c = cell(it, i), y = top + i * rh, on = isOpen(it, l.id, at);
       s += `<g data-jump="${esc(l.id)}" style="cursor:pointer"><title>${esc(c.title)}${it.blocks.some((b) => b.level === l.id) ? ' · click to read it here' : ''}</title>
@@ -235,7 +240,7 @@
     if (lvN(it.target) >= 0) { const ty = top + (lvN(it.target) + 1) * rh - 3; s += `<line x1="${sx - 3}" x2="${sx + sw + 3}" y1="${ty}" y2="${ty}" stroke="var(--ink)" stroke-dasharray="2 2"><title>needs ${esc(it.target)}: everything above this line</title></line>`; }
     const node = (r, x, y, w) => { const o = r.item;
       return `<g ${go(itemHash(o))} data-peek="${esc(o.key)}" data-rel="${esc(REL[r.kind] || r.kind)}" style="cursor:pointer"><rect x="${x}" y="${y}" width="${w}" height="${nh}" rx="6" fill="var(--bg)" stroke="${r.blocked ? 'var(--bad)' : COLOR[o.status]}" stroke-width="1.3" ${life(o) ? 'stroke-dasharray="3 2"' : ''}/>
-        <text x="${x + 5}" y="${y + 13}" fill="var(--ink)" font-weight="600">${esc(name(o)).slice(0, Math.floor(w / 6.2))}</text>${miniBar(o, 7, 5, 1.5, x + 5, y + 21)}${r.level && (r.kind === 'uses' || r.kind === 'used-by') ? `<text x="${x + 5 + L * 8.5 + 3}" y="${y + 27}" font-size="9" fill="${r.blocked ? 'var(--bad)' : 'var(--ink3)'}">${r.kind === 'uses' ? `${esc(o.shown || o.depth || '—')} of ${esc(r.level)}` : `needs ${esc(r.level)}`}</text>` : ''}</g>`; };
+        ${ROLE[o.role] ? `<rect x="${x + 1}" y="${y + nh - 4}" width="${w - 2}" height="3" rx="1" fill="var(--ink3)"><title>${esc(ROLE[o.role])}</title></rect>` : ''}<text x="${x + 5}" y="${y + 13}" fill="var(--ink)" font-weight="600">${esc(name(o)).slice(0, Math.floor(w / 6.2))}</text>${miniBar(o, 7, 5, 1.5, x + 5, y + 21)}${r.level && (r.kind === 'uses' || r.kind === 'used-by') ? `<text x="${x + 5 + L * 8.5 + 3}" y="${y + 27}" font-size="9" fill="${r.blocked ? 'var(--bad)' : 'var(--ink3)'}">${r.kind === 'uses' ? `${esc(o.shown || o.depth || '—')} of ${esc(r.level)}` : `needs ${esc(r.level)}`}</text>` : ''}</g>`; };
     const edge = (x1, y1, x2, y2, r) => `<path d="M${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}" fill="none" stroke="${r.blocked ? 'var(--bad)' : RELCOLOR[r.kind]}" stroke-width="${r.blocked ? 2 : 1.2}" ${r.kind.startsWith('mention') || r.kind === 'inside' || r.kind === 'contains' ? 'stroke-dasharray="3 3"' : ''}><title>${esc(REL[r.kind] || r.kind)}${r.level ? ` · needs ${esc(r.level)}` : ''}${r.blocked ? ' · not deep enough yet' : ''}</title></path>`;
     // an edge from a used item meets the stack at the level that's needed of it, so you can see how deep it must go
     const lvY = (l) => (lvN(l) >= 0 ? top + lvN(l) * rh + (rh - 4) / 2 : cy);
@@ -266,16 +271,16 @@
     const order = reading(), i = order.findIndex((x) => x.key === it.key);
     const pager = i < 0 ? '' : `<div class="pager"><span>${i > 0 ? `← <button ${go(itemHash(order[i - 1], `?at=${at}`))} data-peek="${esc(order[i - 1].key)}">${esc(name(order[i - 1]))}</button>` : ''}</span><span class="mid">${i + 1} of ${order.length} · reading at ${esc(M.levels[at].id)}</span><span>${i < order.length - 1 ? `<button ${go(itemHash(order[i + 1], `?at=${at}`))} data-peek="${esc(order[i + 1].key)}">${esc(name(order[i + 1]))}</button> →` : ''}</span></div>`;
     const main = `${banner}<h1>${esc(it.title)}</h1>
-      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span><span class="b${unbacked(it) ? ' st-gap' : ''}">${unbacked(it) ? `claims ${esc(it.depth)} · shows ${esc(it.shown || 'nothing')}` : `depth ${esc(it.depth || '—')}`} · needs ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
+      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span>${ROLE[it.role] ? `<span class="b">${ROLE[it.role]} · used by ${usedBy(it).length}</span>` : ''}<span class="b${unbacked(it) ? ' st-gap' : ''}">${unbacked(it) ? `claims ${esc(it.depth)} · shows ${esc(it.shown || 'nothing')}` : `depth ${esc(it.depth || '—')}`} · needs ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
       ${chips || partChips ? `<div class="related">${chips}${partChips}</div>` : ''}
       <div class="readbar">${depthCtl}<span class="t">▸ lines unfold one level in place · hover a name to preview it</span></div>
       ${docBody(it, at)}
       ${it.caveats ? `<p><b>Caveats.</b> ${inline(it.caveats, it.file)}</p>` : ''}${it.later.length ? `<p><b>Later.</b> ${it.later.map((l) => inline(l, it.file)).join(' · ')}</p>` : ''}${pager}`;
     const nud = M.nudges.filter((n) => n.item === it.key && n.code !== 'N04');
-    const rail = `<h4>Connections <button class="t" ${go(`#/map?topic=${encodeURIComponent(topicOf(it))}`)}>full map →</button></h4>${minimap(it, at)}
-      <h4>Ready to build?</h4><div class="n">${it.gate.ready ? '🎯 yes: at its target, nothing open' : `no: ${it.gate.why.map(esc).join(' · ')}`}</div>
+    const left = `${fileTree(it)}<h4 class="sep">Connections <button class="t" ${go(`#/map?topic=${encodeURIComponent(topicOf(it))}`)}>full map →</button></h4>${minimap(it, at)}`;
+    const rail = `<h4>Ready to build? <button class="t" data-gate title="Show or hide the build gate on every item page">${showGate ? 'hide' : 'show'}</button></h4>${showGate ? `<div class="n">${it.gate.ready ? '🎯 yes: at its target, nothing open' : `no: ${it.gate.why.map(esc).join(' · ')}`}</div>` : ''}
       <h4>Nudges</h4>${nud.length ? nud.map((n) => `<div class="n"><b>${esc(n.code)}</b> ${esc(n.message)}</div>`).join('') : `<div class="n">${life(it) ? 'not counted: history' : 'none: designed enough'}</div>`}`;
-    return shell(crumbs([{ label: M.root, hash: '#/' }, { label: topicOf(it), hash: `#/topic/${encodeURIComponent(topicOf(it))}` }, { label: name(it) }]), fileTree(it), main, rail);
+    return shell(crumbs([{ label: M.root, hash: '#/' }, { label: topicOf(it), hash: `#/topic/${encodeURIComponent(topicOf(it))}` }, { label: name(it) }]), left, main, rail, 'item');
   }
 
   // ---------- peek: a small preview of any item under the pointer, without leaving the page ----------
@@ -367,6 +372,7 @@
   document.addEventListener('click', (e) => {
     const tr = e.target.closest('[data-tree]');
     if (tr) { treeAll = tr.getAttribute('data-tree') === 'all'; rerender(); return; }
+    if (e.target.closest('[data-gate]')) { showGate = !showGate; try { localStorage.setItem('anaxi.gate', showGate ? '1' : '0'); } catch {} rerender(); return; }
     const f = e.target.closest('[data-fold]'), j = e.target.closest('[data-jump]'), it = current();
     if (f && it) { const k = `${it.key}|${f.getAttribute('data-fold')}`; if (open.has(k)) open.delete(k); else open.add(k); rerender(); return; }
     if (j && it) { // unfold that level (and nothing else changes), then bring it into view

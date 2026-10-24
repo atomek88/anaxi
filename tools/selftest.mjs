@@ -198,6 +198,8 @@ ok(rel('@scheduler').some((r) => r.key === '@recurring' && r.kind === 'used-by' 
 ok(rel('@multi-calendar').some((r) => r.key === '@settings' && r.kind === 'mentions') && rel('@settings').some((r) => r.key === '@multi-calendar' && r.kind === 'mentioned-by'), 'watch: an @id in the text is a mention, both ways');
 ok(rel('@polling-sync').some((r) => r.key === '@scheduler' && r.kind === 'superseded-by'), 'watch: superseded-by is a relation');
 ok(api.files.includes('features/APPENDIX.md'), 'watch: the file list includes part files');
+const role = (k) => api.items.find((i) => i.key === k).role;
+ok(role('@stack') === 'foundation' && role('@task-api') === 'shared' && role('@recurring') === 'feature', 'watch: roles from the shared folder: foundation (uses nothing), shared, feature');
 watch.kill();
 
 console.log(fails ? `${fails} failed` : 'selftest ok');
