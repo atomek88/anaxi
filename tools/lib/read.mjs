@@ -85,6 +85,14 @@ export function blocks(model, it, read) {
         out.push({ kind: title ? 'title' : 'heading', depth: hm[1].length, level: title ? null : level, text: [hm[2]], file: r.file, line: n, ...(r.part ? { part: r.part } : {}) });
         return;
       }
+      const cm = line.trim().match(/^<!--\s*(.*?)\s*-->$/);
+      if (cm && !/^anaxi:/.test(cm[1])) { // a note: `<!-- D3 -->` or `<!-- canvas -->` sets the level below it (FORMAT.md §4, §6)
+        flush();
+        const l = LEVELS.find((x) => x.toLowerCase() === cm[1].toLowerCase()) || (/^canvas$/i.test(cm[1]) ? 'canvas' : null);
+        if (l) level = l;
+        out.push({ kind: 'mark', level: null, text: [line], file: r.file, line: n });
+        return;
+      }
       const last = out[out.length - 1];
       if (MARK.test(line) || (!cur && /^>/.test(line) && last?.kind === 'mark' && last.line + last.text.length === n)) { // a tag, or its wrapped next line
         flush();
