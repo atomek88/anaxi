@@ -14,7 +14,8 @@ function leadIns(cfg) {
   for (const [k, v] of Object.entries(cfg?.levels || {})) if (v?.name) map[v.name.toLowerCase()] = k;
   for (const [w, l] of Object.entries(map)) if (lv(l) < 0) map[w] = LEVELS[top()];
   const words = Object.keys(map).map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  return { map, split: new RegExp(`(?=\\*\\*(?:${words.join('|')})\\.\\*\\*)`, 'i') };
+  // not inside inline code: a doc that writes about `**Why.**` isn't levelled by it
+  return { map, split: new RegExp(`(?<!\`)(?=\\*\\*(?:${words.join('|')})\\.\\*\\*)`, 'i') };
 }
 
 const fence = (l) => /^\s*(```|~~~)/.test(l);

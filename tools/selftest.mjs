@@ -106,6 +106,7 @@ fs.writeFileSync(path.join(ev, 'anaxi.json'), '{}');
 fs.writeFileSync(path.join(ev, 'gap.md'), `---\nanaxi: "@gap"\ndepth: D3\nrisk: 1·1·1·1\n---\n# Gap\n**Why.** ${ten}\n\n**What.** ${ten}\n\n**Contract.** ${ten}\n`);
 fs.writeFileSync(path.join(ev, 'full.md'), `---\nanaxi: "@full"\ndepth: D1\nrisk: 0·0·1·0\n---\n# Full\n**Why.** ${ten}\n\n**What.** ${ten}\n\n**Shape.** ${ten}\n`);
 fs.writeFileSync(path.join(ev, 'thin.md'), `---\nanaxi: "@thin"\ndepth: D1\nrisk: 0·0·1·0\n---\n# Thin\n**Why.** too short\n\n**What.** ${ten}\n`);
+fs.writeFileSync(path.join(ev, 'meta.md'), `---\nanaxi: "@meta"\ndepth: D2\nrisk: 1·1·1·1\n---\n# Meta\nA paragraph that starts with \`**Why.**\`, \`**What.**\` or \`**Shape.**\` sets its level; ${ten}\n`);
 fs.writeFileSync(path.join(ev, 'plain.md'), `---\nanaxi: "@plain"\ndepth: D2\nrisk: 1·1·1·1\n---\n# Plain\n${ten}\n`);
 let evm = evaluate(loadConfig(ev));
 const gp = evm.byId.get('@gap'), ncodes = (id) => evm.nudges.filter((n) => n.item === id).map((n) => n.code);
@@ -114,6 +115,7 @@ ok(evm.nudges.some((n) => n.item === '@gap' && n.code === 'N05' && /D2 has nothi
 ok(!gate(evm, gp).ready && /D1 \(claims D3\)/.test(gate(evm, gp).why.join(' ')), 'evidence: the gate uses what the text shows');
 ok(evm.byId.get('@thin').depthN === -1 && ncodes('@thin').includes('N05'), 'evidence: a D0 under the minimum shows nothing');
 ok(ncodes('@full').includes('N22') && ncodes('@full').includes('N06'), 'evidence: content past the claim is a hint (N22), and past the target over-documented (N06)');
+ok(evm.byId.get('@meta').shownN == null, 'evidence: lead-ins quoted in inline code set no level');
 ok(evm.byId.get('@plain').shownN == null && !ncodes('@plain').includes('N05'), 'evidence: a doc with no level markers is not measured');
 fs.writeFileSync(path.join(ev, 'anaxi.json'), '{ "nudges": { "levelWords": 0 } }');
 evm = evaluate(loadConfig(ev));
