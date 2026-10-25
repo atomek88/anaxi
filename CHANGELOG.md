@@ -3,7 +3,7 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
-## 0.9 · unreleased
+## 0.9 · 2026-10-25
 
 - method · **A claim counts only as far as the text backs it without a gap.** The script measures each level's
   words (headings and lead-ins, parts included); `depth:` is capped at the highest level with every level before

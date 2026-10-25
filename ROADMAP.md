@@ -182,7 +182,7 @@ still used, as the Strata files were in 0.8.
 
 ### 7. Follow-ups from 0.9
 
-- [ ] **Release 0.9.0:** date the CHANGELOG entry, then `tools/release.sh 0.9.0 --push` (needs the GitHub remote,
+- [x] **Release 0.9.0** (2026-10-25, tagged locally). Still to do: push it once the GitHub remote exists (step 2),
   step 2).
 - [ ] **Item roles beyond the folder.** Today an item is shared only because it lives in the `shared` folder, and
   a foundation only because it uses nothing. Pilots may want an explicit `role:` mark (feature, shared,
