@@ -1,4 +1,6 @@
 # Anaxi format: marking up ordinary markdown
+<!-- anaxi: part-of: @format -->
+<!-- D3 -->
 
 Anaxi adds marks to markdown you already write. It doesn't impose a document structure. A doc that follows
 a common TDD template works as-is once it has one tag; a loose page of notes works too. Everything here
@@ -89,6 +91,8 @@ Inside an item, the tools work out which level each section belongs to, in this 
 
 1. **An explicit mark wins:** a heading that starts with `D0`–`D4` (`### D2 Shape`), a badge in the heading
    (``### Rollout `D4` ``), a bold lead-in (`**Shape.**`), or a comment (`<!-- D3 -->`) before a paragraph.
+   A comment directly under a heading marks the whole section, like an invisible badge, so its subsections inherit it:
+   the way to join a reference doc to an item as a part without changing how it reads.
 2. **Otherwise the heading name:** common TDD section names map to levels (table below). Matching ignores
    case and ignores words like "the", "our", "proposed" or "detailed".
 3. **Otherwise the section above:** an unmapped heading takes the level of the nearest mapped heading above

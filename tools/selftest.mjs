@@ -108,6 +108,8 @@ fs.writeFileSync(path.join(ev, 'full.md'), `---\nanaxi: "@full"\ndepth: D1\nrisk
 fs.writeFileSync(path.join(ev, 'thin.md'), `---\nanaxi: "@thin"\ndepth: D1\nrisk: 0·0·1·0\n---\n# Thin\n**Why.** too short\n\n**What.** ${ten}\n`);
 fs.writeFileSync(path.join(ev, 'meta.md'), `---\nanaxi: "@meta"\ndepth: D2\nrisk: 1·1·1·1\n---\n# Meta\nA paragraph that starts with \`**Why.**\`, \`**What.**\` or \`**Shape.**\` sets its level; ${ten}\n`);
 fs.writeFileSync(path.join(ev, 'note.md'), `---\nanaxi: "@note"\ndepth: D1\nrisk: 0·0·1·0\n---\n# Note\n<!-- D0 -->\n${ten}\n\n<!-- D1 -->\n${ten}\n\n<!-- canvas -->\n${ten}\n`);
+fs.writeFileSync(path.join(ev, 'host.md'), `---\nanaxi: "@host"\ndepth: D3\nrisk: 2·1·1·0\n---\n# The \`host\` tool \`D3\`\n**Why.** ${ten}\n\n**What.** ${ten}\n\n**Shape.** ${ten}\n`);
+fs.writeFileSync(path.join(ev, 'ref.md'), `# Reference\n<!-- anaxi: part-of: @host -->\n<!-- D3 -->\n\n## 1. One\n${ten}\n\n### 1.1 Deeper\n${ten}\n`);
 fs.writeFileSync(path.join(ev, 'plain.md'), `---\nanaxi: "@plain"\ndepth: D2\nrisk: 1·1·1·1\n---\n# Plain\n${ten}\n`);
 let evm = evaluate(loadConfig(ev));
 const gp = evm.byId.get('@gap'), ncodes = (id) => evm.nudges.filter((n) => n.item === id).map((n) => n.code);
@@ -117,6 +119,8 @@ ok(!gate(evm, gp).ready && /D1 \(claims D3\)/.test(gate(evm, gp).why.join(' ')),
 ok(evm.byId.get('@thin').depthN === -1 && ncodes('@thin').includes('N05'), 'evidence: a D0 under the minimum shows nothing');
 ok(ncodes('@full').includes('N22') && ncodes('@full').includes('N06'), 'evidence: content past the claim is a hint (N22), and past the target over-documented (N06)');
 ok(String(evm.byId.get('@note').levelWords) === '10,10,0,0,0', `evidence: <!-- Dn --> comments set levels, <!-- canvas --> counts for nothing (${evm.byId.get('@note').levelWords})`);
+ok(evm.byId.get('@host').shownN === 3 && evm.byId.get('@host').levelWords[3] === 20, `evidence: a level comment under a part's heading covers its subsections (${evm.byId.get('@host').levelWords})`);
+ok(evm.byId.get('@host').title === 'The host tool', `parse: inline code stays in a title, badges go (${evm.byId.get('@host').title})`);
 ok(evm.byId.get('@meta').shownN == null, 'evidence: lead-ins quoted in inline code set no level');
 ok(evm.byId.get('@plain').shownN == null && !ncodes('@plain').includes('N05'), 'evidence: a doc with no level markers is not measured');
 fs.writeFileSync(path.join(ev, 'anaxi.json'), '{ "nudges": { "levelWords": 0 } }');

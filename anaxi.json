@@ -1,11 +1,19 @@
 {
+  "profile": "default",
+  "stage": "building",
   "docs": [
-    "**/*.md"
+    "docs/design/**/*.md",
+    "METHOD.md",
+    "FORMAT.md",
+    "QUESTIONS.md",
+    "NUDGES.md",
+    "tools/SPEC.md",
+    "skills/anaxi/SKILL.md"
   ],
   "ignore": [
-    "templates/**",
-    "archive/**",
-    "prototype/**",
-    "docs/prototypes/**"
-  ]
+    "docs/design/README.md",
+    "archive/**"
+  ],
+  "shared": "docs/design/shared",
+  "index": "docs/design/INDEX.md"
 }

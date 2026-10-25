@@ -1,0 +1,24 @@
+---
+anaxi: "@reader"
+depth: D3
+risk: 1·1·2·0
+about: [ui]
+uses: ["@engine"]
+later: search, a static export, per-item git history (when a pilot asks for them)
+---
+# The reader (`anaxi watch`)
+
+**Why.** Reading a design at the right depth, and seeing what an item is connected to, took a file per item and
+a scroll each. Nobody reads a design that way twice.
+
+**What.** A local, read-only page that reloads on save: an overview grouped by what needs attention, topic pages,
+an item page in three panes (a file tree with lines to connected files, the doc with deeper levels folded to one
+line each, a minimap of its levels with uses and used-by as branches), and a 2D map. Hovering a name previews
+it; keys `0`–`4` set the depth. Out of scope: editing, which stays in the editor or with an agent.
+
+**Shape.** A zero-dependency Node server (`tools/anaxi-watch.mjs`) serves one model (`/api/model`) and a static
+page (`tools/watch/app.js`); server-sent events say when to reload. Linked pages plus a 2D depth-bar map won a
+throwaway exploration on the example's real data; the 3D layer stack hid items at 7, and the city's labels
+collided at 7. The risky part is size: past 25 files the tree shows only connected files, and the minimap folds
+past 6 per side; neither is tested beyond 40 docs. `/api/model` is versioned (`anaxi/1`) so other pages can read it,
+which makes it a contract: [tools/SPEC.md](../../../tools/SPEC.md) §8.2.

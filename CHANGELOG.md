@@ -12,6 +12,9 @@ Newest first. Format: `date · area · change · why`.
   shell edited the generated `INDEX.md` by hand.
 - tooling · Lead-ins quoted in inline code (`` `**Why.**` ``) set no level · dogfooding: SPEC.md, which describes
   lead-ins, measured as D0–D4 from one sentence.
+- format · A level comment directly under a heading (`<!-- D3 -->`) marks the whole section, like an invisible
+  badge, and level comments are read when measuring; titles keep their inline code (`The checker (anaxi-check)`)
+  · dogfooding: a reference doc joined as a part counted only up to its first subheading.
 - docs · **Anaxi documents itself** in `docs/design/`: one item per part of the tool, the reference docs joined as
   parts.
 

@@ -184,6 +184,17 @@ function sectionByMark(text) {
   return m ? m[1] : null;
 }
 
+/** A level comment on its own line (`<!-- D3 -->`, `<!-- canvas -->`) at line j or after blanks: an invisible heading badge. */
+function commentMark(lines, j) {
+  while (j < lines.length && lines[j].trim() === '') j++;
+  const m = lines[j]?.trim().match(/^<!--\s*(D\d|canvas)\s*-->$/i);
+  return m ? (/^canvas$/i.test(m[1]) ? 'canvas' : m[1].toUpperCase()) : null;
+}
+
+/** A heading's title: badges (`@id`, a depth, superseded/retired) removed, other inline code kept as its text. */
+const titleOf = (htext) => htext.replace(/`([^`]*)`/g, (_, c) => (/^@[A-Za-z][\w-]*$/.test(c.trim()) || parseDepth(c.trim()) || /^(superseded|retired)\b/.test(c.trim()) ? '' : c))
+  .replace(/🎨/g, '').replace(/\s+/g, ' ').trim();
+
 /**
  * Parse one file. Returns { items, untagged, errors, warnings }.
  * `names` is the heading-name table (SECTION_NAMES plus `sections` from anaxi.json).
@@ -229,7 +240,7 @@ export function parseFile(text, file, names = SECTION_NAMES) {
       const hlevel = h[1].length, htext = h[2];
       canvasMark = false;
       while (stack.length && top().hlevel >= hlevel) stack.pop();
-      if (fileItem && !titleSet && hlevel === 1) { fileItem.title = htext.replace(/`[^`]*`/g, '').trim(); titleSet = true; }
+      if (fileItem && !titleSet && hlevel === 1) { fileItem.title = titleOf(htext); titleSet = true; }
 
       // declarations under the heading: a `>` tag line with depth:, or a <!-- anaxi: --> comment
       let j = i + 1;
@@ -259,7 +270,7 @@ export function parseFile(text, file, names = SECTION_NAMES) {
       const bd = badge.depth && parseDepth(badge.depth);
       const inItem = stack.length > 0;
       const badgeItem = badge.anaxi || (bd && (bd.arrow || bd.enough || !inItem));
-      const title = htext.replace(/`[^`]*`/g, '').replace(/🎨/g, '').replace(/\s+/g, ' ').trim();
+      const title = titleOf(htext);
 
       if (raw || badgeItem) {
         const where = `${file}:${i + 1}`;
@@ -276,7 +287,7 @@ export function parseFile(text, file, names = SECTION_NAMES) {
         stack.push({ item, hlevel, sections: [] });
         if (f.partOf) { // a part's own heading is its first section; a `D3` badge on it is that section's level
           delete item.depth; delete item.arrow; item.enough = false;
-          const mark = sectionByMark(htext), level = mark || sectionByName(title, names);
+          const mark = sectionByMark(htext) || commentMark(lines, consumed + 1), level = mark || sectionByName(title, names);
           top().sections.push({ hlevel, level });
           item.sections.push({ heading: title, level, by: mark ? 'mark' : level ? 'name' : 'none', line: i + 1, words: 0 });
         }
@@ -293,7 +304,7 @@ export function parseFile(text, file, names = SECTION_NAMES) {
       // a section inside the current item
       const t = top();
       while (t.sections.length && t.sections[t.sections.length - 1].hlevel >= hlevel) t.sections.pop();
-      let level = sectionNote ? 'history' : sectionByMark(htext), by = 'mark';
+      let level = sectionNote ? 'history' : sectionByMark(htext) || commentMark(lines, i + 1), by = 'mark';
       if (!level) { level = sectionByName(title, names); by = 'name'; }
       if (!level) { level = t.sections[t.sections.length - 1]?.level || null; by = level ? 'above' : 'none'; }
       t.sections.push({ hlevel, level });

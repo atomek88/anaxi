@@ -14,6 +14,8 @@ The docs are the markdown files matching `docs`, minus `ignore`, the questions f
 folder, `node_modules`, `.git`, `.claude`, and any folder holding its own `anaxi.json` (a separate project).
 
 ## 1. `anaxi-check.mjs`
+<!-- anaxi: part-of: @check -->
+<!-- D3 -->
 
 ```bash
 node anaxi-check.mjs status    [--focus now|next|later] [--about T] [--json]   # status table
@@ -47,6 +49,8 @@ item ends with a `→ Next:` line, the first one or two actions in nudge order. 
   the index goes (used by the pre-commit hook).
 
 ## 1.1 `anaxi-ci.sh`
+<!-- anaxi: part-of: @check -->
+<!-- D3 -->
 
 ```bash
 anaxi-ci.sh [--fix] [--base REF] [--gate "@a @b"] [--dir DIR]
@@ -67,6 +71,8 @@ node anaxi-render.mjs @id | @a,@b | --file GLOB | --about T | --focus F | --supe
 Selection and output order: [TOOLING.md §4.4](../TOOLING.md#44-a-rendered-document-anaxi-render-optional-not-built-yet).
 
 ## 3. Parsing
+<!-- anaxi: part-of: @engine -->
+<!-- D3 -->
 
 ### 3.1 Declaring an item ([FORMAT.md §1](../FORMAT.md#1-declaring-an-item))
 
@@ -141,6 +147,8 @@ matters; the level is the ID's prefix), then the project file ([QUESTIONS.md §5
 lines (`reword:`, `skip-all:`), and `## Principles` (shown by the skill, not checked). Profile `"core"` changes are applied before the project's.
 
 ## 4. Structural rules
+<!-- anaxi: part-of: @engine -->
+<!-- D3 -->
 
 | Rule | Computed as |
 |---|---|
@@ -171,6 +179,8 @@ lines (`reword:`, `skip-all:`), and `## Principles` (shown by the skill, not che
 | status | ⛔ blocked (an N02 block) · ⏸️ `focus: later` · ✂️ over-documented (N06) · ⬇️ go deeper (N01) · ❓ open, or no target · 🎯 enough, in that order |
 
 ## 5. JSON output
+<!-- anaxi: part-of: @engine -->
+<!-- D3 -->
 
 `status --json` and `nudges --json`:
 
@@ -198,6 +208,8 @@ lines (`reword:`, `skip-all:`), and `## Principles` (shown by the skill, not che
 The format is versioned. Add fields; don't rename them.
 
 ## 6. Exit codes
+<!-- anaxi: part-of: @check -->
+<!-- D3 -->
 
 | Code | `anaxi-check` | `anaxi-render` |
 |---|---|---|
@@ -206,6 +218,8 @@ The format is versioned. Add fields; don't rename them.
 | 2 | syntax, settings or reference errors | unknown root, or a parse error |
 
 ## 7. Plugin hooks
+<!-- anaxi: part-of: @check -->
+<!-- D3 -->
 
 `hooks/hooks.json` wires two Node scripts. Both read Claude Code's hook JSON on stdin, import `tools/lib/`
 directly, and exit 0 whatever happens: a hook never fails a session or an edit.
@@ -222,6 +236,10 @@ and runs `claude plugin tag`.
 
 ## 8. Reading, the reader and the MCP server
 
+### 8.1 Reading an item
+<!-- anaxi: part-of: @engine -->
+<!-- D3 -->
+
 **Blocks** (`lib/read.mjs`). An item's lines are its whole file after the front matter, or its heading down to
 the next heading of the same or a higher level, then each part's. They split into blocks (`heading`, `para`,
 `list`, `table`, `code`, `mark`), each with a level: a heading's is its section level; a paragraph starting with a
@@ -234,7 +252,11 @@ on request, and unlevelled text always; deeper never shows less, and nothing is 
 transitively and once each, at the `(Dn)` asked for or that item's target, then the gate. A superseded or retired
 item is replaced by its successor, with a note, unless `--history`.
 
-**anaxi-watch.** `GET /` the page · `GET /api/model` the model (`anaxi/1`: items and inactive items with their
+### 8.2 anaxi-watch
+<!-- anaxi: part-of: @reader -->
+<!-- D3 -->
+
+`GET /` the page · `GET /api/model` the model (`anaxi/1`: items and inactive items with their
 blocks, gate, `shown` depth and `related` list, the doc `files`, deleted ids, nudges, errors, levels). `related` holds
 `{ key, kind, level?, blocked? }` for each connection, both ways: `uses`/`used-by` (with the level needed and whether it
 blocks), `mentions`/`mentioned-by` (an `@id` in the text that isn't already a use), `supersedes`/`superseded-by`, and
@@ -242,7 +264,11 @@ blocks), `mentions`/`mentioned-by` (an `@id` in the text that isn't already a us
 nothing current) · `GET /events` server-sent `change` after a save
 (`fs.watch`, debounced). Binds 127.0.0.1; GET only; never writes.
 
-**anaxi-mcp.** MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
+### 8.3 anaxi-mcp
+<!-- anaxi: part-of: @mcp -->
+<!-- D3 -->
+
+MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
 `ping`. The project is `--dir`, else `$CLAUDE_PROJECT_DIR`, else the working folder, or a tool's `dir` argument.
 Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`. Only
 `anaxi_index` writes, and only the configured index file (`check: true` writes nothing; an unset `index` is an error).

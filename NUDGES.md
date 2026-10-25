@@ -1,4 +1,6 @@
 # Anaxi nudges
+<!-- anaxi: part-of: @engine -->
+<!-- D3 -->
 
 A **nudge** is a short message telling an author, reviewer or agent what to do next with an item. Nudges are
 the point of the method: they are the "obvious moments" where a plan says explain more, stop, wait, or come
