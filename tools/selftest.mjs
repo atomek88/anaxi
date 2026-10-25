@@ -190,6 +190,14 @@ ok(mcp.length === 4 && mcp[0].result.serverInfo.name === 'anaxi', 'mcp: initiali
 ok(mcp[1].result.tools.some((t) => t.name === 'anaxi_context'), 'mcp: tools/list has anaxi_context');
 ok(JSON.parse(mcp[2].result.content[0].text).ready === false, 'mcp: anaxi_gate answers');
 ok(mcp[3].result.isError && /no item/.test(mcp[3].result.content[0].text), 'mcp: a bad id is a tool error, not a crash');
+const mx = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
+fs.cpSync(path.join(HERE, '..', 'example'), mx, { recursive: true });
+const good = fs.readFileSync(path.join(mx, 'INDEX.md'), 'utf8');
+fs.writeFileSync(path.join(mx, 'INDEX.md'), 'edited by hand\n');
+const mcall = (args) => JSON.parse(JSON.parse(execFileSync('node', [path.join(HERE, 'anaxi-mcp.mjs'), '--dir', mx], { encoding: 'utf8', input: `${JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'anaxi_index', arguments: args } })}\n` })).result.content[0].text);
+ok(mcall({ check: true }).stale && !mcall({ check: true }).wrote && fs.readFileSync(path.join(mx, 'INDEX.md'), 'utf8') !== good, 'mcp: anaxi_index check reports a stale index and writes nothing');
+ok(mcall({}).wrote && fs.readFileSync(path.join(mx, 'INDEX.md'), 'utf8') === good && !mcall({}).stale, 'mcp: anaxi_index regenerates the index');
+fs.rmSync(mx, { recursive: true });
 const watch = spawn('node', [path.join(HERE, 'anaxi-watch.mjs'), '--dir', path.join(HERE, '..', 'example'), '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
 const url = await new Promise((res) => { let out = ''; watch.stdout.on('data', (d) => { out += d; const m = out.match(/http:\/\/[^\s]+/); if (m) res(m[0]); }); setTimeout(() => res(null), 5000); });
 const api = url && await fetch(`${url}api/model`).then((r) => r.json()).catch(() => null);

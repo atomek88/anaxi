@@ -3,6 +3,18 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
+## 0.10 · unreleased
+
+- skill · **Blocked means stop.** Asked to build a blocked item, the agent reports N09, offers to draft the missing
+  answers and waits; a proposal goes on the open question (`→ proposed: …`) with the box unchecked, so the agent
+  can't open its own gate · in a headless test, "Implement recurring tasks" wrote the D3 contracts itself.
+- tooling · MCP `anaxi_index` regenerates the index (its one write; `check` only reports) · agents without a
+  shell edited the generated `INDEX.md` by hand.
+- tooling · Lead-ins quoted in inline code (`` `**Why.**` ``) set no level · dogfooding: SPEC.md, which describes
+  lead-ins, measured as D0–D4 from one sentence.
+- docs · **Anaxi documents itself** in `docs/design/`: one item per part of the tool, the reference docs joined as
+  parts.
+
 ## 0.9 · 2026-10-25
 
 - method · **A claim counts only as far as the text backs it without a gap.** The script measures each level's

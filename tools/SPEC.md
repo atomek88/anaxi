@@ -244,5 +244,6 @@ nothing current) · `GET /events` server-sent `change` after a save
 
 **anaxi-mcp.** MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
 `ping`. The project is `--dir`, else `$CLAUDE_PROJECT_DIR`, else the working folder, or a tool's `dir` argument.
-Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`.
+Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`. Only
+`anaxi_index` writes, and only the configured index file (`check: true` writes nothing; an unset `index` is an error).
 

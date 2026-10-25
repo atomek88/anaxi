@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // anaxi-mcp: the Anaxi engine as MCP tools for agents (ROADMAP step 4). Zero dependencies; JSON-RPC 2.0 over stdio.
 //   node anaxi-mcp.mjs [--dir DIR]       the project: --dir, else $CLAUDE_PROJECT_DIR, else the current folder
-// Every call re-reads the docs (≈0.1 s), so answers are always current. Read-only.
+// Every call re-reads the docs (≈0.1 s), so answers are always current. Read-only, except anaxi_index, which writes
+// the generated index (and nothing else) so an agent never edits it by hand.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, LV } from './lib/config.mjs';
-import { evaluate, gate, dependents } from './lib/engine.mjs';
+import { evaluate, gate, dependents, renderIndex } from './lib/engine.mjs';
 import { context } from './lib/read.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +23,7 @@ const TOOLS = [
   { name: 'anaxi_gate', description: 'Whether an item is designed enough to build (N09), and what blocks it. Check before implementing anything with a depth mark.', inputSchema: { type: 'object', properties: { ...ID, ...DIR }, required: ['id'] } },
   { name: 'anaxi_questions', description: 'The questions that apply to an item at each level (core, project and its own checklist), optionally for one level.', inputSchema: { type: 'object', properties: { ...ID, level: { type: 'string', description: 'e.g. D2' }, ...DIR }, required: ['id'] } },
   { name: 'anaxi_context', description: 'Exactly what to read before building or reviewing an item: its text up to a depth (default its target) plus each item it uses, transitively and once each, at the level needed, and the gate. Superseded items are replaced by their successor unless history is true. Use this instead of reading the design docs file by file.', inputSchema: { type: 'object', properties: { ...ID, at: { type: 'string', description: 'depth to read to, e.g. D2 (default: the item\'s target)' }, history: { type: 'boolean', description: 'read a superseded item itself, and decision logs' }, ...DIR }, required: ['id'] } },
+  { name: 'anaxi_index', description: 'Regenerate the project\'s generated index (anaxi.json "index", e.g. INDEX.md) after changing any marks. Never edit that file by hand. check: true only reports whether it is stale.', inputSchema: { type: 'object', properties: { check: { type: 'boolean', description: 'report only, write nothing' }, ...DIR } } },
   { name: 'anaxi_uses', description: 'What an item uses, and who uses it (transitively): the blast radius of changing it.', inputSchema: { type: 'object', properties: { ...ID, ...DIR }, required: ['id'] } },
 ];
 
@@ -49,6 +51,12 @@ const CALLS = {
     own: it.checklist.filter((q) => !a.level || q.level === a.level).map((q) => ({ level: q.level, text: q.text, answered: q.checked, answer: q.answer })) }; },
   anaxi_context: (a) => { const m = load(a.dir); const it = find(m, a.id); const c = context(m, it, { at: a.at, history: !!a.history });
     const g = gate(m, it.successor && !a.history && it.lifecycle !== 'current' ? it.successor : it); return { ...c, gate: { ready: g.ready, why: g.why } }; },
+  anaxi_index: (a) => { const m = load(a.dir); const { cfg } = m;
+    if (!cfg.index) throw new Error('this project has no generated index (anaxi.json "index" is not set)');
+    const file = path.resolve(cfg.root, cfg.index), text = renderIndex(m, path.posix.normalize(cfg.index));
+    const stale = (fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '') !== text;
+    if (!a.check && stale) fs.writeFileSync(file, text);
+    return { index: cfg.index, stale, wrote: !a.check && stale, items: m.items.length }; },
   anaxi_uses: (a) => { const m = load(a.dir); const it = find(m, a.id); return { item: it.id, uses: it.uses.map((u) => ({ id: u.item?.id || u.raw, depth: u.item?.depth || null })),
     usedBy: dependents(m, it).map((d) => ({ id: d.item.id || d.item.title, hop: d.hop, depth: d.item.depth })) }; },
 };
@@ -58,7 +66,7 @@ function handle(msg) {
   const ok = (result) => ({ jsonrpc: '2.0', id, result });
   switch (method) {
     case 'initialize': return ok({ protocolVersion: params.protocolVersion || '2025-06-18', capabilities: { tools: {} }, serverInfo: { name: 'anaxi', version: VERSION },
-      instructions: 'Anaxi design-depth tools. Before implementing a design item, call anaxi_gate; to read what to build from, call anaxi_context instead of opening docs one by one.' });
+      instructions: 'Anaxi design-depth tools. Before implementing a design item, call anaxi_gate; to read what to build from, call anaxi_context instead of opening docs one by one. After changing marks, call anaxi_index; never edit the index by hand.' });
     case 'ping': return ok({});
     case 'tools/list': return ok({ tools: TOOLS });
     case 'tools/call': {

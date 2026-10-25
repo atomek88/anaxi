@@ -121,9 +121,12 @@ Next: answer D3.contracts and D3.failure; leave RRULEs in later:.
 4. Exploration, options still in play and sketches go in the canvas. Out-of-scope design goes to `later:` with
    a trigger (N07, N08).
 5. Decisions the user hasn't made become unchecked questions. Don't make them silently. Ask the user when a
-   decision is theirs: anything costly or one-way, or anything touching product scope.
+   decision is theirs: anything costly or one-way, or anything touching product scope. **A proposal is not an
+   answer:** write it on the open question (`- [ ] D3 · Retry policy? → proposed: 3 tries, then dead-letter`) and
+   leave the box unchecked. Check a box, or write an answer as settled, only when the user gave or accepted it.
 6. Update the marks: the new depth, `skip:`, `caveats:`, `later:`. Re-score if certainty changed (N12). Then
-   regenerate the index (`anaxi-check index`) if the project commits one.
+   regenerate the index (`anaxi_index`, or `anaxi-check index`) if the project commits one. Never edit the index by
+   hand.
 7. When the effective target is reached with nothing open, say **enough** (N04) and stop.
 
 ### 5.1 Read before building
@@ -137,7 +140,11 @@ superseded item to its successor. When the user wants to see the design, offer `
 An item is **ready** when: it is at its **full** target (caps don't apply); nothing is open and every box is
 checked; every `uses:` item is deep enough; and there are no `block` nudges. If it is ready, implement from the
 item's levels and the contracts of what it uses. **Never from the canvas, and never from a guess at a missing
-contract.** If it isn't ready, report N09 with the blockers, then deepen (procedure 5) or ask.
+contract.** If it isn't ready, report N09 with the blockers and **stop: don't build, and don't open the gate
+yourself.** Asked to build, you were not asked to design: offer to draft the missing answers as proposals
+(procedure 5, step 5), list the decisions that are the user's, and wait. Deepen without asking only when the
+user asked you to design or deepen the item. Never deepen an item someone else owns (a `uses:` blocker) without
+being asked; name it as the blocker.
 
 ### 6.1 Superseded, retired, archived (FORMAT.md §10)
 
@@ -154,8 +161,9 @@ contract.** If it isn't ready, report N09 with the blockers, then deepen (proced
 
 ### 7. Index and compose
 
-- **Index:** `anaxi-check index` after any change to marks. Without the scripts, edit `INDEX.md` by hand in the
-  shape of `TOOLING.md §4.2` and say it was edited by hand (CI will regenerate it if set up).
+- **Index:** `anaxi_index` (MCP) or `anaxi-check index` after any change to marks. Only when neither is available,
+  edit `INDEX.md` by hand in the shape of `TOOLING.md §4.2` and say it was edited by hand (CI will regenerate it if
+  set up).
 - **A combined document** (only if asked): the roots and their sub-items, then everything they `uses`,
   transitively (`anaxi-check uses` lists them), each once; the status table first; canvas labelled; superseded
   and retired items left out unless asked for history. Assemble it

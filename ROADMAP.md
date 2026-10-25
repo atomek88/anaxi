@@ -124,6 +124,7 @@ The same engine, exposed so any agent can query the design instead of grepping i
 | `anaxi_gate(id)` | ready or not, with the reasons |
 | `anaxi_questions(id, level)` | the questions that apply at a level |
 | `anaxi_uses(id)` | what it uses, and who uses it, transitively |
+| `anaxi_index(check?)` | regenerate the index, so agents never edit it by hand |
 | `anaxi_context(id, at)` | the item at the depth asked for, plus the contracts of everything it `uses:`, each once: exactly what an agent needs before building, and no more |
 
 `anaxi_context` is the important one. It turns "read the design docs" into one bounded, depth-aware call, and
