@@ -195,6 +195,22 @@ still used, as the Strata files were in 0.8.
 - [ ] **A browser check in CI** for the reader: open the example, unfold a level, hover a chip, follow a link
   (Playwright), alongside the self-test.
 
+### 7.1 Dogfooding: Anaxi documents itself · started 2026-10-25
+
+`docs/design/` holds one item per part of the tool (11 items); the reference docs join as parts through invisible
+comments, so nothing is written twice. `node tools/anaxi-check.mjs status` and `/anaxi:watch` at the repo root read it.
+It found three bugs on its first run, all fixed and self-tested: lead-ins quoted in inline code counted as levels,
+`<!-- D3 -->` comments were ignored when measuring, and titles lost their inline code.
+
+- [x] **Agents stop at a blocked gate**, measured headless: 3 of 3 called `anaxi_gate` and `anaxi_context` unprompted;
+  the blocked ones built nothing. One wrote the missing contracts itself, so the skill now has proposals go on the open
+  question, unchecked. Agents without a shell hand-edited `INDEX.md`, so MCP gained `anaxi_index`.
+- [ ] **An unmeasured claim gets full credit.** A doc with no levelled text, tagged `depth: D4`, shows plain D4. Show
+  it as unmeasured ("D4 ?") in status, the index and the reader, without a nudge, so a claim never looks verified.
+- [ ] **Keep the design current:** a change to the tool changes its item in the same commit; the index is checked by
+  `anaxi-ci.sh` at the root like any project.
+- [ ] **@related** is the first feature to go through Anaxi before it is built (D1 now, target D2).
+
 ### 8. Smaller things
 
 - `anaxi render` to a single file, for people who want one to attach; the reader's super-TDD covers reading
