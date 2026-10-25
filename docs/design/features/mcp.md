@@ -16,7 +16,7 @@ writes, and only the generated index. Every call re-reads the docs. Measured on 
 runs, every agent called `anaxi_gate` and `anaxi_context` without being told to, including one whose prompt named
 no item, and the two blocked ones built nothing.
 
-**Shape.** JSON-RPC over stdio, zero dependencies, started by the plugin's `.mcp.json`, the project taken from
+**Shape.** JSON-RPC over stdio, zero dependencies, started by the plugin (`mcpServers` in `plugin.json`), the project taken from
 `$CLAUDE_PROJECT_DIR`. One bounded `anaxi_context` call, chosen over exposing the files, because it is what makes
 an agent read the right depth and follow a superseded item to its successor. The risky part: tool names and
 fields are a contract with every agent and skill that calls them; renaming one breaks them silently.

@@ -15,6 +15,8 @@ Newest first. Format: `date · area · change · why`.
 - format · A level comment directly under a heading (`<!-- D3 -->`) marks the whole section, like an invisible
   badge, and level comments are read when measuring; titles keep their inline code (`The checker (anaxi-check)`)
   · dogfooding: a reference doc joined as a part counted only up to its first subheading.
+- plugin · The MCP server is declared in `plugin.json`, not a root `.mcp.json` · inside the Anaxi repo the root file
+  also loaded as a project server, which failed, and an agent took Anaxi's MCP to be down.
 - docs · **Anaxi documents itself** in `docs/design/`: one item per part of the tool, the reference docs joined as
   parts.
 

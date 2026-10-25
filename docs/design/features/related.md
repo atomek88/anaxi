@@ -17,5 +17,5 @@ sub-items, both ways, and each item's role. Done when an agent asked to change @
 @mcp and @related as affected without opening a file. Out of scope: transitive blast radius, which `anaxi_uses`
 already gives.
 
-- [ ] D2 · The `related` list is built inside `anaxi-watch.mjs`: move it into the engine so both share it, or call it from the MCP server?
-- [ ] D2 · Should mentions inside the canvas or a decision log count as related?
+- [ ] D2 · The `related` list is built inside `anaxi-watch.mjs`: move it into the engine so both share it, or call it from the MCP server? → proposed: move `rel`/`link` and `roleOf` (`anaxi-watch.mjs:27–41`) into `tools/lib/engine.mjs` as `related(model, it)` and `roleOf(cfg, it)`, beside `usedBy`; the reader and the MCP server both call them. The MCP server can't import the watch script: it starts an HTTP server on load.
+- [ ] D2 · Should mentions inside the canvas or a decision log count as related? → proposed: no. The parser already drops them (`parse.mjs:330`, `if (inCanvas) continue`), and the method ignores the canvas when judging an item (skill, procedure 4). Nothing to change; accept and check.

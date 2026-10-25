@@ -11,5 +11,13 @@
     "tdd",
     "documentation",
     "markdown"
-  ]
+  ],
+  "mcpServers": {
+    "anaxi": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/tools/anaxi-mcp.mjs"
+      ]
+    }
+  }
 }

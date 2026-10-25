@@ -67,7 +67,7 @@ Still to do:
 - **Pin a version per project:** an optional `"requires": ">=0.8"` in `anaxi.json`; the checker warns when the
   plugin is a major version off.
 - **Publish the repo** (GitHub) so `claude plugin marketplace add <owner>/anaxi` works for a team.
-- [x] **The MCP server (step 4)** is in the same plugin, as a `.mcp.json` entry (0.9).
+- [x] **The MCP server (step 4)** is in the same plugin, as an `mcpServers` entry in `plugin.json` (0.9; a root `.mcp.json` also loaded as a broken project server inside this repo).
 
 ### 3. Seeing the design: `anaxi watch` · built in 0.9
 
@@ -112,7 +112,7 @@ self-test checks the JSON the reader relies on.
 
 ### 4. An MCP server: Anaxi as tools for agents · built in 0.9
 
-Built: `tools/anaxi-mcp.mjs`, zero-dependency, started by the plugin (`.mcp.json`). `anaxi_context` follows a
+Built: `tools/anaxi-mcp.mjs`, zero-dependency, started by the plugin (`mcpServers` in `plugin.json`). `anaxi_context` follows a
 superseded item to its successor unless `history` is asked for; the same call is `anaxi-check context @id --at Dn`.
 
 The same engine, exposed so any agent can query the design instead of grepping it:

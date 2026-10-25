@@ -23,4 +23,6 @@ gate. So proposals now go on the open question with the box unchecked (`→ prop
 checks it. The risky part is that every rule is prose an agent may not follow; the headless test is how we find
 out.
 
-- [ ] D3 · Does "blocked means stop" hold when the headless test is re-run on the new skill text?
+- [ ] D3 · Does "blocked means stop" hold when the headless test is re-run on the new skill text? → proposed: yes, so far. On
+  2026-10-25, "Add an anaxi_related tool…" on this repo gated, built nothing, and wrote its proposals on @related's open
+  questions with the boxes unchecked; both runs stopped early at the account's spend limit, so re-run once more.
