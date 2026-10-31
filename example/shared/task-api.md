@@ -33,4 +33,5 @@ app versions stay installed.
 > superseded-by: the client-generated `submissionId` above
 
 Before 2026-09: the server generated task IDs and returned them in the `201`. Replaced because a retry after a
-lost response created a duplicate task. Kept so nobody proposes it again; never counted.
+lost response created a duplicate task; @recurring, which retries each occurrence, made it common. Kept so nobody
+proposes it again; never counted.

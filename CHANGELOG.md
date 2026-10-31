@@ -17,6 +17,13 @@ Newest first. Format: `date · area · change · why`.
   · dogfooding: a reference doc joined as a part counted only up to its first subheading.
 - plugin · The MCP server is declared in `plugin.json`, not a root `.mcp.json` · inside the Anaxi repo the root file
   also loaded as a project server, which failed, and an agent took Anaxi's MCP to be down.
+- tooling · **MCP `anaxi_related`**: everything an item is connected to, both ways, with each one's depth and status,
+  and its role; the list moved from the reader into the engine (`related`, `roleOf`) so both share it · the first
+  feature designed through Anaxi before it was built (@related).
+- format · A mention in a decision log is its own relation, `changed-with`, not an ordinary mention · it records that
+  changes went together, which is a reason to look, not a dependency.
+- tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
+  per heading.
 - docs · **Anaxi documents itself** in `docs/design/`: one item per part of the tool, the reference docs joined as
   parts.
 

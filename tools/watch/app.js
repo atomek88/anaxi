@@ -131,9 +131,9 @@
   let showGate = (() => { try { return localStorage.getItem('anaxi.gate') === '1'; } catch { return false; } })(); // off by default
   const open = new Set(); // "key|level" levels unfolded past the reading depth, kept across live reloads
   const REL = { uses: 'uses', 'used-by': 'used by', mentions: 'mentions', 'mentioned-by': 'mentioned by', supersedes: 'replaces',
-    'superseded-by': 'replaced by', inside: 'inside', contains: 'contains' };
+    'superseded-by': 'replaced by', 'changed-with': 'changed with', inside: 'inside', contains: 'contains' };
   const RELCOLOR = { uses: 'var(--ink2)', 'used-by': 'var(--accent)', mentions: 'var(--ink3)', 'mentioned-by': 'var(--ink3)',
-    supersedes: 'var(--hist)', 'superseded-by': 'var(--hist)', inside: 'var(--ink3)', contains: 'var(--ink3)', part: 'var(--trim)' };
+    supersedes: 'var(--hist)', 'superseded-by': 'var(--hist)', 'changed-with': 'var(--hist)', inside: 'var(--ink3)', contains: 'var(--ink3)', part: 'var(--trim)' };
   const lvName = (l) => { const d = M.levels.find((x) => x.id === l); return d?.name || (l === 'canvas' ? 'canvas' : l === 'history' ? 'decision log' : ''); };
   const relOf = (it) => (it.related || []).map((r) => ({ ...r, item: byKey(r.key) })).filter((r) => r.item);
   const miniBar = (it, w = 9, h = 5, gap = 1.5, x0 = 0, y0 = 0) => M.levels.map((l, i) => { const c = cell(it, i);
@@ -241,7 +241,7 @@
     const node = (r, x, y, w) => { const o = r.item;
       return `<g ${go(itemHash(o))} data-peek="${esc(o.key)}" data-rel="${esc(REL[r.kind] || r.kind)}" style="cursor:pointer"><rect x="${x}" y="${y}" width="${w}" height="${nh}" rx="6" fill="var(--bg)" stroke="${r.blocked ? 'var(--bad)' : COLOR[o.status]}" stroke-width="1.3" ${life(o) ? 'stroke-dasharray="3 2"' : ''}/>
         ${ROLE[o.role] ? `<rect x="${x + 1}" y="${y + nh - 4}" width="${w - 2}" height="3" rx="1" fill="var(--ink3)"><title>${esc(ROLE[o.role])}</title></rect>` : ''}<text x="${x + 5}" y="${y + 13}" fill="var(--ink)" font-weight="600">${esc(name(o)).slice(0, Math.floor(w / 6.2))}</text>${miniBar(o, 7, 5, 1.5, x + 5, y + 21)}${r.level && (r.kind === 'uses' || r.kind === 'used-by') ? `<text x="${x + 5 + L * 8.5 + 3}" y="${y + 27}" font-size="9" fill="${r.blocked ? 'var(--bad)' : 'var(--ink3)'}">${r.kind === 'uses' ? `${esc(o.shown || o.depth || '—')} of ${esc(r.level)}` : `needs ${esc(r.level)}`}</text>` : ''}</g>`; };
-    const edge = (x1, y1, x2, y2, r) => `<path d="M${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}" fill="none" stroke="${r.blocked ? 'var(--bad)' : RELCOLOR[r.kind]}" stroke-width="${r.blocked ? 2 : 1.2}" ${r.kind.startsWith('mention') || r.kind === 'inside' || r.kind === 'contains' ? 'stroke-dasharray="3 3"' : ''}><title>${esc(REL[r.kind] || r.kind)}${r.level ? ` · needs ${esc(r.level)}` : ''}${r.blocked ? ' · not deep enough yet' : ''}</title></path>`;
+    const edge = (x1, y1, x2, y2, r) => `<path d="M${x1} ${y1} C ${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}" fill="none" stroke="${r.blocked ? 'var(--bad)' : RELCOLOR[r.kind]}" stroke-width="${r.blocked ? 2 : 1.2}" ${r.kind.startsWith('mention') || r.kind === 'changed-with' || r.kind === 'inside' || r.kind === 'contains' ? 'stroke-dasharray="3 3"' : ''}><title>${esc(REL[r.kind] || r.kind)}${r.level ? ` · needs ${esc(r.level)}` : ''}${r.blocked ? ' · not deep enough yet' : ''}</title></path>`;
     // an edge from a used item meets the stack at the level that's needed of it, so you can see how deep it must go
     const lvY = (l) => (lvN(l) >= 0 ? top + lvN(l) * rh + (rh - 4) / 2 : cy);
     lc.shown.forEach((r, k) => { const y = lc.y0 + k * (nh + ngap); s += edge(93, y + nh / 2, sx, cy, r) + node(r, 1, y, 92); });

@@ -8,7 +8,7 @@
 | 🎯 | [Setting up a project (/anaxi:init)](features/init.md) `@init` | D1 | D1 | [@check](features/check.md) | — | 0 |
 | 🎯 | [The MCP server (anaxi-mcp)](features/mcp.md) `@mcp` · parts: [8.3 anaxi-mcp](../../tools/SPEC.md#83-anaxi-mcp) | D3 | D3 | [@engine](shared/engine.md) | @related, @skill | 0 |
 | 🎯 | [The reader (anaxi watch)](features/reader.md) `@reader` · parts: [8.2 anaxi-watch](../../tools/SPEC.md#82-anaxi-watch) | D3 | D3 | [@engine](shared/engine.md) | — | 0 |
-| ⬇️ | [Related items for agents (anaxi_related)](features/related.md) `@related` | D1 | D2 | [@mcp](features/mcp.md), [@engine](shared/engine.md) | — | 2 |
+| 🎯 | [Related items for agents (anaxi_related)](features/related.md) `@related` | D2 | D2 | [@mcp](features/mcp.md), [@engine](shared/engine.md) | — | 0 |
 | ❓ | [Releasing the plugin](features/release.md) `@release` | D2 | D2 | [@check](features/check.md) | — | 1 |
 | ❓ | [The skill](features/skill.md) `@skill` · parts: [Anaxi](../../skills/anaxi/SKILL.md#anaxi) | D3 | D3 | [@mcp](features/mcp.md), [@check](features/check.md), [@method](shared/method.md), [@questions](shared/questions.md) | — | 1 |
 | 🎯 | [The engine](shared/engine.md) `@engine` · parts: [Anaxi nudges](../../NUDGES.md#anaxi-nudges), [3. Parsing](../../tools/SPEC.md#3-parsing), [4. Structural rules](../../tools/SPEC.md#4-structural-rules), [5. JSON output](../../tools/SPEC.md#5-json-output), [8.1 Reading an item](../../tools/SPEC.md#81-reading-an-item) | D3 | D3 | [@format](shared/format.md), [@method](shared/method.md), [@questions](shared/questions.md) | @check, @mcp, @reader, @related | 0 |
@@ -18,8 +18,6 @@
 
 ## Nudges
 
-- ❓ **Related items for agents (anaxi_related)** 2 open: The `related` list is built inside `anaxi-watch.mjs`: move it into the engine so both share it, or call it from the MCP server? (D2) · Should mentions inside the canvas or a decision log count as related? (D2)
-- ⬇️ **Related items for agents (anaxi_related)** D1 → D2. Questions for D2: D2.shape, D2.decisions + 2 of its own
 - ❓ **Releasing the plugin** 1 open: Where does the marketplace repo live (GitHub owner and name), and who can push a release tag? (D2)
 - ❓ **The skill** 1 open: Does "blocked means stop" hold when the headless test is re-run on the new skill text? (D3)
 - ❓ **The method** 1 open: Should an item's role (feature, shared, foundation) change which questions apply to it? (ROADMAP §7) (D2)

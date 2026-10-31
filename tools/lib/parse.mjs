@@ -207,7 +207,7 @@ export function parseFile(text, file, names = SECTION_NAMES) {
 
   const newItem = (o) => ({ id: null, title: '', file, line: 1, declared: '', hlevel: 0, anchor: '', parent: null,
     children: [], depth: null, arrow: null, enough: false, risk: null, target: null, about: [], uses: [], open: [],
-    skip: [], caveats: null, later: [], focus: null, profile: null, checklist: [], sections: [], mentions: new Set(),
+    skip: [], caveats: null, later: [], focus: null, profile: null, checklist: [], sections: [], mentions: new Set(), historyMentions: new Set(),
     supersededBy: null, supersedes: [], retired: null, archivedFrom: null, unknown: [], ...o });
 
   if (lines[0]?.trim() === '---') {
@@ -327,7 +327,10 @@ export function parseFile(text, file, names = SECTION_NAMES) {
     if (bare.includes('<!--')) { bare = bare.slice(0, bare.indexOf('<!--')); inComment = true; }
     const sec = t.item.sections.at(-1);
     if (sec) sec.words += bare.split(/\s+/).filter(Boolean).length;
-    const inCanvas = canvasMark || ['canvas', 'history'].includes(t.sections[t.sections.length - 1]?.level);
+    const secLevel = t.sections[t.sections.length - 1]?.level;
+    // a mention in a decision log records that changes went together (`changed-with`); the canvas isn't committed
+    if (!canvasMark && secLevel === 'history') for (const m of line.matchAll(/(?<![\w@./`-])@([A-Za-z][\w-]*)/g)) t.item.historyMentions.add(`@${m[1]}`);
+    const inCanvas = canvasMark || ['canvas', 'history'].includes(secLevel);
     if (inCanvas) continue;
     const c = line.match(CHECK);
     if (c) {

@@ -130,7 +130,7 @@ The same engine, exposed so any agent can query the design instead of grepping i
 `anaxi_context` is the important one. It turns "read the design docs" into one bounded, depth-aware call, and
 it could run in the same process as `anaxi watch`.
 
-- [ ] **`anaxi_related(id)`**: the reader's `related` list (uses, used by, mentions, supersedes) for agents, so an
+- [x] **`anaxi_related(id)`** (built 2026-10-30, through @related): the reader's `related` list (uses, used by, mentions, supersedes) for agents, so an
   agent sees what else a change touches without reading every doc.
 
 ### 5. References and attribution
@@ -209,7 +209,8 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
   it as unmeasured ("D4 ?") in status, the index and the reader, without a nudge, so a claim never looks verified.
 - [ ] **Keep the design current:** a change to the tool changes its item in the same commit; the index is checked by
   `anaxi-ci.sh` at the root like any project.
-- [ ] **@related** is the first feature to go through Anaxi before it is built (D1 now, target D2).
+- [x] **@related** went through Anaxi before it was built: D1, two open questions with an agent's proposals, decided
+  by the user, D2 written, gate ready, built (2026-10-30).
 
 ### 8. Smaller things
 

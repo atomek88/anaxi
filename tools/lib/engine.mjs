@@ -62,6 +62,7 @@ export function evaluate(cfg, { read, files } = {}) {
     host.open.push(...p.open);
     host.uses.push(...p.uses.filter((u) => !host.uses.some((h) => h.raw === u.raw)));
     for (const m of p.mentions) host.mentions.add(m);
+    for (const m of p.historyMentions) host.historyMentions.add(m);
     for (const c of p.children) { c.parent = host; host.children.push(c); }
   }
   // lifecycle (FORMAT.md §10): superseded, retired or archived items stay readable but stop counting
@@ -366,6 +367,34 @@ export function gate(model, it) {
 }
 
 /** Who depends on `it`, transitively. */
+/**
+ * What each item is connected to, both ways (ROADMAP §4, @related): Map item → [{ key, kind, level?, blocked? }].
+ * Kinds: uses / used-by (dependencies, with the level needed and whether it blocks), mentions / mentioned-by (an @id in
+ * the committed text that isn't already a use, a parent or a child), changed-with (an @id in a decision log: the changes
+ * went together; same both ways), supersedes / superseded-by, and inside / contains (sub-items).
+ */
+export function related(model) {
+  const rel = new Map(model.all.map((it) => [it, []]));
+  const link = (a, b, kind, back, extra = {}) => { if (!a || !b || a === b) return;
+    if (!rel.get(a).some((r) => r.key === b.key && r.kind === kind)) rel.get(a).push({ key: b.key, kind, ...extra });
+    if (back && !rel.get(b).some((r) => r.key === a.key && r.kind === back)) rel.get(b).push({ key: a.key, kind: back, ...extra }); };
+  for (const it of model.all) {
+    for (const u of it.uses) link(it, u.item, 'uses', 'used-by', { level: u.level || LV(u.item?.targetN), blocked: !!u.item && u.item.lifecycle === 'current' && (u.level ? lv(u.level) : u.item.targetN ?? -1) > u.item.depthN });
+    for (const m of it.mentions) { const x = model.byId.get(m); if (x && !it.uses.some((u) => u.item === x) && !x.uses.some((u) => u.item === it) && x !== it.parent && x.parent !== it) link(it, x, 'mentions', 'mentioned-by'); }
+    for (const m of it.historyMentions || []) link(it, model.byId.get(m), 'changed-with', 'changed-with');
+    if (it.supersededBy) link(it, model.byId.get(it.supersededBy.id), 'superseded-by', 'supersedes');
+    if (it.parent) link(it, it.parent, 'inside', 'contains');
+  }
+  return rel;
+}
+
+/** An item's role: `shared` when it lives in anaxi.json's `shared` folder, `foundation` when shared and using nothing
+ *  current (a stack, a platform), else `feature`. */
+export function roleOf(cfg, it) {
+  const dir = cfg.shared ? `${path.posix.normalize(cfg.shared).replace(/\/$/, '')}/` : null;
+  return !dir || !it.file.startsWith(dir) ? 'feature' : it.uses.some((u) => u.item && u.item.lifecycle === 'current') ? 'shared' : 'foundation';
+}
+
 export function dependents(model, it) {
   const seen = new Set(), out = [];
   const visit = (x, hop) => {

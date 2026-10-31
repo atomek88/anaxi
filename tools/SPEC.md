@@ -259,7 +259,8 @@ item is replaced by its successor, with a note, unless `--history`.
 `GET /` the page · `GET /api/model` the model (`anaxi/1`: items and inactive items with their
 blocks, gate, `shown` depth and `related` list, the doc `files`, deleted ids, nudges, errors, levels). `related` holds
 `{ key, kind, level?, blocked? }` for each connection, both ways: `uses`/`used-by` (with the level needed and whether it
-blocks), `mentions`/`mentioned-by` (an `@id` in the text that isn't already a use), `supersedes`/`superseded-by`, and
+blocks), `mentions`/`mentioned-by` (an `@id` in the committed text that isn't already a use), `changed-with` (an `@id` in a
+decision log: the changes went together; the same both ways), `supersedes`/`superseded-by`, and
 `inside`/`contains` for sub-items; and `role`: `feature`, `shared` (in `anaxi.json` `shared`) or `foundation` (shared, using
 nothing current) · `GET /events` server-sent `change` after a save
 (`fs.watch`, debounced). Binds 127.0.0.1; GET only; never writes.
@@ -270,6 +271,8 @@ nothing current) · `GET /events` server-sent `change` after a save
 
 MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
 `ping`. The project is `--dir`, else `$CLAUDE_PROJECT_DIR`, else the working folder, or a tool's `dir` argument.
-Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`. Only
+Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`. `anaxi_related` returns the
+same list as the reader (`related` in `lib/engine.mjs`), each entry with the other item's id, title, file, depth, shown
+depth and status, sorted by kind, plus the item's `role`. Only
 `anaxi_index` writes, and only the configured index file (`check: true` writes nothing; an unset `index` is an error).
 

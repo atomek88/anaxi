@@ -212,6 +212,9 @@ const mcall = (args) => JSON.parse(JSON.parse(execFileSync('node', [path.join(HE
 ok(mcall({ check: true }).stale && !mcall({ check: true }).wrote && fs.readFileSync(path.join(mx, 'INDEX.md'), 'utf8') !== good, 'mcp: anaxi_index check reports a stale index and writes nothing');
 ok(mcall({}).wrote && fs.readFileSync(path.join(mx, 'INDEX.md'), 'utf8') === good && !mcall({}).stale, 'mcp: anaxi_index regenerates the index');
 fs.rmSync(mx, { recursive: true });
+const rl = JSON.parse(JSON.parse(execFileSync('node', [path.join(HERE, 'anaxi-mcp.mjs'), '--dir', path.join(HERE, '..', 'example')], { encoding: 'utf8', input: `${JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'anaxi_related', arguments: { id: '@task-api' } } })}\n` })).result.content[0].text);
+ok(rl.role === 'shared' && rl.related.some((r) => r.kind === 'used-by' && r.id === '@recurring') && rl.related.some((r) => r.kind === 'changed-with' && r.id === '@recurring'), 'mcp: anaxi_related lists used-by and changed-with (a decision-log mention)');
+ok(!rl.related.some((r) => r.kind === 'mentions' && r.id === '@recurring'), 'related: a decision-log mention is not an ordinary mention');
 const watch = spawn('node', [path.join(HERE, 'anaxi-watch.mjs'), '--dir', path.join(HERE, '..', 'example'), '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
 const url = await new Promise((res) => { let out = ''; watch.stdout.on('data', (d) => { out += d; const m = out.match(/http:\/\/[^\s]+/); if (m) res(m[0]); }); setTimeout(() => res(null), 5000); });
 const api = url && await fetch(`${url}api/model`).then((r) => r.json()).catch(() => null);
@@ -221,6 +224,7 @@ const rel = (k) => api.items.concat(api.inactive).find((i) => i.key === k).relat
 ok(rel('@scheduler').some((r) => r.key === '@recurring' && r.kind === 'used-by' && r.blocked) && rel('@recurring').some((r) => r.key === '@scheduler' && r.kind === 'uses' && r.level === 'D3'), 'watch: uses and used-by, both ways, with the level needed and whether it blocks');
 ok(rel('@multi-calendar').some((r) => r.key === '@settings' && r.kind === 'mentions') && rel('@settings').some((r) => r.key === '@multi-calendar' && r.kind === 'mentioned-by'), 'watch: an @id in the text is a mention, both ways');
 ok(rel('@polling-sync').some((r) => r.key === '@scheduler' && r.kind === 'superseded-by'), 'watch: superseded-by is a relation');
+ok(rel('@recurring').some((r) => r.key === '@task-api' && r.kind === 'changed-with'), 'watch: changed-with goes both ways');
 ok(api.files.includes('features/APPENDIX.md'), 'watch: the file list includes part files');
 const role = (k) => api.items.find((i) => i.key === k).role;
 ok(role('@stack') === 'foundation' && role('@task-api') === 'shared' && role('@recurring') === 'feature', 'watch: roles from the shared folder: foundation (uses nothing), shared, feature');

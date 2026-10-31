@@ -247,7 +247,8 @@ a superseded doc goes with it.
 
 **Inside a living TDD**, a replaced decision or section is kept under a heading named `Decision log` (or
 `History`, `Previous design`), or a heading with a `` `superseded` `` badge, or with a `> superseded-by: …` line
-under it. Like the canvas, it's kept and labelled and never counted.
+under it. Like the canvas, it's kept and labelled and never counted. An `@id` written there isn't an ordinary
+mention: it says the change went with a change to that item, and shows as **changed with**, both ways.
 
 **Deleting.** Once an archived doc is no longer read, it can be deleted: git keeps it. `archive/RETIRED.md`
 keeps one row per deleted `@id` (date, why, successor, last commit), so the id is never reused by accident.
