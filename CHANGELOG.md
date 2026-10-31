@@ -24,6 +24,9 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
+- method · **A claim is never taken on trust.** An item with no text marked at any level shows nothing (`— (D3?)`),
+  gets N05 saying how to mark it, and doesn't pass the gate; `nudges.levelWords: 0` still turns measuring off · a
+  doc with plain prose and `depth: D4` showed D4 as if it had been checked.
 - tooling · **Outline with anchors**: `anaxi_outline`, `anaxi-check outline @id [--at Dn]`, and an Outline list in the
   reader that unfolds and scrolls to the entry clicked; every section and lead-in with its level, link, words and first
   sentence · readers and agents kept reading past the answer, or opened the next level just in case.

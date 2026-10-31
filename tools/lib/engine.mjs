@@ -239,7 +239,10 @@ function nudges(model) {
       add('N03', 'warn', it, `${it.openList.length} open: ${it.openList.map((q) => (q.level ? `${q.text} (${q.level})` : q.text)).join(' · ')}`,
         { details: it.openList.map((q) => `${q.level ? q.level + ' · ' : ''}${q.text}`) });
     }
-    if (it.depthN < it.claimedN) {
+    if (it.depthN < it.claimedN && it.unmarked && !(it.parent?.levelWords || []).some((w) => w >= it.minWords)) {
+      add('N05', 'warn', it, `claims ${it.depth}, but none of its text says which level it answers, so it shows nothing yet. Mark it: level headings (\`## Shape\`, a \`D2\` badge), lead-ins (\`**Why.**\`), or your template's heading names in anaxi.json "sections"`,
+        { claimed: it.depth, shown: null, missing: it.levelWords.slice(0, it.claimedN + 1).map((_, i) => LV(i)), unmarked: true });
+    } else if (it.depthN < it.claimedN) {
       const missing = it.levelWords.slice(0, it.claimedN + 1).map((w, i) => (w < it.minWords ? LV(i) : null)).filter(Boolean);
       const list = missing.length > 1 ? `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)} have` : `${missing[0]} has`;
       const enough = it.effectiveN != null && it.shownN >= it.effectiveN;
@@ -301,7 +304,8 @@ export const at = (it) => (it.depthN == null ? '—' : it.depthN < 0 ? `nothing 
 /**
  * Words written at each level (headings, lead-ins; parts count for their host), and the levels they reach:
  * shownN, the highest level with every level up to it written (≥ nudges.levelWords words; -1: not even D0), and
- * deepestN, the deepest level with any. No levelled text at all, or levelWords 0: null (nothing to measure).
+ * deepestN, the deepest level with any. No levelled text at all counts as nothing written (`unmarked`): a claim is
+ * never taken on trust. levelWords 0 turns the check off: null (nothing measured).
  */
 function evidence(cfg, it, read) {
   const min = it.cfg.nudges.levelWords ?? 10;
@@ -317,7 +321,7 @@ function evidence(cfg, it, read) {
     any = true;
     w[lv(b.level)] += b.text.join(' ').replace(/\*\*[^*]+\.\*\*/, '').split(/\s+/).filter(Boolean).length;
   }
-  if (!any) return;
+  it.unmarked = !any;
   it.levelWords = w;
   Object.assign(it, reach(w, min));
 }

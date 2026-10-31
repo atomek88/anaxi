@@ -205,7 +205,7 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
 - [x] **Agents stop at a blocked gate**, measured headless: 3 of 3 called `anaxi_gate` and `anaxi_context` unprompted;
   the blocked ones built nothing. One wrote the missing contracts itself, so the skill now has proposals go on the open
   question, unchecked. Agents without a shell hand-edited `INDEX.md`, so MCP gained `anaxi_index`.
-- [ ] **An unmeasured claim gets full credit.** A doc with no levelled text, tagged `depth: D4`, shows plain D4. Show
+- [x] **An unmeasured claim gets full credit** (fixed 2026-10-30: it now shows nothing until marked, N05). A doc with no levelled text, tagged `depth: D4`, shows plain D4. Show
   it as unmeasured ("D4 ?") in status, the index and the reader, without a nudge, so a claim never looks verified.
 - [ ] **Keep the design current:** a change to the tool changes its item in the same commit; the index is checked by
   `anaxi-ci.sh` at the root like any project.

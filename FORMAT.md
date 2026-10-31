@@ -115,7 +115,9 @@ Inside an item, the tools work out which level each section belongs to, in this 
 **The claim needs its levels written.** Levels are cumulative, so the script counts an item only up to the
 first level, from D0, with nothing written under it (fewer than `nudges.levelWords` words, default 10).
 `depth: D4` over a why, a what and a build paragraph counts as D1, and the status says "D1 (claims D4)" (N05).
-Write the missing level or lower the claim. Items with no levelled text at all aren't measured.
+Write the missing level or lower the claim. **A claim is never taken on trust:** an item with no text marked at
+any level shows nothing (`— (D3?)`) until its text is marked, by headings, lead-ins, or your template's heading names
+in `anaxi.json` `sections`. `nudges.levelWords: 0` turns the whole check off for a project that doesn't want it.
 
 | Level | Heading names that map to it |
 |---|---|

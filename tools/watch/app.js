@@ -168,7 +168,7 @@
       rs.splice(k < 0 ? rs.length : k, 0, { level: l, blocks: [], empty: true, claimed: i <= lvN(it.depth) });
     }
     return rs.map((r) => {
-      if (r.empty) return `<div class="fold gapline"${seen.has(r.level) ? '' : ` id="lv-${esc(r.level)}"`}><span class="lv">${esc(r.level)}</span> <b>${esc(lvName(r.level))}</b> · nothing written yet${r.claimed ? ` <span class="t">— the claim of ${esc(it.depth)} counts only up to ${esc(it.shown || 'nothing')}</span>` : ' <span class="t">— needed for the target</span>'}</div>`;
+      if (r.empty) return `<div class="fold gapline"${seen.has(r.level) ? '' : ` id="lv-${esc(r.level)}"`}><span class="lv">${esc(r.level)}</span> <b>${esc(lvName(r.level))}</b> · ${it.unmarked ? 'nothing marked at this level' : 'nothing written yet'}${r.claimed ? ` <span class="t">— the claim of ${esc(it.depth)} counts only up to ${esc(it.shown || 'nothing')}</span>` : ' <span class="t">— needed for the target</span>'}</div>`;
       const first = !seen.has(r.level); seen.add(r.level);
       const anchor = first && r.level ? ` id="lv-${esc(r.level)}"` : '';
       const lvTag = r.level ? `<span class="lv">${esc(r.level)}</span>` : '';

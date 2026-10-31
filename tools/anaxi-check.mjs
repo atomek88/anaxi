@@ -53,7 +53,7 @@ const pad = (s, n) => { s = String(s); const w = [...s].length; return w >= n ? 
 const json = (o) => console.log(JSON.stringify(o, null, 2));
 const itemJson = (it) => ({
   id: it.id, title: it.title, file: it.file, line: it.line, declared: it.declared, parent: it.parent?.key || null,
-  depth: it.depth, shown: LV(it.depthN), levelWords: it.levelWords, target: LV(it.targetN), effective: LV(it.effectiveN), targetFrom: it.targetSrc, status: it.status,
+  depth: it.depth, shown: LV(it.depthN), levelWords: it.levelWords, ...(it.unmarked ? { unmarked: true } : {}), target: LV(it.targetN), effective: LV(it.effectiveN), targetFrom: it.targetSrc, status: it.status,
   risk: it.risk, about: it.about, focus: it.focus || 'now', parts: it.parts || [],
   uses: it.uses.map((u) => ({ id: u.item ? u.item.key : null, raw: u.raw, path: u.item?.file || u.path, required: u.level || LV(u.item?.targetN), actual: u.item ? LV(u.item.depthN) : null })),
   open: it.openList, caveats: it.caveats, later: it.later.map((l) => ({ text: l.text, trigger: l.trigger ? { id: l.trigger.id, level: l.trigger.level } : null })),
@@ -156,6 +156,7 @@ switch (cmd) {
       console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(depthText(it), 8)} ${pad(targetText(it), 12)} ${B ? `${pad(builtText(it) || '—', 6)} ` : ''}${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}`);
     }
     if (items.some((it) => it.depthN < it.claimedN)) console.log(dim('\nD1 (D4?): the text shows D1 of the D4 it claims; levels count only up to the first one with nothing written (N05)'));
+    if (items.some((it) => it.unmarked && it.depthN < it.claimedN)) console.log(dim('— (D3?): no text in it is marked with a level, so nothing counts yet (N05)'));
     const past = model.inactive.filter((it) => !it.parent || it.parent.lifecycle === 'current');
     if (past.length && flag('all')) {
       console.log('');

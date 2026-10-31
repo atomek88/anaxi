@@ -32,7 +32,7 @@ ok(ex.items.some((it) => it.parent && it.title === 'Upgrade policy'), 'badge sub
 
 // 2. a broken project
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
-fs.writeFileSync(path.join(dir, 'anaxi.json'), '{ "stage": "shaping" }');
+fs.writeFileSync(path.join(dir, 'anaxi.json'), '{ "stage": "shaping", "nudges": { "levelWords": 0 } }');
 fs.writeFileSync(path.join(dir, 'anaxi-questions.md'), '## Changes to core\n- skip-all: D2.decisions\n- reword: D1.nope → x\n');
 fs.writeFileSync(path.join(dir, 'a.md'), [
   '## A', '> @a · depth: D1 → D3 · risk: 0·0·0·0 · uses: @missing, @b (D3) · skip: D1.touches · later: x (when @b reaches D1)',
@@ -121,8 +121,8 @@ ok(ncodes('@full').includes('N22') && ncodes('@full').includes('N06'), 'evidence
 ok(String(evm.byId.get('@note').levelWords) === '10,10,0,0,0', `evidence: <!-- Dn --> comments set levels, <!-- canvas --> counts for nothing (${evm.byId.get('@note').levelWords})`);
 ok(evm.byId.get('@host').shownN === 3 && evm.byId.get('@host').levelWords[3] === 20, `evidence: a level comment under a part's heading covers its subsections (${evm.byId.get('@host').levelWords})`);
 ok(evm.byId.get('@host').title === 'The host tool', `parse: inline code stays in a title, badges go (${evm.byId.get('@host').title})`);
-ok(evm.byId.get('@meta').shownN == null, 'evidence: lead-ins quoted in inline code set no level');
-ok(evm.byId.get('@plain').shownN == null && !ncodes('@plain').includes('N05'), 'evidence: a doc with no level markers is not measured');
+ok(evm.byId.get('@meta').unmarked, 'evidence: lead-ins quoted in inline code set no level');
+ok(evm.byId.get('@plain').depthN === -1 && evm.byId.get('@plain').unmarked && evm.nudges.some((n) => n.item === '@plain' && n.code === 'N05' && n.unmarked) && !gate(evm, evm.byId.get('@plain')).ready, 'evidence: a doc with no level markers shows nothing, says how to mark it (N05), and is not ready');
 fs.writeFileSync(path.join(ev, 'anaxi.json'), '{ "nudges": { "levelWords": 0 } }');
 evm = evaluate(loadConfig(ev));
 ok(evm.byId.get('@gap').depthN === 3 && !ncodes('@gap').includes('N05'), 'evidence: levelWords 0 turns the check off');
