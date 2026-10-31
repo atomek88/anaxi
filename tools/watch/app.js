@@ -179,7 +179,7 @@
       }
       const deeper = r.level && (r.level === 'canvas' || r.level === 'history' || lvN(r.level) > at);
       const head = deeper ? `<button class="fold on" data-fold="${esc(r.level)}" title="Fold it again">▾ ${lvTag} <b>${esc(lvName(r.level))}</b></button>` : '';
-      return `<section class="run ${cls} ${deeper ? 'unfolded' : ''}"${anchor} data-run="${esc(r.level || '')}">${head}${r.blocks.map(html).join('')}</section>`;
+      return `<section class="run ${cls} ${deeper ? 'unfolded' : ''}"${anchor} data-run="${esc(r.level || '')}">${head}${r.blocks.map((b) => html(b).replace(/^<(\w+)/, `<$1 data-at="${esc(`${b.file}:${b.line}`)}"`)).join('')}</section>`;
     }).join('');
   }
 
@@ -283,6 +283,7 @@
     const nud = M.nudges.filter((n) => n.item === it.key && n.code !== 'N04');
     const left = `${fileTree(it)}<h4 class="sep">Connections <button class="t" ${go(`#/map?topic=${encodeURIComponent(topicOf(it))}`)}>full map →</button></h4>${minimap(it, at)}`;
     const rail = `<h4>Ready to build? <button class="t" data-gate title="Show or hide the build gate on every item page">${showGate ? 'hide' : 'show'}</button></h4>${showGate ? `<div class="n">${it.gate.ready ? '🎯 yes: at its target, nothing open' : `no: ${it.gate.why.map(esc).join(' · ')}`}</div>` : ''}
+      ${(it.outline || []).length ? `<h4>Outline <span class="t">${it.outline.length}</span></h4><div class="outline">${it.outline.map((e) => `<button class="ol ${e.level && e.level !== 'canvas' && e.level !== 'history' && lvN(e.level) > at ? 'deep' : ''}" data-goto="${esc(`${e.file}:${e.line}`)}" data-level="${esc(e.level || '')}" title="${esc(e.first || e.label)} · ${e.words} words · ${esc(e.link)}">${e.level ? `<span class="lv">${esc(e.level === 'history' ? 'log' : e.level)}</span>` : ''} ${esc(e.label)} <span class="t">${e.words}</span></button>`).join('')}</div>` : ''}
       <h4>Nudges</h4>${nud.length ? nud.map((n) => `<div class="n"><b>${esc(n.code)}</b> ${esc(n.message)}</div>`).join('') : `<div class="n">${life(it) ? 'not counted: history' : 'none: designed enough'}</div>`}`;
     return shell(crumbs([{ label: M.root, hash: '#/' }, { label: topicOf(it), hash: `#/topic/${encodeURIComponent(topicOf(it))}` }, { label: name(it) }]), left, main, rail, 'item');
   }
@@ -379,6 +380,14 @@
     if (e.target.closest('[data-gate]')) { showGate = !showGate; try { localStorage.setItem('anaxi.gate', showGate ? '1' : '0'); } catch {} rerender(); return; }
     const f = e.target.closest('[data-fold]'), j = e.target.closest('[data-jump]'), it = current();
     if (f && it) { const k = `${it.key}|${f.getAttribute('data-fold')}`; if (open.has(k)) open.delete(k); else open.add(k); rerender(); return; }
+    const o = e.target.closest('[data-goto]');
+    if (o && it) { // an outline entry: unfold its level and every one before it, then scroll to that line
+      const l = o.getAttribute('data-level'), at = +(new URLSearchParams(location.hash.split('?')[1] || '').get('at') ?? Math.max(lvN(it.depth), 0));
+      if (l === 'canvas' || l === 'history') open.add(`${it.key}|${l}`);
+      else if (l) for (let i = at + 1; i <= lvN(l); i++) open.add(`${it.key}|${M.levels[i].id}`);
+      const to = o.getAttribute('data-goto');
+      rerender(() => { const el = [...document.querySelectorAll('[data-at]')].find((x) => x.getAttribute('data-at') === to); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1400); } }); return;
+    }
     if (j && it) { // unfold that level (and nothing else changes), then bring it into view
       const l = j.getAttribute('data-jump'), at = new URLSearchParams(location.hash.split('?')[1] || '').get('at') ?? Math.max(lvN(it.depth), 0);
       for (let i = +at + 1; i <= lvN(l); i++) open.add(`${it.key}|${M.levels[i].id}`); // levels are cumulative: open the ones before it too

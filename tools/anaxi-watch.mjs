@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, LV, LEVELS, docFiles } from './lib/config.mjs';
 import { evaluate, gate, related, roleOf } from './lib/engine.mjs';
-import { blocks } from './lib/read.mjs';
+import { blocks, outline } from './lib/read.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -28,7 +28,7 @@ function build() {
       risk: it.risk, about: it.about, focus: it.focus || 'now', caveats: it.caveats, later: it.later.map((l) => l.text),
       uses: it.uses.map((u) => ({ key: u.item?.key || null, raw: u.raw, level: u.level, actual: u.item ? LV(u.item.depthN) : null, required: u.level || LV(u.item?.targetN) })),
       parts: it.parts || [], open: it.openList || [], lifecycle: it.lifecycle, supersededBy: it.supersededBy, supersedes: it.supersedes,
-      retired: it.retired, successor: it.successor?.key || null, gate: gate(model, it), built: it.built || null, builtParts: it.builtParts || null, code: it.codePaths || [], drift: it.drift || null, related: rel.get(it) || [], role: roleOf(cfg, it),
+      retired: it.retired, successor: it.successor?.key || null, gate: gate(model, it), outline: outline(model, it), built: it.built || null, builtParts: it.builtParts || null, code: it.codePaths || [], drift: it.drift || null, related: rel.get(it) || [], role: roleOf(cfg, it),
       blocks: blocks(model, it).map(({ kind, level, text, file, line, depth, lead, part }) => ({ kind, level, text, file, line, depth, lead, part })) });
     state = { version: state.version + 1, model, error: null, json: JSON.stringify({
       format: 'anaxi/1', root: path.basename(cfg.root), config: cfg.file ? path.relative(cfg.root, cfg.file) : null,

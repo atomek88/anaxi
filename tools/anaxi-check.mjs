@@ -24,7 +24,7 @@ import { execFileSync } from 'node:child_process';
 import { loadConfig, globRe, LV, lv, top as topLevel, METHOD_DIR } from './lib/config.mjs';
 import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt } from './lib/engine.mjs';
 import { transition } from './lib/lifecycle.mjs';
-import { context } from './lib/read.mjs';
+import { context, outline } from './lib/read.mjs';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0] && !argv[0].startsWith('--') ? argv.shift() : 'status';
@@ -225,6 +225,15 @@ switch (cmd) {
     const skipped = model.questions.list.filter((q) => q.skippedAll);
     if (skipped.length) console.log(`\nskipped project-wide: ${skipped.map((q) => q.id).join(', ')}`);
     console.log('\nWhether each one is answered needs reading: ask the skill (procedure 4), or a reviewer.');
+    break;
+  }
+
+  case 'outline': {
+    const it = find(positional[0]);
+    const o = outline(model, it, { at: opt('at') });
+    if (flag('json')) { json({ item: it.id || it.title, outline: o }); break; }
+    console.log(`${name(it)} — ${it.title} · ${depthText(it)} of ${targetText(it)}`);
+    for (const e of o) console.log(`  ${pad(e.level || '·', 8)} ${pad(e.label.slice(0, 34), 35)} ${pad(`${e.words}w`, 6)} ${dim(`${e.file}:${e.line}`)}${e.first ? `\n${' '.repeat(11)}${dim(e.first)}` : ''}`);
     break;
   }
 

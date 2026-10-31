@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { LEVELS, lv, top } from './config.mjs';
+import { slug } from './parse.mjs';
 
 // The ladder's own names as paragraph lead-ins ("**Why.**", "**Shape.**") carry levels, like headings do.
 // Project level names (anaxi.json `levels`) are added by leadIns().
@@ -108,6 +109,36 @@ export function blocks(model, it, read) {
     flush();
   }
   return out;
+}
+
+/**
+ * Where each answer is (@outline): one entry per heading and per lead-in, in order, up to depth `at` (default: all,
+ * canvas and decision logs included and labelled), each with its level, label, file, line, anchor (the heading's, or
+ * the heading above a lead-in), its words up to the next entry, and its first sentence. Built on blocks(), so it
+ * can't disagree with what the reader shows.
+ */
+export function outline(model, it, { at, read } = {}) {
+  const bs = blocks(model, it, read), out = [];
+  const lim = at == null ? Infinity : typeof at === 'string' ? lv(at) : at;
+  let anchor = it.anchor || '', cur = null;
+  const first = (t) => { const s = t.replace(/^\*\*[^*]+\.\*\*\s*/, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[`*]/g, '').replace(/\s+/g, ' ').trim();
+    const m = s.match(/^(.{20,}?[.!?])(\s|$)/); const f = m ? m[1] : s; return f.length > 160 ? `${f.slice(0, 157)}…` : f; };
+  for (const b of bs) {
+    if (b.kind === 'mark' || b.kind === 'title') { if (b.kind === 'title') anchor = slug(b.text[0]); continue; }
+    if (b.kind === 'heading') anchor = slug(b.text[0]);
+    if (b.kind === 'heading' || b.lead) {
+      const label = b.kind === 'heading' ? b.text[0].replace(/`(@[\w-]+|D\d[^`]*)`/g, '').replace(/\s*\(?\[([^\]]*)\]\([^)]*\)\)?/g, '').replace(/`/g, '').replace(/\s+/g, ' ').trim() : b.text[0].match(/^\*\*([^*]+)\.\*\*/)[1];
+      cur = { level: b.level, label, file: b.file, line: b.line, anchor: b.file === it.file && !anchor ? '' : anchor, words: 0, first: b.lead ? first(b.text.join(' ')) : '', ...(b.part ? { part: b.part } : {}) };
+      out.push(cur);
+      if (b.kind === 'heading') continue;
+    } else if (!cur) { cur = { level: b.level, label: '(before the first heading)', file: b.file, line: b.line, anchor: '', words: 0, first: '' }; out.push(cur); }
+    cur.words += b.text.join(' ').replace(/^\*\*[^*]+\.\*\*/, '').split(/\s+/).filter(Boolean).length;
+    if (!cur.first && (b.kind === 'para' || b.kind === 'list')) cur.first = first(b.text.join(' ').replace(/^\s*([-*+]|\d+\.)\s+/, ''));
+  }
+  // a whole-file item's own title, with nothing under it before the first level, says nothing the item doesn't
+  if (out[0] && it.declared === 'front-matter' && out[0].file === it.file && out[0].level == null && !out[0].words) out.shift();
+  return out.filter((e) => e.level == null || lv(e.level) < 0 || lv(e.level) <= lim)
+    .map((e) => ({ ...e, link: `${e.file}${e.anchor ? `#${e.anchor}` : ''}` }));
 }
 
 /** What shows at depth `at` (a number): levels ≤ at; the canvas and history only when asked; unlevelled always. */

@@ -25,6 +25,7 @@ node anaxi-check.mjs uses      @id                                             #
 node anaxi-check.mjs index     [--out docs/INDEX.md] [--check | --path]        # write the index (TOOLING.md §4.2)
 node anaxi-check.mjs check                                                     # syntax, settings and references; for CI
 node anaxi-check.mjs new       NAME [--title T] [--small] [--in DIR]          # a TDD (or small item) from the template, @id and title filled
+node anaxi-check.mjs outline   @id [--at Dn] [--json]                          # where each answer is: sections, lead-ins, links, words, first sentences
 node anaxi-check.mjs context   @id [--at Dn] [--history] [--json]              # the item to a depth + each use once, at the level needed; the gate
 node anaxi-check.mjs supersede @old --by @new [--why W]                       # FORMAT.md §10: marks both sides
 node anaxi-check.mjs retire    @id --why W [--date YYYY-MM-DD]                # dropped, no successor
@@ -239,6 +240,11 @@ project's own level names) sets its own, and a paragraph with several is split a
 A wrapped list line continues its item. At depth n a block shows when its level ≤ n, the canvas and history only
 on request, and unlevelled text always; deeper never shows less, and nothing is lost (self-tested).
 
+**Outline** (`outline @id [--at Dn]`, `anaxi_outline`). One entry per heading and per lead-in, from `blocks`, each with
+`level`, `label`, `file`, `line`, `anchor` (the heading's; a lead-in takes the heading above it), `link`, `words` (up to the
+next entry) and `first` (its first sentence, at most 160 characters); up to `--at`; parts included. A whole-file item's
+own title is left out when nothing is under it. `anaxi_outline` adds the item's checklist with answers.
+
 **Context** (`context @id`, `anaxi_context`). The item at `--at` (default: its target), then each item it uses,
 transitively and once each, at the `(Dn)` asked for or that item's target, then the gate. A superseded or retired
 item is replaced by its successor, with a note, unless `--history`.
@@ -258,7 +264,8 @@ nothing current) · `GET /events` server-sent `change` after a save
 
 MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
 `ping`. The project is `--dir`, else `$CLAUDE_PROJECT_DIR`, else the working folder, or a tool's `dir` argument.
-Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`. `anaxi_related` returns the
+Tools: `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_related`,
+`anaxi_uses`, `anaxi_index`. Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`. `anaxi_related` returns the
 same list as the reader (`related` in `lib/engine.mjs`), each entry with the other item's id, title, file, depth, shown
 depth and status, sorted by kind, plus the item's `role`. Only
 `anaxi_index` writes, and only the configured index file (`check: true` writes nothing; an unset `index` is an error).

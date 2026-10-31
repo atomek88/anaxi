@@ -131,7 +131,10 @@ Next: answer D3.contracts and D3.failure; leave RRULEs in later:.
 
 ### 5.1 Read before building
 
-Read an item through `anaxi_context` (MCP) or `anaxi-check context @id [--at Dn]`, not file by file: it returns the
+To answer a question about an item, start with `anaxi_outline` (or `anaxi-check outline @id`): every section with
+its level, link, size and first sentence. Read only the section that answers it, and stop there. Before changing an
+item, `anaxi_related` says what else the change touches. To build, read an item through `anaxi_context` (MCP) or
+`anaxi-check context @id [--at Dn]`, not file by file: it returns the
 item to the depth needed plus each thing it uses, once each, at the level needed, and the gate, and it follows a
 superseded item to its successor. When the user wants to see the design, offer `/anaxi:watch`.
 

@@ -24,6 +24,9 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
+- tooling · **Outline with anchors**: `anaxi_outline`, `anaxi-check outline @id [--at Dn]`, and an Outline list in the
+  reader that unfolds and scrolls to the entry clicked; every section and lead-in with its level, link, words and first
+  sentence · readers and agents kept reading past the answer, or opened the next level just in case.
 - format · **What's built.** `built: no | partly | yes (date)` on any item or sub-item (the host rolls up `2/3`), and
   `code:` paths; N23 when the design changed after both its code and the checked day (from git), N24 built ahead of
   its design, N25 a code path that's gone. A Built column appears in status and the index only when a project uses

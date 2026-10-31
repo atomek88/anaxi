@@ -197,8 +197,8 @@ still used, as the Strata files were in 0.8.
 
 ### 7.1 Dogfooding: Anaxi documents itself · started 2026-10-25
 
-`docs/design/` holds one item per part of the tool (11 items); the reference docs join as parts through invisible
-comments, so nothing is written twice. `node tools/anaxi-check.mjs status` and `/anaxi:watch` at the repo root read it.
+`docs/design/` holds one item per part of the tool; the reference docs are listed on the items as `parts:`, so
+nothing is written twice and nothing outside the folder carries a mark. `node tools/anaxi-check.mjs status` and `/anaxi:watch` at the repo root read it.
 It found three bugs on its first run, all fixed and self-tested: lead-ins quoted in inline code counted as levels,
 `<!-- D3 -->` comments were ignored when measuring, and titles lost their inline code.
 
@@ -211,6 +211,21 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
   `anaxi-ci.sh` at the root like any project.
 - [x] **@related** went through Anaxi before it was built: D1, two open questions with an agent's proposals, decided
   by the user, D2 written, gate ready, built (2026-10-30).
+
+### 7.2 Living docs while a project is built · decided 2026-10-30
+
+- [x] **One design folder.** `anaxi.json` lives in the design folder and is found from the repo root; parts are listed
+  from the item's side, so specs and code carry no marks; `/anaxi:init` writes `docs/design/`.
+- [x] **What's built.** `built: no | partly | yes (date)` on items and sub-items, `code:` paths, the roll-up, and drift
+  from git (N23), built ahead of its design (N24), a missing code path (N25).
+- [x] **Outline with anchors** (`anaxi_outline`, `outline`, the reader's Outline).
+- [ ] **A summary line per item in `INDEX.md` and `anaxi_status`**: the first Why/What sentence, so many questions are
+  answered from the index without opening an item. Proposed.
+- [ ] **Code → design lookup**: from `code:` paths, `anaxi_for_file(path)` and an after-edit hook that says "this file
+  is @engine, its contract is SPEC §3–5, built, design unchanged since". Proposed; needs `code:` on real projects first.
+- [ ] **What changed since**: from git, which items' depth, decisions or contracts changed since a date or a commit,
+  so a returning reader reads only the difference. Proposed.
+- [ ] **Per-section drift** with `git log -L`, if file-level drift is noisy in docs that hold several items.
 
 ### 8. Smaller things
 

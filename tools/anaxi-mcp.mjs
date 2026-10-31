@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, LV } from './lib/config.mjs';
 import { evaluate, gate, dependents, renderIndex, related, roleOf } from './lib/engine.mjs';
-import { context } from './lib/read.mjs';
+import { context, outline } from './lib/read.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const VERSION = (() => { try { return JSON.parse(fs.readFileSync(path.join(HERE, '..', '.claude-plugin', 'plugin.json'), 'utf8')).version; } catch { return '0'; } })();
@@ -25,6 +25,7 @@ const TOOLS = [
   { name: 'anaxi_context', description: 'Exactly what to read before building or reviewing an item: its text up to a depth (default its target) plus each item it uses, transitively and once each, at the level needed, and the gate. Superseded items are replaced by their successor unless history is true. Use this instead of reading the design docs file by file.', inputSchema: { type: 'object', properties: { ...ID, at: { type: 'string', description: 'depth to read to, e.g. D2 (default: the item\'s target)' }, history: { type: 'boolean', description: 'read a superseded item itself, and decision logs' }, ...DIR }, required: ['id'] } },
   { name: 'anaxi_index', description: 'Regenerate the project\'s generated index (anaxi.json "index", e.g. INDEX.md) after changing any marks. Never edit that file by hand. check: true only reports whether it is stale.', inputSchema: { type: 'object', properties: { check: { type: 'boolean', description: 'report only, write nothing' }, ...DIR } } },
   { name: 'anaxi_related', description: 'Everything an item is connected to, both ways, with each other item\'s depth and status: uses and used-by (with the level needed and whether it blocks), mentions, changed-with (named in a decision log: past changes went together), supersedes, sub-items; and the item\'s role (feature, shared, foundation). Call before changing an item, to see what else the change touches.', inputSchema: { type: 'object', properties: { ...ID, ...DIR }, required: ['id'] } },
+  { name: 'anaxi_outline', description: 'Where each answer is in an item, without reading it: every section and lead-in in order with its level, label, link (file#anchor), word count and first sentence, plus its own questions and answers. Read this first, then only the section that answers your question.', inputSchema: { type: 'object', properties: { ...ID, at: { type: 'string', description: 'only up to this depth, e.g. D2' }, ...DIR }, required: ['id'] } },
   { name: 'anaxi_uses', description: 'What an item uses, and who uses it (transitively): the blast radius of changing it.', inputSchema: { type: 'object', properties: { ...ID, ...DIR }, required: ['id'] } },
 ];
 
@@ -64,6 +65,9 @@ const CALLS = {
       return { kind: r.kind, id: o.id || o.title, title: o.title, file: o.file, depth: o.depth, shown: LV(o.depthN), status: o.status,
         ...(r.level ? { level: r.level } : {}), ...(r.blocked ? { blocked: true } : {}), ...(o.lifecycle !== 'current' ? { lifecycle: o.lifecycle } : {}) }; })
       .sort((x, y) => order.indexOf(x.kind) - order.indexOf(y.kind)) }; },
+  anaxi_outline: (a) => { const m = load(a.dir); const it = find(m, a.id);
+    return { item: it.id || it.title, file: it.file, depth: it.depth, shown: LV(it.depthN), target: LV(it.targetN), ...(it.built ? { built: it.built } : {}),
+      outline: outline(m, it, { at: a.at }), questions: it.checklist.map((q) => ({ level: q.level, text: q.text, answered: q.checked, ...(q.answer ? { answer: q.answer } : {}), file: q.file || it.file, line: q.line })) }; },
   anaxi_uses: (a) => { const m = load(a.dir); const it = find(m, a.id); return { item: it.id, uses: it.uses.map((u) => ({ id: u.item?.id || u.raw, depth: u.item?.depth || null })),
     usedBy: dependents(m, it).map((d) => ({ id: d.item.id || d.item.title, hop: d.hop, depth: d.item.depth })) }; },
 };
