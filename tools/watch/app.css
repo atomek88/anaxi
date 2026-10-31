@@ -69,6 +69,7 @@ li.check { list-style: none; margin-left: -20px; } li.check.open { color: var(--
 .vw.item { grid-template-columns: 290px minmax(0, 1fr) 240px; }
 @media (max-width: 980px) { .vw.item { grid-template-columns: 1fr; } }
 .vw-nav h4.sep { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+.role.drift { border-color: var(--bad); color: var(--bad); }
 .role { font-size: 11px; color: var(--ink3); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
 .n.t { color: var(--ink3); font-size: 12.5px; }
 .tree { position: relative; font-size: 12.5px; }

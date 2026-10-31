@@ -40,7 +40,7 @@ function find(model, q) {
   return it;
 }
 const brief = (it) => ({ id: it.id, title: it.title, file: it.file, line: it.line, depth: it.depth, shown: LV(it.depthN), target: LV(it.targetN), effective: LV(it.effectiveN),
-  status: it.status, open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
+  status: it.status, ...(it.built ? { built: it.built } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.drift ? { drift: it.drift } : {}), open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
   ...(it.lifecycle && it.lifecycle !== 'current' ? { lifecycle: it.lifecycle, successor: it.successor?.id || null } : {}) });
 
 const CALLS = {

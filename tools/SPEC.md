@@ -110,7 +110,7 @@ field    = "depth:" level [ arrow level | done ]
          | "profile:" name
          | "part-of:" "@" id
          | "parts:" part { "," part }                 ; detail listed from the item's side (FORMAT.md §9)
-         | "built:" ("no" | "partly" | "yes")          ; is the design built (FORMAT.md §2)
+         | "built:" ("no" | "partly" | "yes") [ "(" date ")" ]   ; is it built; the day the code was last checked
          | "code:" path { "," path }                 ; where it is built: files or folders, relative to the item's file
          | "superseded-by:" "@" id [ "(" reason ")" ] | "supersedes:" "@" id { "," "@" id }
          | "retired:" date [ "(" reason ")" ]          ; date YYYY-MM-DD; a date or a reason is required
@@ -158,6 +158,9 @@ lines (`reword:`, `skip-all:`), and `## Principles` (shown by the skill, not che
 | N04 | current = effective, nothing open, no N02. Says "for now" when effective < target |
 | N06 | max(current, deepest) > effective (canvas and history never count) |
 | N22 | shown > claimed: info, content past the claim |
+| N23 | `built:` partly or yes, `code:` set, inside git: the last change (uncommitted = now, else the last commit) to the item's file and part files is newer than the last change to its code paths, and its local day is after the `built:` date if one is given |
+| N24 | `built:` partly or yes, and current < the full target |
+| N25 | a `code:` path (relative to the item's file) doesn't exist |
 | N05 (structural part) | shown < claimed: the message names each level up to the claim with nothing written; or the item claims D0 and every D0-mapped section is empty (HTML comments don't count). The rest of N05 (is it *answered*, not just written) is the agent's |
 | N09 | gate fails when current < the **full** target, anything is open (any level), a `uses:` item isn't deep enough or doesn't resolve, or there is any other `block` nudge |
 | N10 | a `later:` trigger `when @x reaches Dn` where current(@x) ≥ Dn |

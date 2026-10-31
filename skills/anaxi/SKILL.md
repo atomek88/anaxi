@@ -146,6 +146,12 @@ yourself.** Asked to build, you were not asked to design: offer to draft the mis
 user asked you to design or deepen the item. Never deepen an item someone else owns (a `uses:` blocker) without
 being asked; name it as the blocker.
 
+After building, mark it: `built: yes (today)` or `partly`, and `code:` with where it went (relative to the item's
+file). On N23 (the design changed after the code), read what changed in the design and check the code against it
+before anything else; then fix the code, or write today's date on `built:` once it matches. On N24 (built ahead of its
+design), write the missing levels from what the code actually does, and say which parts you inferred. Never set
+`built: yes` on something you didn't build or check.
+
 ### 6.1 Superseded, retired, archived (FORMAT.md §10)
 
 - **Never build from, cite or extend a superseded, retired or archived item** (`status --all`, or a

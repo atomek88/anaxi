@@ -22,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { loadConfig, globRe, LV, lv, top as topLevel, METHOD_DIR } from './lib/config.mjs';
-import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText } from './lib/engine.mjs';
+import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt } from './lib/engine.mjs';
 import { transition } from './lib/lifecycle.mjs';
 import { context } from './lib/read.mjs';
 
@@ -59,6 +59,7 @@ const itemJson = (it) => ({
   open: it.openList, caveats: it.caveats, later: it.later.map((l) => ({ text: l.text, trigger: l.trigger ? { id: l.trigger.id, level: l.trigger.level } : null })),
   skip: it.skip, sections: it.sections, lifecycle: it.lifecycle,
   supersededBy: it.supersededBy, supersedes: it.supersedes, retired: it.retired, successor: it.successor?.key || null,
+  ...(it.built ? { built: it.built } : {}), ...(it.builtChecked ? { builtChecked: it.builtChecked } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.drift ? { drift: it.drift } : {}),
 });
 // "D1 (D4?)": the text shows D1 of a claimed D4 (N05)
 const depthText = (it) => (!it.depth ? '—' : it.depthN < it.claimedN ? `${it.depthN < 0 ? '—' : LV(it.depthN)} (${it.depth}?)` : it.depth);
@@ -148,10 +149,11 @@ switch (cmd) {
       break;
     }
     console.log(header());
-    console.log(`\n   ${pad('Item', 34)} ${pad('Depth', 8)} ${pad('Target', 12)} ${pad('Open', 5)} Uses`);
+    const B = usesBuilt(model.all);
+    console.log(`\n   ${pad('Item', 34)} ${pad('Depth', 8)} ${pad('Target', 12)} ${B ? `${pad('Built', 6)} ` : ''}${pad('Open', 5)} Uses`);
     for (const it of items) {
       const title = `${it.parent ? '↳ ' : ''}${it.id ? it.id + ' ' : ''}${it.title}`;
-      console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(depthText(it), 8)} ${pad(targetText(it), 12)} ${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}`);
+      console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(depthText(it), 8)} ${pad(targetText(it), 12)} ${B ? `${pad(builtText(it) || '—', 6)} ` : ''}${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}`);
     }
     if (items.some((it) => it.depthN < it.claimedN)) console.log(dim('\nD1 (D4?): the text shows D1 of the D4 it claims; levels count only up to the first one with nothing written (N05)'));
     const past = model.inactive.filter((it) => !it.parent || it.parent.lifecycle === 'current');

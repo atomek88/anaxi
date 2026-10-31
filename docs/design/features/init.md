@@ -4,6 +4,8 @@ depth: D1
 risk: 1·0·0·0
 about: [cli]
 uses: ["@check"]
+built: yes (2026-10-30)
+code: [../../../tools/anaxi-init.sh, ../../../skills/init]
 ---
 # Setting up a project (`/anaxi:init`)
 

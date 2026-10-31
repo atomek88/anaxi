@@ -6,6 +6,8 @@ about: [agents]
 uses: ["@mcp", "@check", "@method", "@questions"]
 parts:
   - "../../../skills/anaxi/SKILL.md (D3)"
+built: yes (2026-10-30)
+code: [../../../skills]
 ---
 # The skill
 

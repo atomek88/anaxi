@@ -119,10 +119,12 @@ export function normalizeFields(raw, errs, where) {
           return { path: p, anchor: a || '', level: m[3] || null, raw: String(x).trim() };
         }).filter(Boolean);
         break;
-      case 'built':
-        if (!['no', 'partly', 'yes'].includes(String(val).toLowerCase())) errs.push(`${where}: built must be no, partly or yes`);
-        else f.built = String(val).toLowerCase();
+      case 'built': { // no | partly | yes, optionally with the day the code was last checked against the design
+        const m = String(val).trim().match(/^(no|partly|yes)\s*(?:\(?\s*(\d{4}-\d{2}-\d{2})\s*\)?)?$/i);
+        if (!m) errs.push(`${where}: built must be no, partly or yes, optionally with a date: built: yes (2026-10-30)`);
+        else { f.built = m[1].toLowerCase(); if (m[2]) f.builtChecked = m[2]; }
         break;
+      }
       case 'code': f.code = asList(val).map((x) => x.trim()).filter(Boolean); break;
       case 'superseded-by': {
         const m = String(val).match(/^@?([A-Za-z][\w-]*)\s*(?:\((.*)\))?/);
@@ -264,7 +266,9 @@ export function parseFile(text, file, names = SECTION_NAMES) {
         const parts = [];
         while (k < lines.length && lines[k].startsWith('>')) parts.push(lines[k++].replace(/^>\s?/, '').trim());
         const joined = parts.filter(Boolean).join(' · ');
-        if (/(^|\s)(depth|part-of):/.test(joined)) { raw = parseFieldString(joined); declared = 'tag'; consumed = k - 1; }
+        // a tag line declares an item (depth: or part-of:), or adds fields to a heading that's already one by its badge
+        const badged = /`@[A-Za-z][\w-]*`|`D\d[^`]*`/.test(htext);
+        if (/(^|\s)(depth|part-of):/.test(joined) || (badged && /(^|\s)(built|code|uses|risk|about|caveats|later|focus):/.test(joined))) { raw = parseFieldString(joined); declared = 'tag'; consumed = k - 1; }
         else if (stack.length && /(^|\s)(superseded-by|retired):/.test(joined)) sectionNote = { text: joined, end: k - 1 };
       } else if (/^<!--\s*anaxi:/.test(lines[j]?.trim() || '')) {
         let k = j, s = '';

@@ -4,6 +4,8 @@ depth: D2
 risk: 1·1·0·0
 about: [cli]
 uses: ["@check"]
+built: partly (2026-10-30)
+code: [../../../tools/release.sh, ../../../.claude-plugin]
 ---
 # Releasing the plugin
 

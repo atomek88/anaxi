@@ -23,6 +23,10 @@
       title: `${M.levels[i].id}: ${i <= d ? 'written' : w ? (i > c ? 'written, past the claimed depth' : 'written, but not counted: a level below it is empty') : i <= c ? 'claimed, nothing written' : need ? 'needed' : 'not needed'}` };
   }
   const ROLE = { shared: '🔗 shared', foundation: '🧱 foundation' };
+  // what's built (FORMAT.md §2): ✓ yes, ◐ partly, · no, k/n of its marked parts; red when the design moved on since
+  const BUILT = { yes: '✓ built', partly: '◐ partly built', no: '· not built' };
+  const builtWord = (it) => [BUILT[it.built], it.builtParts ? `${it.builtParts.yes}/${it.builtParts.yes + it.builtParts.partly + it.builtParts.no} parts built` : ''].filter(Boolean).join(' · ');
+  const builtTag = (it) => (builtWord(it) ? `<span class="role ${it.drift ? 'drift' : ''}" title="${esc(it.drift ? `the design changed after the code (design ${it.drift.doc.slice(0, 10)}, code ${it.drift.code.slice(0, 10)})` : (it.code || []).join(', ') || 'no code: paths')}">${it.built === 'yes' ? '✓' : it.built === 'partly' ? '◐' : it.built === 'no' ? '·' : ''}${it.builtParts ? ` ${it.builtParts.yes}/${it.builtParts.yes + it.builtParts.partly + it.builtParts.no}` : ''}${it.drift ? ' ⚠' : ''}</span>` : '');
   const roleTag = (it) => (ROLE[it.role] ? `<span class="role" title="${it.role === 'foundation' ? 'shared, and builds on nothing: what features stand on' : 'shared: other items build on it'}">${ROLE[it.role]}</span>` : '');
   const all = () => [...M.items, ...M.inactive];
   const byKey = (k) => all().find((it) => it.key === k);
@@ -81,7 +85,7 @@
   const nav = (active) => `<h4>Topics</h4>${topics().map((t) => `<button class="o ${t === active ? 'on' : ''}" ${go(`#/topic/${encodeURIComponent(t)}`)}>${esc(t)} · ${M.items.filter((i) => topicOf(i) === t).length}</button>`).join('')}
     ${M.inactive.length || M.deleted.length ? `<h4>History</h4>${M.inactive.map((it) => `<button class="o dim" ${go(itemHash(it))}>${ICON[it.status]} ${esc(name(it))}</button>`).join('')}${M.deleted.map((d) => `<span class="o dim" title="${esc(d.why || '')}">✕ ${esc(d.id)}</span>`).join('')}` : ''}`;
   const row = (it) => { const bb = blockedBy(it), ub = usedBy(it);
-    return `<div class="row"><span>${ICON[it.status]}</span><span>${link(it)} <span class="t">${esc(it.title)}</span> ${roleTag(it)}</span><span>${esc(unbacked(it) ? `${it.shown || '—'} (${it.depth}?)` : it.depth || '—')} → ${esc(it.target || '—')}</span><span>${bb.length ? `blocked by ${bb.map(link).join(', ')}` : esc(WORD[it.status])}${ub.length ? ` · used by ${ub.map(link).join(', ')}` : ''}</span></div>`; };
+    return `<div class="row"><span>${ICON[it.status]}</span><span>${link(it)} <span class="t">${esc(it.title)}</span> ${roleTag(it)}${builtTag(it)}</span><span>${esc(unbacked(it) ? `${it.shown || '—'} (${it.depth}?)` : it.depth || '—')} → ${esc(it.target || '—')}</span><span>${bb.length ? `blocked by ${bb.map(link).join(', ')}` : esc(WORD[it.status])}${ub.length ? ` · used by ${ub.map(link).join(', ')}` : ''}</span></div>`; };
   // reading order: what an item uses comes first, so "next" reads the design bottom-up
   function rankOf() {
     const rank = new Map(), r = (it, seen = new Set()) => {
@@ -271,7 +275,7 @@
     const order = reading(), i = order.findIndex((x) => x.key === it.key);
     const pager = i < 0 ? '' : `<div class="pager"><span>${i > 0 ? `← <button ${go(itemHash(order[i - 1], `?at=${at}`))} data-peek="${esc(order[i - 1].key)}">${esc(name(order[i - 1]))}</button>` : ''}</span><span class="mid">${i + 1} of ${order.length} · reading at ${esc(M.levels[at].id)}</span><span>${i < order.length - 1 ? `<button ${go(itemHash(order[i + 1], `?at=${at}`))} data-peek="${esc(order[i + 1].key)}">${esc(name(order[i + 1]))}</button> →` : ''}</span></div>`;
     const main = `${banner}<h1>${esc(it.title)}</h1>
-      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span>${ROLE[it.role] ? `<span class="b">${ROLE[it.role]} · used by ${usedBy(it).length}</span>` : ''}<span class="b${unbacked(it) ? ' st-gap' : ''}">${unbacked(it) ? `claims ${esc(it.depth)} · shows ${esc(it.shown || 'nothing')}` : `depth ${esc(it.depth || '—')}`} · needs ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
+      <div class="badges">${it.id ? `<span class="b">${esc(it.id)}</span>` : ''}<span class="b st-${it.status}">${ICON[it.status]} ${esc(WORD[it.status])}</span>${ROLE[it.role] ? `<span class="b">${ROLE[it.role]} · used by ${usedBy(it).length}</span>` : ''}${builtWord(it) ? `<span class="b ${it.drift ? 'st-blocked' : it.built === 'yes' ? 'st-enough' : 'st-gap'}" title="${esc((it.code || []).join(', '))}">${esc(builtWord(it))}${it.drift ? ' · design changed since' : ''}</span>` : ''}<span class="b${unbacked(it) ? ' st-gap' : ''}">${unbacked(it) ? `claims ${esc(it.depth)} · shows ${esc(it.shown || 'nothing')}` : `depth ${esc(it.depth || '—')}`} · needs ${esc(it.target || '—')}${it.effective && it.effective !== it.target ? ` (now ${esc(it.effective)})` : ''}</span>${it.risk ? `<span class="b">risk ${it.risk.join('·')}</span>` : ''}<span class="b">${esc(it.file)}:${it.line}</span></div>
       ${chips || partChips ? `<div class="related">${chips}${partChips}</div>` : ''}
       <div class="readbar">${depthCtl}<span class="t">▸ lines unfold one level in place · hover a name to preview it</span></div>
       ${docBody(it, at)}

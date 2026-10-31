@@ -9,6 +9,8 @@ parts:
   - "../../../tools/SPEC.md#11-anaxi-cish (D3)"
   - "../../../tools/SPEC.md#6-exit-codes (D3)"
   - "../../../tools/SPEC.md#7-plugin-hooks (D3)"
+built: yes (2026-10-30)
+code: [../../../tools/anaxi-check.mjs, ../../../tools/anaxi-ci.sh, ../../../hooks]
 ---
 # The checker (`anaxi-check`)
 

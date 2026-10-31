@@ -24,6 +24,11 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
+- format · **What's built.** `built: no | partly | yes (date)` on any item or sub-item (the host rolls up `2/3`), and
+  `code:` paths; N23 when the design changed after both its code and the checked day (from git), N24 built ahead of
+  its design, N25 a code path that's gone. A Built column appears in status and the index only when a project uses
+  it. Replaces "no check marks": tasks still belong in the tracker, checkboxes still mean answered · living docs need
+  to say what exists and warn when the design moves on without the code.
 - format · **One design folder.** `anaxi.json` can live in the design folder (`docs/design`, `docs`, `design`, `doc` or
   `.anaxi`) and is found from the repo root; `/anaxi:init` now writes everything into `docs/design/`. Parts can be
   listed from the item's side (`parts: ["../../tools/SPEC.md#3-parsing (D3)"]`), so specs and code carry no marks ·

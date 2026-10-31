@@ -7,6 +7,8 @@ uses: ["@engine"]
 later: search, a static export, per-item git history (when a pilot asks for them)
 parts:
   - "../../../tools/SPEC.md#82-anaxi-watch (D3)"
+built: yes (2026-10-30)
+code: [../../../tools/anaxi-watch.mjs, ../../../tools/watch]
 ---
 # The reader (`anaxi watch`)
 

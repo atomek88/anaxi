@@ -11,6 +11,8 @@ parts:
   - "../../../tools/SPEC.md#4-structural-rules (D3)"
   - "../../../tools/SPEC.md#5-json-output (D3)"
   - "../../../tools/SPEC.md#81-reading-an-item (D3)"
+built: yes (2026-10-30)
+code: [../../../tools/lib]
 ---
 # The engine
 

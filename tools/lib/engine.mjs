@@ -1,6 +1,7 @@
 // Structural rules (tools/SPEC.md §4): targets, effective targets, open questions, structural nudges, the index.
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile } from './config.mjs';
 import { parseFile, SECTION_NAMES, slug, sectionByName } from './parse.mjs';
 import { questionSet, questionsFor } from './questions.mjs';
@@ -8,7 +9,7 @@ import { blocks } from './read.mjs';
 
 const ICON = { blocked: '⛔', later: '⏸️', trim: '✂️', gap: '⬇️', open: '❓', enough: '🎯', none: '❓',
   superseded: '↪️', retired: '⏹️', archived: '🗄️' };
-const ORDER = ['N09', 'N02', 'N18', 'N15', 'N19', 'N21', 'N03', 'N05', 'N22', 'N01', 'N08', 'N07', 'N06', 'N14', 'N12', 'N10',
+const ORDER = ['N09', 'N02', 'N18', 'N15', 'N19', 'N21', 'N23', 'N24', 'N25', 'N03', 'N05', 'N22', 'N01', 'N08', 'N07', 'N06', 'N14', 'N12', 'N10',
   'N11', 'N13', 'N16', 'N17', 'N20', 'N04'];
 
 /**
@@ -16,6 +17,7 @@ const ORDER = ['N09', 'N02', 'N18', 'N15', 'N19', 'N21', 'N03', 'N05', 'N22', 'N
  * on another git revision for `--diff`.
  */
 export function evaluate(cfg, { read, files } = {}) {
+  const git = !read;
   read ||= (rel) => fs.readFileSync(path.join(cfg.root, rel), 'utf8');
   files ||= docFiles(cfg);
   const names = { ...SECTION_NAMES };
@@ -189,7 +191,13 @@ export function evaluate(cfg, { read, files } = {}) {
   for (const it of items) it.successor = it.lifecycle === 'current' ? null : successor(it);
   const active = items.filter((it) => it.lifecycle === 'current');
   const inactive = items.filter((it) => it.lifecycle !== 'current');
-  const model = { cfg, items: active, inactive, all: items, byId, retired, untagged, errors, warnings, questions: qs };
+  // what's built (FORMAT.md §2): the code paths, relative to the item's file, and the roll-up over marked sub-items
+  for (const it of items) {
+    it.codePaths = (it.code || []).map((c) => path.posix.normalize(path.posix.join(path.posix.dirname(it.file), c)));
+    const marked = it.children.filter((c) => c.built);
+    if (marked.length) it.builtParts = { yes: marked.filter((c) => c.built === 'yes').length, partly: marked.filter((c) => c.built === 'partly').length, no: marked.filter((c) => c.built === 'no').length };
+  }
+  const model = { cfg, items: active, inactive, all: items, byId, retired, untagged, errors, warnings, questions: qs, clock: git ? gitClock(cfg) : null };
   model.nudges = nudges(model);
   for (const it of active) it.status = statusOf(it, model);
   for (const it of inactive) it.status = it.lifecycle;
@@ -240,6 +248,7 @@ function nudges(model) {
     } else if (it.shownN > it.claimedN) {
       add('N22', 'info', it, `has content through ${LV(it.shownN)} but claims ${it.depth}: raise its depth if those questions are answered`);
     }
+    if (it.built || it.codePaths.length) builtNudges(model, it, add);
     if (it.targetN == null) { add('N14', 'warn', it, 'has no target. Score its risk, or write depth: Dn → Dt'); continue; }
     const capped = it.effectiveN < it.targetN;
     const d0 = it.sections.filter((s) => s.level === 'D0');
@@ -318,6 +327,39 @@ const reach = (w, min) => {
   return { shownN, deepestN: w.reduce((d, x, i) => (x >= min ? i : d), -1) };
 };
 
+/** N23–N25: a built item whose design changed after its code, one built ahead of its design, a code path that's gone. */
+function builtNudges(model, it, add) {
+  const root = model.cfg.root, done = it.built === 'yes' || it.built === 'partly';
+  const missing = it.codePaths.filter((p) => !fs.existsSync(path.join(root, p)));
+  if (missing.length) add('N25', 'warn', it, `code: ${missing.join(', ')} ${missing.length > 1 ? "don't" : "doesn't"} exist: fix the path, or remove it`);
+  if (done && it.targetN != null && it.depthN < it.targetN) add('N24', 'warn', it, `built ${it.built}, but designed only to ${at(it)} of ${LV(it.targetN)}: built ahead of its design. Write the missing levels from the code, or lower the target`);
+  const code = it.codePaths.filter((p) => !missing.includes(p));
+  if (!done || !code.length || !model.clock) return;
+  const docT = model.clock([it.file, ...(it.parts || []).map((p) => p.file)]), codeT = model.clock(code);
+  const day = (t) => { const d = new Date(t * 1000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }; // local, as people write dates
+  // `built: yes (2026-10-30)`: the code was checked against the design that day, so only later design changes count
+  if (docT == null || codeT == null || docT <= codeT || (it.builtChecked && day(docT) <= it.builtChecked)) return;
+  it.drift = { doc: new Date(docT * 1000).toISOString(), code: new Date(codeT * 1000).toISOString() };
+  add('N23', 'warn', it, `built, but its design changed after the code (design ${day(docT)}${docT === model.clock.now ? ', not committed' : ''}, code ${day(codeT)}): check the code still matches, then write the day you checked (built: ${it.built} (${day(model.clock.now)})), or set built: partly`, { drift: it.drift });
+}
+
+/** When paths last changed, from git: an uncommitted change is now, else the last commit's time. Null outside git. */
+function gitClock(cfg) {
+  const run = (args) => execFileSync('git', args, { cwd: cfg.root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  try { run(['rev-parse', '--git-dir']); } catch { return null; }
+  const now = Math.floor(Date.now() / 1000), cache = new Map();
+  const clock = (paths) => {
+    const k = paths.join('\0');
+    if (!cache.has(k)) {
+      try { cache.set(k, run(['status', '--porcelain', '--', ...paths]).trim() ? now : Number(run(['log', '-1', '--format=%ct', '--', ...paths]).trim()) || null); }
+      catch { cache.set(k, null); }
+    }
+    return cache.get(k);
+  };
+  clock.now = now;
+  return clock;
+}
+
 /** "superseded by @new", "retired 2026-11-02 (why)", "archived". */
 export function lifeText(it) {
   if (it.supersededBy) return `superseded by ${it.supersededBy.id}${it.supersededBy.reason ? ` (${it.supersededBy.reason})` : ''}${it.lifecycle === 'archived' ? ', archived' : ''}`;
@@ -391,7 +433,6 @@ export function gate(model, it) {
   return { ready: why.length === 0, why };
 }
 
-/** Who depends on `it`, transitively. */
 /**
  * What each item is connected to, both ways (ROADMAP §4, @related): Map item → [{ key, kind, level?, blocked? }].
  * Kinds: uses / used-by (dependencies, with the level needed and whether it blocks), mentions / mentioned-by (an @id in
@@ -420,6 +461,7 @@ export function roleOf(cfg, it) {
   return !dir || !it.file.startsWith(dir) ? 'feature' : it.uses.some((u) => u.item && u.item.lifecycle === 'current') ? 'shared' : 'foundation';
 }
 
+/** Who depends on `it`, transitively. */
 export function dependents(model, it) {
   const seen = new Set(), out = [];
   const visit = (x, hop) => {
@@ -437,8 +479,17 @@ export const targetText = (it) => (it.targetN == null ? '—'
   : it.effectiveN < it.targetN ? `${LV(it.targetN)} (now ${LV(it.effectiveN)})` : LV(it.targetN));
 
 /** INDEX.md (TOOLING.md §4.2). Deterministic: no dates, so CI can compare it. */
+/** "✓", "◐", "·", "2/3" (a host's marked sub-items), or "" when unmarked (FORMAT.md §2). */
+export function builtText(it) {
+  const own = { yes: '✓', partly: '◐', no: '·' }[it.built] || '';
+  const p = it.builtParts, roll = p ? `${p.yes}/${p.yes + p.partly + p.no}` : '';
+  return [own, roll].filter(Boolean).join(' ');
+}
+export const usesBuilt = (items) => items.some((it) => it.built || it.code?.length);
+
 export function renderIndex(model, indexPath) {
   const { cfg, items } = model;
+  const B = usesBuilt(model.all);
   const dir = path.posix.dirname(indexPath);
   const link = (it) => {
     const rel = path.posix.relative(dir, it.file) + (it.anchor ? `#${it.anchor}` : '');
@@ -450,9 +501,9 @@ export function renderIndex(model, indexPath) {
   const rows = order.map((it) => {
     const uses = it.uses.map((u) => (u.item ? `[${name(u.item)}](${path.posix.relative(dir, u.item.file)}${u.item.anchor ? '#' + u.item.anchor : ''})` : u.raw));
     const parts = (it.parts || []).map((p) => `[${p.title.replace(/[[\]|]/g, '')}](${path.posix.relative(dir, p.file)}${p.anchor ? '#' + p.anchor : ''})`);
-    return `| ${icon(it.status)} | ${it.parent ? '↳ ' : ''}${link(it)}${it.id ? ` \`${it.id}\`` : ''}${parts.length ? ` · parts: ${parts.join(', ')}` : ''} | ${it.depth ? at(it) : '—'} | ${targetText(it)} | ${uses.join(', ') || '—'} | ${usedBy(it).join(', ') || '—'} | ${it.openList.length} |`;
+    return `| ${icon(it.status)} | ${it.parent ? '↳ ' : ''}${link(it)}${it.id ? ` \`${it.id}\`` : ''}${parts.length ? ` · parts: ${parts.join(', ')}` : ''} | ${it.depth ? at(it) : '—'} | ${targetText(it)} |${B ? ` ${builtText(it) || '—'} |` : ''} ${uses.join(', ') || '—'} | ${usedBy(it).join(', ') || '—'} | ${it.openList.length} |`;
   });
-  const NI = { N02: '⛔', N15: '⛔', N03: '❓', N01: '⬇️', N05: '⚠️', N06: '✂️', N14: '❓', N10: '⏸️', N13: 'ℹ️' };
+  const NI = { N02: '⛔', N15: '⛔', N03: '❓', N01: '⬇️', N05: '⚠️', N06: '✂️', N14: '❓', N10: '⏸️', N13: 'ℹ️', N23: '⚠️', N24: '⚠️', N25: '⚠️' };
   const nud = model.nudges.filter((n) => n.code !== 'N04' && !(n.code === 'N02' && n.severity === 'info'))
     .map((n) => `- ${NI[n.code] || 'ℹ️'} **${n.title}** ${n.message}`);
   const later = items.flatMap((it) => it.later.map((l) => `- **${it.title}**: ${l.text}`));
@@ -466,8 +517,8 @@ export function renderIndex(model, indexPath) {
     '',
     '<!-- Generated by `anaxi-check index`. Don\'t edit: change the docs and regenerate. -->',
     '',
-    '| | Item | Depth | Target | Uses | Used by | Open |',
-    '|---|---|---|---|---|---|---|',
+    `| | Item | Depth | Target |${B ? ' Built |' : ''} Uses | Used by | Open |`,
+    `|---|---|---|---|${B ? '---|' : ''}---|---|---|`,
     ...rows,
     '',
     '## Nudges',
@@ -480,7 +531,7 @@ export function renderIndex(model, indexPath) {
     '',
     ...(past.length || gone.length ? ['## Superseded and retired', '', ...past,
       ...(gone.length ? [`- Deleted (in git history, listed in ${path.posix.relative(dir, retiredFile(cfg))}): ${gone.join(', ')}`] : []), ''] : []),
-    `<sub>${icon('enough')} enough · ${icon('gap')} go deeper · ${icon('blocked')} blocked · ${icon('open')} open · ${icon('trim')} over-documented · ${icon('later')} later${(model.inactive || []).length ? ` · ${icon('superseded')} superseded · ${icon('retired')} retired · ${icon('archived')} archived` : ''}. Structural nudges only; the skill and reviewers add the ones that need reading (N05, N07, N08, N12, N16, N17).</sub>`,
+    `<sub>${icon('enough')} enough · ${icon('gap')} go deeper · ${icon('blocked')} blocked · ${icon('open')} open · ${icon('trim')} over-documented · ${icon('later')} later${B ? ' · built ✓ yes, ◐ partly, · no, k/n of its parts' : ''}${(model.inactive || []).length ? ` · ${icon('superseded')} superseded · ${icon('retired')} retired · ${icon('archived')} archived` : ''}. Structural nudges only; the skill and reviewers add the ones that need reading (N05, N07, N08, N12, N16, N17).</sub>`,
     '',
   ].join('\n');
 }

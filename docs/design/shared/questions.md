@@ -6,6 +6,8 @@ about: [method]
 uses: ["@method"]
 parts:
   - "../../../QUESTIONS.md (D3)"
+built: yes (2026-10-30)
+code: [../../../tools/lib/questions.mjs]
 ---
 # The questions
 

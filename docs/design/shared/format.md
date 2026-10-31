@@ -7,6 +7,8 @@ uses: ["@method"]
 caveats: levels are read from prose by heuristics; a mark quoted as an example can look like a real one
 parts:
   - "../../../FORMAT.md (D3)"
+built: yes (2026-10-30)
+code: [../../../tools/lib/parse.mjs, ../../../tools/lib/read.mjs]
 ---
 # The markup
 

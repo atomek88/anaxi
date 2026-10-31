@@ -5,6 +5,8 @@ risk: 1·1·0·1
 about: [agents]
 uses: ["@mcp", "@engine"]
 focus: now
+built: yes (2026-10-30)
+code: [../../../tools/anaxi-mcp.mjs, ../../../tools/lib/engine.mjs]
 ---
 # Related items for agents (`anaxi_related`)
 

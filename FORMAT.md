@@ -63,9 +63,25 @@ optional, and the tools treat each one exactly like the word next to it:
 | ⚠️ | `caveat` | a known limit accepted at this depth |
 | 🎨 | `canvas` | unbound exploration, not committed (§6) |
 
-**No check marks.** A design doc doesn't track whether work is done; that belongs in your tracker. The
-closest Anaxi gets is 🎯, which means the design is deep enough for its risk. The checkboxes in an item's
-question list (§5) mean "answered", not "done".
+**What's built: one mark, nothing finer.** 🎯 means the design is deep enough for its risk, not that it's
+built. Whether it's built is `built: no | partly | yes`, on the item or on any sub-item, so the sections of a doc
+can be checked off one by one, and the host shows the roll-up (`2/3`). `code:` says where it's built (files or
+folders, relative to the item's file, like a link). Add the day the code was last checked against the design,
+`built: yes (2026-10-30)`; when the design changes after both the code and that day, the checker warns (N23).
+Tasks, estimates and who's doing them stay in your tracker. The checkboxes in an item's question list (§5) mean
+"answered", never "built".
+
+```markdown
+---
+anaxi: "@recurring"
+depth: D3
+built: partly (2026-10-30)
+code: [../../src/recurring/, ../../src/jobs/materialize.ts]
+---
+
+## Series editing `@recurring-edit` `D3 🎯`
+> built: yes
+```
 
 Writing `D3 🎯` or `D3 enough` in a tag is the same thing. Generated output (the index, the status table) uses icons,
 because they scan quickly in a long list.
