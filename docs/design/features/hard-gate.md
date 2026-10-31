@@ -24,7 +24,9 @@ results lead with "NOT READY: don't implement" when the gate is closed. On by de
 project by editing `anaxi.json` (`"hooks": { "gate": false }`) themselves: **it can't be lifted from inside a session.**
 In the second test the agent read the off switch in the refusal, turned it off, and built; so the refusal no longer
 names it, and an edit that turns the gate off, opens a blocked item through settings alone, marks a blocked item
-built, or drops its planned `code:` is refused too. Designing the item stays the way through. Out of scope: shell-command writes, and code no item maps.
+built, or drops its planned `code:` is refused too. Designing the item stays the way through. In the third test (2026-10-31) the same prompt was refused on 8 writes,
+the agent stopped, didn't route around it, and offered the two ways through: the user lifts the gate, or it designs
+the item to D3, with proposals for the open questions and four design gaps it found while drafting. Out of scope: shell-command writes, and code no item maps.
 
 **Shape.** A PreToolUse hook (`hooks/before-edit.mjs`) on Write, Edit, MultiEdit and NotebookEdit returns a deny
 decision; Claude Code doesn't run the edit, so no wording in a prompt gets past it. The rule lives in the engine
