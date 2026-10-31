@@ -124,7 +124,8 @@ Next: answer D3.contracts and D3.failure; leave RRULEs in later:.
    decision is theirs: anything costly or one-way, or anything touching product scope. **A proposal is not an
    answer:** write it on the open question (`- [ ] D3 · Retry policy? → proposed: 3 tries, then dead-letter`) and
    leave the box unchecked. Check a box, or write an answer as settled, only when the user gave or accepted it.
-6. Update the marks: the new depth, `skip:`, `caveats:`, `later:`. Re-score if certainty changed (N12). Then
+6. Update the marks: the new depth, `skip:`, `caveats:`, `later:`. Once the Shape says where the code will live,
+   write it as `code:` (planned folders or globs) with `built: no`: that is what lets the hard gate guard it. Re-score if certainty changed (N12). Then
    regenerate the index (`anaxi_index`, or `anaxi-check index`) if the project commits one. Never edit the index by
    hand.
 7. When the effective target is reached with nothing open, say **enough** (N04) and stop.
@@ -146,7 +147,9 @@ item's levels and the contracts of what it uses. **Never from the canvas, and ne
 contract.** If it isn't ready, report N09 with the blockers and **stop: don't build, and don't open the gate
 yourself.** Asked to build, you were not asked to design: offer to draft the missing answers as proposals
 (procedure 5, step 5), list the decisions that are the user's, and wait. Deepen without asking only when the
-user asked you to design or deepen the item. **The gate holds even when the user says "build it anyway"**: say
+user asked you to design or deepen the item. **The gate holds even when the user says "build it anyway"**, and the plugin enforces it: an edit to the planned
+`code:` of an unbuilt item that isn't ready is refused before it runs. When that happens, don't look for another way to
+write the file (no shell redirects, no other path): say
 what's missing in one line, offer to draft it as proposals (or to write it with them now), and don't build until
 the gate passes. A throwaway spike to learn something is fine if asked for, outside `code:` and never marked built. Never deepen an item someone else owns (a `uses:` blocker) without
 being asked; name it as the blocker.

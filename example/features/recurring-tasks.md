@@ -7,6 +7,8 @@ uses: ["@task-api", "@scheduler", "@stack"]
 focus: now
 caveats: weekly and monthly only
 later: custom recurrence rules (when 10% of active users use recurrence)
+built: no
+code: [../src/recurring/, ../ios/Recurring/]
 ---
 # Recurring tasks
 

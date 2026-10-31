@@ -69,7 +69,9 @@ can be checked off one by one, and the host shows the roll-up (`2/3`). `code:` s
 globs (`../../src/messaging/**`), relative to the item's file, like a link. Together they are the **code map**: a file
 can be in several items' `code:` (cross-cutting code gets its own item, like @auth or @logging, listing what it
 spans), and the tools read it backwards, so an agent editing a file is told which designs it belongs to. Nothing is
-written in code or config files. Add the day the code was last checked against the design,
+written in code or config files. Write `code:` as soon as the design says where the code will live, with `built: no`: planned paths
+needn't exist yet, and the plugin refuses edits there until the item is ready (the hard gate). Add the day the code
+was last checked against the design,
 `built: yes (2026-10-30)`; when the design changes after both the code and that day, the checker warns (N23).
 Tasks, estimates and who's doing them stay in your tracker. The checkboxes in an item's question list (§5) mean
 "answered", never "built".

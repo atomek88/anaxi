@@ -335,7 +335,7 @@ const reach = (w, min) => {
 function builtNudges(model, it, add) {
   const root = model.cfg.root, done = it.built === 'yes' || it.built === 'partly';
   const missing = it.codePaths.filter((p) => (isGlob(p) ? !globMatches(root, p) : !fs.existsSync(path.join(root, p))));
-  if (missing.length) add('N25', 'warn', it, `code: ${missing.join(', ')} ${missing.length > 1 ? "match" : "matches"} nothing: fix the path, or remove it`);
+  if (missing.length && done) add('N25', 'warn', it, `code: ${missing.join(', ')} ${missing.length > 1 ? "match" : "matches"} nothing: fix the path, or remove it`);
   if (done && it.targetN != null && it.depthN < it.targetN) add('N24', 'warn', it, `built ${it.built}, but designed only to ${at(it)} of ${LV(it.targetN)}: built ahead of its design. Write the missing levels from the code, or lower the target`);
   const code = it.codePaths.filter((p) => !missing.includes(p));
   if (!done || !code.length || !model.clock) return;
@@ -368,12 +368,21 @@ export function itemsForFile(model, file) {
   }));
 }
 
+/** The hard gate (@hard-gate): the items that refuse an edit to `file` (relative to the project root): current
+ *  items that map it in `code:`, aren't built (`built:` no or unmarked) and whose gate isn't ready. */
+export function gateFor(model, file) {
+  return itemsForFile(model, file).filter((it) => it.built !== 'yes' && it.built !== 'partly')
+    .map((it) => ({ it, g: gate(model, it) })).filter(({ g }) => !g.ready)
+    .map(({ it, g }) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: at(it), target: LV(it.targetN), why: g.why }));
+}
+
 /** What a file belongs to, for people and agents: each item with its depth, built state, drift and contract links
  *  (relative to `base`, the folder the reader works in; default the project root). */
 export function fileReport(model, file, base = model.cfg.root) {
   const at = (p) => path.relative(base, path.resolve(model.cfg.root, p)).split(path.sep).join('/');
   return itemsForFile(model, file).map((it) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: it.depth, shown: LV(it.depthN),
     target: LV(it.targetN), status: it.status, ...(it.built ? { built: it.built } : {}), ...(it.drift ? { drift: it.drift } : {}),
+    ...(it.built !== 'yes' && it.built !== 'partly' && !gate(model, it).ready ? { blocks: true } : {}),
     doc: at(it.file), ready: gate(model, it).ready, contract: (it.parts || []).map((p) => `${at(p.file)}${p.anchor ? `#${p.anchor}` : ''}`) }));
 }
 

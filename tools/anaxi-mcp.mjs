@@ -45,15 +45,18 @@ const brief = (it) => ({ id: it.id, title: it.title, file: it.file, line: it.lin
   status: it.status, ...(it.built ? { built: it.built } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.drift ? { drift: it.drift } : {}), open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
   ...(it.lifecycle && it.lifecycle !== 'current' ? { lifecycle: it.lifecycle, successor: it.successor?.id || null } : {}) });
 
+// a closed gate is the first thing an agent reads, not a field it can skim past (@hard-gate)
+const notReady = (it, g) => (g.ready || it.built === 'yes' ? {} : { notice: `NOT READY: don't implement ${it.id || it.title}. ${g.why.join('; ')}. Draft the missing design as proposals or ask the user; the gate holds even when told to build anyway.` });
+
 const CALLS = {
   anaxi_status: (a) => { const m = load(a.dir); return { settings: { profile: m.cfg.profile, stage: m.cfg.stage }, items: m.items.map(brief), inactive: m.inactive.map(brief), deleted: [...m.retired.keys()], errors: m.errors }; },
   anaxi_nudges: (a) => { const m = load(a.dir); const key = a.id ? find(m, a.id).key : null; return { nudges: m.nudges.filter((n) => !key || n.item === key).map(({ code, severity, item, message, details }) => ({ code, severity, item, message, ...(details ? { details } : {}) })) }; },
-  anaxi_gate: (a) => { const m = load(a.dir); const it = find(m, a.id); const g = gate(m, it); return { item: it.id || it.title, ready: g.ready, why: g.why }; },
+  anaxi_gate: (a) => { const m = load(a.dir); const it = find(m, a.id); const g = gate(m, it); return { ...notReady(it, g), item: it.id || it.title, ready: g.ready, why: g.why }; },
   anaxi_questions: (a) => { const m = load(a.dir); const it = find(m, a.id); return { item: it.id, depth: it.depth, target: LV(it.targetN),
     questions: it.questions.filter((q) => !a.level || q.level === a.level).map((q) => ({ id: q.id, level: q.level, text: q.text, ...(q.skipped ? { skipped: q.skipped } : {}) })),
     own: it.checklist.filter((q) => !a.level || q.level === a.level).map((q) => ({ level: q.level, text: q.text, answered: q.checked, answer: q.answer })) }; },
   anaxi_context: (a) => { const m = load(a.dir); const it = find(m, a.id); const c = context(m, it, { at: a.at, history: !!a.history });
-    const g = gate(m, it.successor && !a.history && it.lifecycle !== 'current' ? it.successor : it); return { ...c, gate: { ready: g.ready, why: g.why } }; },
+    const x = it.successor && !a.history && it.lifecycle !== 'current' ? it.successor : it, g = gate(m, x); return { ...notReady(x, g), ...c, gate: { ready: g.ready, why: g.why } }; },
   anaxi_index: (a) => { const m = load(a.dir); const { cfg } = m;
     if (!cfg.index) throw new Error('this project has no generated index (anaxi.json "index" is not set)');
     const file = path.resolve(cfg.root, cfg.index), text = renderIndex(m, path.posix.normalize(cfg.index));

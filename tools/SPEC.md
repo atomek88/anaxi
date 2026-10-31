@@ -163,7 +163,7 @@ how to mark it (a sub-item still leans on its parent). `nudges.levelWords: 0` tu
 | N22 | shown > claimed: info, content past the claim |
 | N23 | `built:` partly or yes, `code:` set, inside git: the last change (uncommitted = now, else the last commit) to the item's file and part files is newer than the last change to its code paths, and its local day is after the `built:` date if one is given |
 | N24 | `built:` partly or yes, and current < the full target |
-| N25 | a `code:` entry (relative to the item's file) matches nothing: a path that doesn't exist, or a glob with no file |
+| N25 | `built:` partly or yes, and a `code:` entry (relative to the item's file) matches nothing: a path that doesn't exist, or a glob with no file |
 | code map | a file belongs to an item when one of its `code:` entries equals it, is a folder above it, or is a glob (`*`, `**`, `?`) matching it; many items can cover one file. Drift for a glob uses git's `:(glob)` pathspec |
 | N05 (structural part) | shown < claimed: the message names each level up to the claim with nothing written; or the item claims D0 and every D0-mapped section is empty (HTML comments don't count). The rest of N05 (is it *answered*, not just written) is the agent's |
 | N09 | gate fails when current < the **full** target, anything is open (any level), a `uses:` item isn't deep enough or doesn't resolve, or there is any other `block` nudge |
@@ -218,12 +218,13 @@ The format is versioned. Add fields; don't rename them.
 
 ## 7. Plugin hooks
 
-`hooks/hooks.json` wires two Node scripts. Both read Claude Code's hook JSON on stdin, import `tools/lib/`
+`hooks/hooks.json` wires three Node scripts. Both read Claude Code's hook JSON on stdin, import `tools/lib/`
 directly, and exit 0 whatever happens: a hook never fails a session or an edit.
 
 | Hook | Script | Does |
 |---|---|---|
 | `SessionStart` | `hooks/session-start.mjs` | when `anaxi.json` is found upward from `cwd` and `hooks.sessionStart` isn't `false`: prints the status table (no colour, at most 40 lines) and the commands; stdout becomes session context. Also writes the plugin's folder to `~/.anaxi/home` for the git hook |
+| `PreToolUse` (`Write\|Edit\|MultiEdit\|NotebookEdit`) | `hooks/before-edit.mjs` | **the hard gate** (`hooks.gate`, default on): a non-markdown file that a current item maps in `code:`, where the item isn't `built: partly`/`yes` and its gate isn't ready (`gateFor` in `lib/engine.mjs`), is refused: `permissionDecision: "deny"` with each blocking item, its depth, target and gate reasons, and what to do instead. Finds the project from the file, else `cwd`. Any error allows the edit |
 | `PostToolUse` (`Edit\|Write\|MultiEdit`) | `hooks/after-edit.mjs` | finds the project from the edited file, else from `cwd` (the design folder needn't be above the code). **A code or config file** that items cover in `code:` (`hooks.codeMap`, default on): once per file per session (`$TMPDIR/anaxi-codemap-<session>.txt`), the items it belongs to with depth, built state, drift, readiness, their doc and contract links (relative to `cwd`), and a request to check the change against them. **A markdown file** (`hooks.afterEdit: true`, default off): the errors for that file and the nudges (except N04) of the items it holds or is a part of. Both as `additionalContext` |
 
 `anaxi-init.sh --plugin` (run by `/anaxi:init`) is `--no-vendor --no-skill` with plugin wording.

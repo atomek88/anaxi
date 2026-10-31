@@ -24,6 +24,11 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
+- plugin · **The hard gate.** A PreToolUse hook refuses Write/Edit on the planned `code:` of an item that isn't built
+  and isn't ready, with what's missing (`hooks.gate`, default on); built items, design docs and unmapped files are
+  never blocked. The skill writes `code:` with `built: no` once the Shape says where code lives; `anaxi_gate` and
+  `anaxi_context` lead with "NOT READY" · in a headless test, "just build it, skip the design" never loaded the skill
+  and built @recurring anyway.
 - skill · **The gate holds even against "build it anyway"**: the agent says what's missing and offers to draft it,
   and doesn't build (a spike outside `code:` is allowed if asked) · a built mark should always mean a design came
   first (decided 2026-10-30).

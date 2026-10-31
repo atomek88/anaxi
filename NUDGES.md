@@ -43,12 +43,12 @@ never over-documented, over-engineered or out of focus.
 
 | Code | Name | Trigger | Detected by | Severity | Message | Action |
 |---|---|---|---|---|---|---|
-| **N09** | gate | someone or something is about to implement an item. Uses the full target, never the capped one | both | block until clear | "**Recurring tasks** is not ready: D2 → D3, 1 open, blocked by @scheduler." / "**Task API** ready: D3 🎯, all uses deep enough." | implement only when ready. Agents deepen the item or ask; they don't guess |
+| **N09** | gate | someone or something is about to implement an item. Uses the full target, never the capped one. The plugin enforces it for an unbuilt item's planned `code:` (the hard gate) | both | block until clear | "**Recurring tasks** is not ready: D2 → D3, 1 open, blocked by @scheduler." / "**Task API** ready: D3 🎯, all uses deep enough." | implement only when ready. Agents deepen the item or ask; they don't guess |
 | **N10** | revisit | a `later:` trigger that names an item and depth is now met | script | info | "@bulk-import reached D1: the batch part of **Task API** (`later:`) is due." | re-score the item; deepen if the target went up |
 | **N11** | recheck-shared | a shared item's content changed after an item that uses it was marked enough (from git history) | script | info | "@scheduler changed on 2026-10-12, after **Recurring tasks** was marked D3 🎯. Recheck what you rely on." | read the change; keep it at enough, or lower its depth |
 | **N23** | built-drift | `built: partly` or `yes` with `code:`, and the design (the item's doc or its parts) last changed after both its code and the `built:` date (from git; an uncommitted edit counts as now) | script | warn | "**Task API** is built, but its design changed after the code (design 2026-11-02, code 2026-10-28)." | check the code still matches; then write the day you checked (`built: yes (2026-11-02)`), change the code, or set `built: partly` |
 | **N24** | built-ahead | `built: partly` or `yes`, and the depth is below the full target | script | warn | "**Recurring tasks** is built yes, but designed only to D2 of D3: built ahead of its design." | write the missing levels from what the code does, or lower the target with a reason |
-| **N25** | code-missing | a `code:` path doesn't exist | script | warn | "**Task API** code: src/tasks/api.ts doesn't exist." | fix the path or remove it |
+| **N25** | code-missing | an item marked `built: partly` or `yes` has a `code:` path that matches nothing (planned paths on an unbuilt item needn't exist yet) | script | warn | "**Task API** code: src/tasks/api.ts doesn't exist." | fix the path or remove it |
 | **N12** | rescore | open questions were answered or the scope changed, and the risk scores weren't updated | agent | info | "**Recurring tasks**: certainty was scored 2 (guessed), but the DST question is now answered. Re-score; the target may drop to D2." | re-score and update the target |
 
 ### Hygiene
