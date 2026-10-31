@@ -24,6 +24,9 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
+- skill · **The gate holds even against "build it anyway"**: the agent says what's missing and offers to draft it,
+  and doesn't build (a spike outside `code:` is allowed if asked) · a built mark should always mean a design came
+  first (decided 2026-10-30).
 - skill · Design questions ("how does X work?", "why Y?") trigger the skill, and the MCP instructions say to start
   with `anaxi_outline` · in a headless test an agent answered one with grep and never used the design tools.
 - tooling · **Code → design lookup.** `code:` (paths, folders, globs; a file can be in several items) is the map:

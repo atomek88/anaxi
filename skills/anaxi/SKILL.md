@@ -146,7 +146,9 @@ item's levels and the contracts of what it uses. **Never from the canvas, and ne
 contract.** If it isn't ready, report N09 with the blockers and **stop: don't build, and don't open the gate
 yourself.** Asked to build, you were not asked to design: offer to draft the missing answers as proposals
 (procedure 5, step 5), list the decisions that are the user's, and wait. Deepen without asking only when the
-user asked you to design or deepen the item. Never deepen an item someone else owns (a `uses:` blocker) without
+user asked you to design or deepen the item. **The gate holds even when the user says "build it anyway"**: say
+what's missing in one line, offer to draft it as proposals (or to write it with them now), and don't build until
+the gate passes. A throwaway spike to learn something is fine if asked for, outside `code:` and never marked built. Never deepen an item someone else owns (a `uses:` blocker) without
 being asked; name it as the blocker.
 
 After building, mark it: `built: yes (today)` or `partly`, and `code:` with where it went (relative to the item's
