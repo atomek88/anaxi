@@ -44,7 +44,7 @@ export const DEFAULTS = {
     stage: { discovery: 'D1', shaping: 'D2' },
   },
   nudges: { off: [], severity: {}, untaggedWords: 80, levelWords: 10 },
-  hooks: { sessionStart: true, afterEdit: false }, // the Claude Code plugin's hooks
+  hooks: { sessionStart: true, afterEdit: false, codeMap: true }, // the Claude Code plugin's hooks
 };
 
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);

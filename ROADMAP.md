@@ -221,8 +221,10 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
 - [x] **Outline with anchors** (`anaxi_outline`, `outline`, the reader's Outline).
 - [ ] **A summary line per item in `INDEX.md` and `anaxi_status`**: the first Why/What sentence, so many questions are
   answered from the index without opening an item. Proposed.
-- [ ] **Code → design lookup**: from `code:` paths, `anaxi_for_file(path)` and an after-edit hook that says "this file
-  is @engine, its contract is SPEC §3–5, built, design unchanged since". Proposed; needs `code:` on real projects first.
+- [x] **Code → design lookup** (built 2026-10-30, @code-map): `code:` paths, folders and globs are the map;
+  `anaxi_for_file`, `anaxi-check file`, and a hook the first time Claude edits a mapped file.
+- [ ] **Map coverage**: list the code files no item covers (`anaxi-check file --unmapped`), so a project sees what
+  its design doesn't describe yet. Proposed.
 - [ ] **What changed since**: from git, which items' depth, decisions or contracts changed since a date or a commit,
   so a returning reader reads only the difference. Proposed.
 - [ ] **Per-section drift** with `git log -L`, if file-level drift is noisy in docs that hold several items.

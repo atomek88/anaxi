@@ -1,5 +1,5 @@
 {
-  "description": "Anaxi: show the design-depth status when a session starts in a project with anaxi.json, and (opt-in) the nudges for a doc after Claude edits it.",
+  "description": "Anaxi: show the design-depth status when a session starts in a project with anaxi.json, say which design items a code file belongs to when Claude edits it, and (opt-in) the nudges for a doc after Claude edits it.",
   "hooks": {
     "SessionStart": [
       { "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"", "timeout": 10 } ] }

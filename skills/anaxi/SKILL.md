@@ -150,7 +150,9 @@ user asked you to design or deepen the item. Never deepen an item someone else o
 being asked; name it as the blocker.
 
 After building, mark it: `built: yes (today)` or `partly`, and `code:` with where it went (relative to the item's
-file). On N23 (the design changed after the code), read what changed in the design and check the code against it
+file; folders and globs are fine, and a file can be in several items). Before changing a file's behaviour, ask
+`anaxi_for_file` (the plugin also says it the first time you edit a mapped file): read those items' contracts, and
+update their design in the same change when behaviour changes. On N23 (the design changed after the code), read what changed in the design and check the code against it
 before anything else; then fix the code, or write today's date on `built:` once it matches. On N24 (built ahead of its
 design), write the missing levels from what the code actually does, and say which parts you inferred. Never set
 `built: yes` on something you didn't build or check.

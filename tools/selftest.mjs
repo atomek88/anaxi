@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, lv } from './lib/config.mjs';
-import { evaluate, builtText, gate } from './lib/engine.mjs';
+import { evaluate, builtText, itemsForFile, gate } from './lib/engine.mjs';
 import { transition } from './lib/lifecycle.mjs';
 import { blocks, visible, words, context, outline } from './lib/read.mjs';
 import { spawn, execFileSync } from 'node:child_process';
@@ -172,6 +172,21 @@ ok(bcodes('@b').includes('N23'), 'built: a design change after the checked day i
 const bst = execFileSync('node', [path.join(HERE, 'anaxi-check.mjs'), 'status', '--dir', bt], { encoding: 'utf8' });
 ok(/Built/.test(bst) && /✓/.test(bst), 'built: status shows a Built column when the project uses built:');
 ok(!/Built/.test(execFileSync('node', [path.join(HERE, 'anaxi-check.mjs'), 'status', '--dir', path.join(HERE, '..', 'example')], { encoding: 'utf8' })), 'built: no Built column for a project that never marks it');
+// the code map (@code-map): code: paths, folders and globs, read backwards from a file; cross-cutting files have several
+fs.mkdirSync(path.join(bt, 'src', 'msg'), { recursive: true }); fs.writeFileSync(path.join(bt, 'src', 'msg', 'send.ts'), '');
+fs.writeFileSync(path.join(bt, 'src', 'log.ts'), '');
+fs.writeFileSync(path.join(bt, 'docs', 'design', 'msg.md'), `---\nanaxi: "@msg"\ndepth: D1\nrisk: 0·0·1·0\ncode: [../../src/msg/, ../../src/log.ts]\n---\n# Messaging\n**Why.** ${ten}\n\n**What.** ${ten}\n`);
+fs.writeFileSync(path.join(bt, 'docs', 'design', 'log.md'), `---\nanaxi: "@log"\ndepth: D1\nrisk: 0·0·1·0\ncode: ["../../src/**/*.ts", "../../src/**/*.py"]\n---\n# Logging\n**Why.** ${ten}\n\n**What.** ${ten}\n`);
+bm = evaluate(loadConfig(bt));
+const forF = (f) => itemsForFile(bm, f).map((it) => it.id).sort().join();
+ok(forF('../../src/msg/send.ts') === '@log,@msg' && forF('../../src/log.ts') === '@log,@msg' && forF('../../src/b.js') === '@b', `code map: a folder, an exact path and a glob; a file in several items (${forF('../../src/msg/send.ts')})`);
+ok(bm.nudges.some((n) => n.item === '@log' && n.code === 'N25' && /\*\.py/.test(n.message)) && !bm.nudges.some((n) => n.item === '@msg' && n.code === 'N25'), 'code map: a glob that matches nothing is N25');
+const ff = JSON.parse(JSON.parse(execFileSync('node', [path.join(HERE, 'anaxi-mcp.mjs'), '--dir', bt], { encoding: 'utf8', input: `${JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'anaxi_for_file', arguments: { path: 'src/msg/send.ts' } } })}\n` })).result.content[0].text);
+ok(ff.items.map((x) => x.id).sort().join() === '@log,@msg' && ff.items.every((x) => x.doc.startsWith('docs/design/')), 'mcp: anaxi_for_file names the items and their docs, from the repo root');
+const hook = (f) => execFileSync('node', [path.join(HERE, '..', 'hooks', 'after-edit.mjs')], { encoding: 'utf8', input: JSON.stringify({ cwd: bt, session_id: `selftest-${process.pid}`, tool_input: { file_path: f } }) });
+const h1 = hook('src/msg/send.ts'), h2 = hook('src/msg/send.ts');
+ok(/@msg/.test(h1) && /@log/.test(h1) && h2 === '' && hook('README.txt') === '', 'hook: an edited code file names its items once per session; an unmapped file says nothing');
+try { fs.rmSync(path.join(os.tmpdir(), `anaxi-codemap-selftest-${process.pid}.txt`)); } catch {}
 fs.rmSync(bt, { recursive: true });
 const ar = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
 fs.writeFileSync(path.join(ar, 'anaxi.json'), '{ "docs": ["docs/**/*.md"] }');

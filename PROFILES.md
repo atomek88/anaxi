@@ -83,7 +83,7 @@ Every key is optional. A project with no `anaxi.json` gets the defaults.
 | `caps.focus` / `caps.stage` | change the default caps; `null` means no cap |
 | `nudges.off` / `severity` | switch nudges off, or change their severity. N09 (gate) can't be switched off |
 | `nudges.levelWords` | words a level needs before it counts as written (default 10; `0` turns the gap check off). A floor against empty or skipped levels, not a measure of detail |
-| `hooks.sessionStart` / `hooks.afterEdit` | the Claude Code plugin's hooks: the status table at session start (default on), the nudges after Claude edits a doc (default off) |
+| `hooks.sessionStart` / `hooks.codeMap` / `hooks.afterEdit` | the Claude Code plugin's hooks: the status table at session start (default on); which items a code file belongs to, the first time Claude edits it in a session (default on); the nudges after Claude edits a doc (default off) |
 
 ## 3. Built-in profiles
 

@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile } from './config.mjs';
+import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile, globRe } from './config.mjs';
 import { parseFile, SECTION_NAMES, slug, sectionByName } from './parse.mjs';
 import { questionSet, questionsFor } from './questions.mjs';
 import { blocks } from './read.mjs';
@@ -334,17 +334,47 @@ const reach = (w, min) => {
 /** N23–N25: a built item whose design changed after its code, one built ahead of its design, a code path that's gone. */
 function builtNudges(model, it, add) {
   const root = model.cfg.root, done = it.built === 'yes' || it.built === 'partly';
-  const missing = it.codePaths.filter((p) => !fs.existsSync(path.join(root, p)));
-  if (missing.length) add('N25', 'warn', it, `code: ${missing.join(', ')} ${missing.length > 1 ? "don't" : "doesn't"} exist: fix the path, or remove it`);
+  const missing = it.codePaths.filter((p) => (isGlob(p) ? !globMatches(root, p) : !fs.existsSync(path.join(root, p))));
+  if (missing.length) add('N25', 'warn', it, `code: ${missing.join(', ')} ${missing.length > 1 ? "match" : "matches"} nothing: fix the path, or remove it`);
   if (done && it.targetN != null && it.depthN < it.targetN) add('N24', 'warn', it, `built ${it.built}, but designed only to ${at(it)} of ${LV(it.targetN)}: built ahead of its design. Write the missing levels from the code, or lower the target`);
   const code = it.codePaths.filter((p) => !missing.includes(p));
   if (!done || !code.length || !model.clock) return;
-  const docT = model.clock([it.file, ...(it.parts || []).map((p) => p.file)]), codeT = model.clock(code);
+  const docT = model.clock([it.file, ...(it.parts || []).map((p) => p.file)]), codeT = model.clock(code.map((p) => (isGlob(p) ? `:(glob)${p}` : p)));
   const day = (t) => { const d = new Date(t * 1000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }; // local, as people write dates
   // `built: yes (2026-10-30)`: the code was checked against the design that day, so only later design changes count
   if (docT == null || codeT == null || docT <= codeT || (it.builtChecked && day(docT) <= it.builtChecked)) return;
   it.drift = { doc: new Date(docT * 1000).toISOString(), code: new Date(codeT * 1000).toISOString() };
   add('N23', 'warn', it, `built, but its design changed after the code (design ${day(docT)}${docT === model.clock.now ? ', not committed' : ''}, code ${day(codeT)}): check the code still matches, then write the day you checked (built: ${it.built} (${day(model.clock.now)})), or set built: partly`, { drift: it.drift });
+}
+
+const isGlob = (p) => /[*?]/.test(p);
+/** Whether a `code:` glob matches any file (paths relative to the project root, may start with ../); stops at the first. */
+function globMatches(root, glob) {
+  const re = globRe(glob), base = glob.slice(0, glob.search(/[*?]/)).replace(/[^/]*$/, '').replace(/\/$/, '') || '.';
+  const walk = (rel) => { let es; try { es = fs.readdirSync(path.join(root, rel), { withFileTypes: true }); } catch { return false; }
+    return es.some((e) => e.name !== '.git' && e.name !== 'node_modules' && (e.isDirectory() ? walk(path.posix.join(rel, e.name)) : re.test(path.posix.join(rel, e.name)))); };
+  return walk(base);
+}
+
+/**
+ * The code map (@code-map): the items whose `code:` covers a file, as an exact path, a folder or a glob. `file` is
+ * relative to the project root (it may start with ../ for code outside the design folder). Current items only.
+ */
+export function itemsForFile(model, file) {
+  const f = path.posix.normalize(file);
+  return model.items.filter((it) => (it.codePaths || []).some((p) => {
+    const c = p.replace(/\/$/, '');
+    return isGlob(c) ? globRe(c).test(f) : f === c || f.startsWith(`${c}/`);
+  }));
+}
+
+/** What a file belongs to, for people and agents: each item with its depth, built state, drift and contract links
+ *  (relative to `base`, the folder the reader works in; default the project root). */
+export function fileReport(model, file, base = model.cfg.root) {
+  const at = (p) => path.relative(base, path.resolve(model.cfg.root, p)).split(path.sep).join('/');
+  return itemsForFile(model, file).map((it) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: it.depth, shown: LV(it.depthN),
+    target: LV(it.targetN), status: it.status, ...(it.built ? { built: it.built } : {}), ...(it.drift ? { drift: it.drift } : {}),
+    doc: at(it.file), ready: gate(model, it).ready, contract: (it.parts || []).map((p) => `${at(p.file)}${p.anchor ? `#${p.anchor}` : ''}`) }));
 }
 
 /** When paths last changed, from git: an uncommitted change is now, else the last commit's time. Null outside git. */

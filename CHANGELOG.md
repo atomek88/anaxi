@@ -24,6 +24,10 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
+- tooling · **Code → design lookup.** `code:` (paths, folders, globs; a file can be in several items) is the map:
+  `anaxi_for_file`, `anaxi-check file <path>`, and a hook that tells Claude, the first time it edits a mapped file in a
+  session, which items it belongs to and where their contract is (`hooks.codeMap`, default on). No marks in code ·
+  an agent editing code was never told which design it was changing.
 - method · **A claim is never taken on trust.** An item with no text marked at any level shows nothing (`— (D3?)`),
   gets N05 saying how to mark it, and doesn't pass the gate; `nudges.levelWords: 0` still turns measuring off · a
   doc with plain prose and `depth: D4` showed D4 as if it had been checked.

@@ -43,7 +43,7 @@ Zero-dependency Node (≥ 18) and bash. The skill also works without them (by ha
 | `tools/selftest.mjs` | checks the example's statuses and that a broken project trips every structural check | built |
 | `tools/anaxi-init.sh` | adds Anaxi to a new or existing project: vendors the method into `tools/anaxi`, writes `anaxi.json`, `anaxi-questions.md` and `@stack`, links the skill, installs the hook, builds the first index. Never overwrites | built |
 | `tools/anaxi-watch.mjs` | the reader: linked pages (overview → topic → item) with a depth control, parts inline, uses and used-by, the gate, and a 2D map; reloads on save; read-only (§4.3) | built |
-| `tools/anaxi-mcp.mjs` | the engine as MCP tools for agents: `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_uses`, `anaxi_related`, and `anaxi_index` (the one write: regenerates the index) | built |
+| `tools/anaxi-mcp.mjs` | the engine as MCP tools for agents: `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_uses`, `anaxi_related`, `anaxi_for_file`, and `anaxi_index` (the one write: regenerates the index) | built |
 | `tools/lib/read.mjs` | an item's text as levelled blocks (headings, and lead-ins named after the levels), the depth filter, and the bounded context for building | built |
 | `tools/release.sh` | releases a plugin version: checks, sets the version, commits, tags (§5.1) | built |
 | `hooks/` | the plugin's session-start and after-edit hooks ([tools/SPEC.md §7](tools/SPEC.md#7-plugin-hooks)) | built |
@@ -198,8 +198,9 @@ Then, in any project, `/anaxi:init [--profile P] [--stage S] [--docs DIR]`. The 
 | `/anaxi:gate @id` | ready to build or not, and why |
 | `/anaxi:init` | `anaxi-init.sh --plugin`: settings, questions, `@stack`, the git hook; nothing vendored |
 | `/anaxi:watch` | the reader (§4.3), in the background; prints its URL |
-| MCP server `anaxi` | `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_uses`, `anaxi_related`, `anaxi_index` for any agent in the session |
+| MCP server `anaxi` | `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_uses`, `anaxi_related`, `anaxi_for_file`, `anaxi_index` for any agent in the session |
 | hook: session start | in a project with `anaxi.json`, gives Claude the status table. Off: `"hooks": {"sessionStart": false}` |
+| hook: editing code | on by default (`"hooks": {"codeMap": false}` to turn off): the first time Claude edits a file that items list in `code:`, it's told which items, their depth and built state, and where their design and contract are. Never blocks |
 | hook: after an edit | opt-in, `"hooks": {"afterEdit": true}`: after Claude edits a markdown doc, it sees that file's nudges. Never blocks |
 
 The git pre-commit hook finds the checker at `$ANAXI_HOME`, then a vendored `tools/anaxi`, then the plugin

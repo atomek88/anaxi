@@ -22,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { loadConfig, globRe, LV, lv, top as topLevel, METHOD_DIR } from './lib/config.mjs';
-import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt } from './lib/engine.mjs';
+import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt, fileReport } from './lib/engine.mjs';
 import { transition } from './lib/lifecycle.mjs';
 import { context, outline } from './lib/read.mjs';
 
@@ -226,6 +226,17 @@ switch (cmd) {
     const skipped = model.questions.list.filter((q) => q.skippedAll);
     if (skipped.length) console.log(`\nskipped project-wide: ${skipped.map((q) => q.id).join(', ')}`);
     console.log('\nWhether each one is answered needs reading: ask the skill (procedure 4), or a reviewer.');
+    break;
+  }
+
+  case 'file': { // the code map: which items a code or config file belongs to (@code-map)
+    if (!positional[0]) { console.error('usage: anaxi-check file <path>'); process.exitCode = 2; break; }
+    const rel = path.relative(cfg.root, path.resolve(positional[0])).split(path.sep).join('/');
+    const r = fileReport(model, rel, process.cwd());
+    if (flag('json')) { json({ file: positional[0], items: r }); break; }
+    if (!r.length) { console.log(`${positional[0]}: no item lists it in code:`); break; }
+    console.log(`${positional[0]} belongs to:`);
+    for (const x of r) console.log(`  ${icon(x.status)} ${x.id} ${x.title} · ${x.shown || '—'} of ${x.target || '—'}${x.built ? ` · built ${x.built}` : ''}${x.drift ? ' · design changed after the code (N23)' : ''}${x.ready ? '' : ' · not ready'}\n      design: ${x.doc}${x.contract.length ? ` · contract: ${x.contract.join(', ')}` : ''}`);
     break;
   }
 

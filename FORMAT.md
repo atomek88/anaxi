@@ -65,8 +65,11 @@ optional, and the tools treat each one exactly like the word next to it:
 
 **What's built: one mark, nothing finer.** 🎯 means the design is deep enough for its risk, not that it's
 built. Whether it's built is `built: no | partly | yes`, on the item or on any sub-item, so the sections of a doc
-can be checked off one by one, and the host shows the roll-up (`2/3`). `code:` says where it's built (files or
-folders, relative to the item's file, like a link). Add the day the code was last checked against the design,
+can be checked off one by one, and the host shows the roll-up (`2/3`). `code:` says where it's built: files, folders or
+globs (`../../src/messaging/**`), relative to the item's file, like a link. Together they are the **code map**: a file
+can be in several items' `code:` (cross-cutting code gets its own item, like @auth or @logging, listing what it
+spans), and the tools read it backwards, so an agent editing a file is told which designs it belongs to. Nothing is
+written in code or config files. Add the day the code was last checked against the design,
 `built: yes (2026-10-30)`; when the design changes after both the code and that day, the checker warns (N23).
 Tasks, estimates and who's doing them stay in your tracker. The checkboxes in an item's question list (§5) mean
 "answered", never "built".
