@@ -1,6 +1,6 @@
 ---
 name: anaxi
-description: Track and steer how deep technical design docs go, using Anaxi depth marks (D0 Why → D4 Build) in ordinary markdown. Use when writing, reviewing or planning a TDD, epic, story, feature or shared component; when asked "is this designed enough?", "how deep do we need to go?", "what's left to document?", "is this ready to build?"; before implementing anything with a `depth:` mark (front matter, `>` tag line, heading badge or comment); and when building an index or a combined TDD from marked-up docs.
+description: Track and steer how deep technical design docs go, using Anaxi depth marks (D0 Why → D4 Build) in ordinary markdown. Use when writing, reviewing or planning a TDD, epic, story, feature or shared component; when asked "is this designed enough?", "how deep do we need to go?", "what's left to document?", "is this ready to build?"; before implementing anything with a `depth:` mark (front matter, `>` tag line, heading badge or comment); when answering a question about how something in the project is designed, or why ("how does X work?", "why did we choose Y?"); before changing code that a design item lists in `code:`; and when building an index or a combined TDD from marked-up docs.
 ---
 
 # Anaxi

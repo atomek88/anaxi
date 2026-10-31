@@ -81,7 +81,7 @@ function handle(msg) {
   const ok = (result) => ({ jsonrpc: '2.0', id, result });
   switch (method) {
     case 'initialize': return ok({ protocolVersion: params.protocolVersion || '2025-06-18', capabilities: { tools: {} }, serverInfo: { name: 'anaxi', version: VERSION },
-      instructions: 'Anaxi design-depth tools. Before implementing a design item, call anaxi_gate; to read what to build from, call anaxi_context instead of opening docs one by one. After changing marks, call anaxi_index; never edit the index by hand.' });
+      instructions: 'Anaxi design-depth tools for this project\'s design docs. To answer a question about how something is designed or why, call anaxi_status to find the item, then anaxi_outline, and read only the section that answers it, before grepping docs or code. Before changing a code file, anaxi_for_file says which designs it belongs to. Before implementing a design item, call anaxi_gate; to read what to build from, call anaxi_context instead of opening docs one by one. After changing marks, call anaxi_index; never edit the index by hand.' });
     case 'ping': return ok({});
     case 'tools/list': return ok({ tools: TOOLS });
     case 'tools/call': {

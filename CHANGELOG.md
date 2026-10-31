@@ -24,6 +24,8 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
+- skill · Design questions ("how does X work?", "why Y?") trigger the skill, and the MCP instructions say to start
+  with `anaxi_outline` · in a headless test an agent answered one with grep and never used the design tools.
 - tooling · **Code → design lookup.** `code:` (paths, folders, globs; a file can be in several items) is the map:
   `anaxi_for_file`, `anaxi-check file <path>`, and a hook that tells Claude, the first time it edits a mapped file in a
   session, which items it belongs to and where their contract is (`hooks.codeMap`, default on). No marks in code ·
