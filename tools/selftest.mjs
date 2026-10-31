@@ -127,6 +127,14 @@ fs.writeFileSync(path.join(ev, 'anaxi.json'), '{ "nudges": { "levelWords": 0 } }
 evm = evaluate(loadConfig(ev));
 ok(evm.byId.get('@gap').depthN === 3 && !ncodes('@gap').includes('N05'), 'evidence: levelWords 0 turns the check off');
 fs.rmSync(ev, { recursive: true });
+const ar = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
+fs.writeFileSync(path.join(ar, 'anaxi.json'), '{ "docs": ["docs/**/*.md"] }');
+fs.mkdirSync(path.join(ar, 'archive')); fs.mkdirSync(path.join(ar, 'docs'));
+fs.writeFileSync(path.join(ar, 'archive', 'old.md'), `# Old notes\n${'word '.repeat(120)}\n`);
+fs.writeFileSync(path.join(ar, 'docs', 'new.md'), `# New notes\n${'word '.repeat(120)}\n`);
+const arn = evaluate(loadConfig(ar)).nudges.filter((n) => n.code === 'N13').map((n) => n.message.match(/\((.*?):/)[1]);
+ok(arn.join() === 'docs/new.md', `untagged: old notes in the archive are not nudged (${arn})`);
+fs.rmSync(ar, { recursive: true });
 ok(ex.byId.get('@settings').depthN === 1 && ex.byId.get('@settings').status === 'trim', 'example: @settings claims D4 but shows D1, and is still over-documented');
 
 // lifecycle: the example's archived item, and the marks, nudges and transitions (FORMAT.md §10)

@@ -250,8 +250,9 @@ function nudges(model) {
   }
   lifecycleNudges(model, add);
   const words = cfg.nudges.untaggedWords ?? 80;
+  const archived = (f) => cfg.archive && `${f}/`.startsWith(`${path.posix.normalize(cfg.archive)}/`); // old notes there aren't designs to tag
   for (const u of untagged) {
-    if (u.words > words) add('N13', 'info', null, `"${u.heading}" (${u.file}:${u.line}) has ${u.words} words and no tag`, { file: u.file, line: u.line, title: u.heading });
+    if (u.words > words && !archived(u.file)) add('N13', 'info', null, `"${u.heading}" (${u.file}:${u.line}) has ${u.words} words and no tag`, { file: u.file, line: u.line, title: u.heading });
   }
   const pos = new Map([...items, ...model.inactive].map((it, i) => [it.key, i]));
   return out.sort((a, b) => (pos.get(a.item) ?? 1e9) - (pos.get(b.item) ?? 1e9) || ORDER.indexOf(a.code) - ORDER.indexOf(b.code));
