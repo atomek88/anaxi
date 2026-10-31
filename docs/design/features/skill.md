@@ -29,4 +29,7 @@ out.
 
 - [ ] D3 · Does "blocked means stop" hold when the headless test is re-run on the new skill text? → proposed: yes, so far. On
   2026-10-25, "Add an anaxi_related tool…" on this repo gated, built nothing, and wrote its proposals on @related's open
-  questions with the boxes unchecked; both runs stopped early at the account's spend limit, so re-run once more.
+  questions with the boxes unchecked; both runs stopped early at the account's spend limit. Re-run 2026-10-30 (5 runs):
+  both blocked prompts stopped, left @scheduler alone and offered proposals without writing them; the ready one built,
+  tested, marked `built:`/`code:` and called `anaxi_index`; a code change updated SPEC and @outline with it; a design
+  question skipped the design tools until the skill's description named questions (fixed, re-run passed).
