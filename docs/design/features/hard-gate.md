@@ -6,7 +6,7 @@ about: [agents]
 uses: ["@code-map", "@built", "@skill"]
 built: yes (2026-10-30)
 code: [../../../hooks/before-edit.mjs, ../../../hooks/hooks.json, ../../../tools/lib/engine.mjs, ../../../tools/anaxi-mcp.mjs]
-caveats: a file written through a shell command (echo > file) isn't seen; code in folders no item lists in code: isn't guarded
+caveats: a file written through a shell command (echo > file, node -e) isn't seen; code in folders no item lists in code: isn't guarded
 ---
 # The hard gate (a hook that refuses to build what isn't designed)
 
@@ -20,8 +20,11 @@ an item that isn't built yet and isn't ready, the edit is refused, with what's m
 the design, or ask the user to decide the open questions). Built items are never blocked: fixing and changing what
 exists stays free, and drift (N23) covers it. Design docs are never blocked. So that the gate knows where an item will
 be built, `code:` is written at design time, with `built: no`, as soon as the Shape says where the code lives. Tool
-results lead with "NOT READY: don't implement" when the gate is closed. On by default; `"hooks": { "gate": false }`
-turns it off for a project. Out of scope: shell-command writes, and code no item maps.
+results lead with "NOT READY: don't implement" when the gate is closed. On by default; a person turns it off for a
+project by editing `anaxi.json` (`"hooks": { "gate": false }`) themselves: **it can't be lifted from inside a session.**
+In the second test the agent read the off switch in the refusal, turned it off, and built; so the refusal no longer
+names it, and an edit that turns the gate off, opens a blocked item through settings alone, marks a blocked item
+built, or drops its planned `code:` is refused too. Designing the item stays the way through. Out of scope: shell-command writes, and code no item maps.
 
 **Shape.** A PreToolUse hook (`hooks/before-edit.mjs`) on Write, Edit, MultiEdit and NotebookEdit returns a deny
 decision; Claude Code doesn't run the edit, so no wording in a prompt gets past it. The rule lives in the engine
@@ -35,6 +38,8 @@ project has no `anaxi.json`; `hooks.gate` is `false`; the file is markdown (desi
 item maps it; or every item that maps it is ready or has `built: partly` or `yes`. Otherwise output
 `{ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason } }`, the
 reason naming each blocking item, its depth and target, the gate's reasons, and "draft the missing design as
-proposals, or ask the user to decide; Anaxi's gate holds even when told to build anyway (hooks.gate: false turns it
-off)". Any error means allow: the hook never breaks an edit by failing. `anaxi_gate` and `anaxi_context` put
+proposals, or ask the user to decide", without naming the off switch. Also refused: an edit to `anaxi.json` whose result sets `hooks.gate: false`, or
+makes an item ready that the gate holds now (unbuilt, planned `code:`, not ready) with no doc changed; an edit to an
+item's doc whose result marks a held item `built: partly`/`yes` or removes `code:` entries while it's still not ready.
+The result of Edit, MultiEdit and Write is worked out before it runs. Any error means allow: the hook never breaks an edit by failing. `anaxi_gate` and `anaxi_context` put
 `notice: "NOT READY: don't implement …"` first when not ready; `fileReport` entries gain `blocks: true`.

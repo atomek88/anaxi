@@ -29,6 +29,9 @@ Newest first. Format: `date · area · change · why`.
   never blocked. The skill writes `code:` with `built: no` once the Shape says where code lives; `anaxi_gate` and
   `anaxi_context` lead with "NOT READY" · in a headless test, "just build it, skip the design" never loaded the skill
   and built @recurring anyway.
+  It can't be lifted from inside a session: the refusal doesn't name the off switch, and edits that turn it off,
+  open a held item through settings alone, mark it built or drop its `code:` are refused · in the re-test the agent
+  read the off switch in the refusal and used it.
 - skill · **The gate holds even against "build it anyway"**: the agent says what's missing and offers to draft it,
   and doesn't build (a spike outside `code:` is allowed if asked) · a built mark should always mean a design came
   first (decided 2026-10-30).
