@@ -68,5 +68,5 @@ quiet(async () => {
   const doc = (f) => path.relative(cwd, path.resolve(cfg.root, f));
   deny([`Anaxi's gate: ${path.relative(cwd, abs)} is where ${blocking.map((b) => b.id).join(', ')} will be built, and ${blocking.length > 1 ? "they aren't" : "it isn't"} designed enough yet.`,
     ...blocking.map((b) => `- ${b.id} (${b.title}, ${doc(b.file)}): ${b.depth} of ${b.target || '—'}; ${b.why.join('; ')}`),
-    `Don't write this code, and don't look for another way to write it. Draft the missing design as proposals on the open questions, or ask the user to decide them; build once the gate passes. ${LIFT}`].join('\n'));
+    `Every file under ${[...new Set(blocking.flatMap((b) => model.byId.get(b.id)?.codePaths || []))].map((p) => path.relative(cwd, path.resolve(cfg.root, p))).join(', ')} is refused until then, so stop trying files there. Don't write this code, and don't look for another way to write it (no shell commands, no other path). Draft the missing design as proposals on the open questions, or ask the user to decide them; build once the gate passes. ${LIFT}`].join('\n'));
 });
