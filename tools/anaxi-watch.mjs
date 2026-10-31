@@ -33,7 +33,7 @@ function build() {
     state = { version: state.version + 1, model, error: null, json: JSON.stringify({
       format: 'anaxi/1', root: path.basename(cfg.root), config: cfg.file ? path.relative(cfg.root, cfg.file) : null,
       settings: { profile: cfg.profile, stage: cfg.stage }, levels: LEVELS.map((l) => ({ id: l, ...(cfg.levels[l] || {}) })),
-      files: docFiles(cfg), items: model.items.map(item), inactive: model.inactive.map(item), deleted: [...model.retired].map(([id, r]) => ({ id, ...r })),
+      files: [...new Set([...docFiles(cfg), ...model.all.flatMap((it) => (it.parts || []).map((p) => p.file))])], items: model.items.map(item), inactive: model.inactive.map(item), deleted: [...model.retired].map(([id, r]) => ({ id, ...r })),
       nudges: model.nudges.map(({ code, severity, item: k, message }) => ({ code, severity, item: k, message })), errors: model.errors,
       version: state.version + 1 }) };
   } catch (e) { state = { ...state, version: state.version + 1, error: e.message }; }
@@ -50,6 +50,15 @@ try {
     timer = setTimeout(() => { build(); for (const c of clients) c.write(`event: change\ndata: ${state.version}\n\n`); }, 120);
   });
 } catch (e) { console.error(`anaxi-watch: can't watch ${watched} (${e.message}); reload the page by hand`); }
+// parts listed from an item's side can live outside the design folder: watch those files too
+const outside = new Set();
+const watchParts = () => { for (const it of state.model?.all || []) for (const p of it.parts || []) {
+  const f = path.resolve(watched, p.file);
+  if (outside.has(f) || !path.relative(watched, f).startsWith('..')) continue;
+  outside.add(f);
+  try { fs.watch(f, () => { clearTimeout(timer); timer = setTimeout(() => { build(); watchParts(); for (const c of clients) c.write(`event: change\ndata: ${state.version}\n\n`); }, 120); }); } catch {}
+} };
+watchParts();
 
 const STATIC = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/app.css': ['app.css', 'text/css'] };
 const server = http.createServer((req, res) => {

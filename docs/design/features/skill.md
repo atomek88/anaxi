@@ -4,6 +4,8 @@ depth: D3
 risk: 2·0·1·1
 about: [agents]
 uses: ["@mcp", "@check", "@method", "@questions"]
+parts:
+  - "../../../skills/anaxi/SKILL.md (D3)"
 ---
 # The skill
 

@@ -20,7 +20,7 @@ export const SECTION_NAMES = {
 };
 
 export const KNOWN_FIELDS = new Set(['anaxi', 'depth', 'risk', 'target', 'about', 'uses', 'open', 'skip', 'caveats',
-  'later', 'focus', 'profile', 'part-of', 'superseded-by', 'supersedes', 'retired', 'archived-from']);
+  'later', 'focus', 'profile', 'part-of', 'parts', 'built', 'code', 'superseded-by', 'supersedes', 'retired', 'archived-from']);
 
 const FENCE = /^\s*(```|~~~)/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
@@ -111,6 +111,19 @@ export function normalizeFields(raw, errs, where) {
         break;
       case 'profile': f.profile = val; break;
       case 'part-of': f.partOf = String(val).replace(/^@?/, '@'); break;
+      case 'parts': // detail kept elsewhere, listed from the item's side: `path#anchor (D3)` or `[text](path#anchor) (D3)`
+        f.partRefs = asList(val).map((x) => {
+          const m = String(x).trim().match(/^(?:\[[^\]]*\]\(([^)]+)\)|(\S+))\s*(?:\((D\d)\))?$/);
+          if (!m) { errs.push(`${where}: can't read part "${x}" (write path#anchor (D3))`); return null; }
+          const [p, a] = (m[1] || m[2]).split('#');
+          return { path: p, anchor: a || '', level: m[3] || null, raw: String(x).trim() };
+        }).filter(Boolean);
+        break;
+      case 'built':
+        if (!['no', 'partly', 'yes'].includes(String(val).toLowerCase())) errs.push(`${where}: built must be no, partly or yes`);
+        else f.built = String(val).toLowerCase();
+        break;
+      case 'code': f.code = asList(val).map((x) => x.trim()).filter(Boolean); break;
       case 'superseded-by': {
         const m = String(val).match(/^@?([A-Za-z][\w-]*)\s*(?:\((.*)\))?/);
         if (!m) errs.push(`${where}: superseded-by needs an @id, e.g. superseded-by: @new (why)`);
@@ -164,7 +177,7 @@ export function parseFrontMatter(lines) {
   return out;
 }
 
-function sectionByName(text, names) {
+export function sectionByName(text, names) {
   const norm = text.toLowerCase().replace(/[`*_:]/g, ' ').replace(/\s+/g, ' ').trim()
     .split(' ').filter((w) => !STOP.has(w)).join(' ');
   let best = null, bestLen = 0;

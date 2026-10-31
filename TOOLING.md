@@ -222,10 +222,10 @@ Project docs never need migrating: the plugin only reads them, and new marks and
 path/to/anaxi/tools/anaxi-init.sh my-project --profile service --stage shaping
 ```
 
-That vendors the method into `my-project/tools/anaxi/`, writes `anaxi.json`, `docs/anaxi-questions.md` and
-`docs/shared/stack.md` (and sets `docs/archive`), links the skill into `.claude/skills/`, installs the pre-commit hook (in a git repo) and
+That vendors the method into `my-project/tools/anaxi/`, writes `docs/design/anaxi.json`,
+`docs/design/anaxi-questions.md` and `docs/design/shared/stack.md` (everything in one folder, found from the repo root), links the skill into `.claude/skills/`, installs the pre-commit hook (in a git repo) and
 builds the first index. It works on an existing project and never overwrites a file; `--docs DIR` points it at
-where your docs already are, `--no-vendor` uses `$ANAXI_HOME` instead of a copy. Add CI yourself (§4.2). A
+where your docs already are (an `anaxi.json` already at the root is kept), `--no-vendor` uses `$ANAXI_HOME` instead of a copy. Add CI yourself (§4.2). A
 vendored copy wins over the plugin for the git hook, so CI, the hook and Claude agree.
 
 Upgrading means replacing the vendored folder (or bumping the submodule) and reading [CHANGELOG.md](CHANGELOG.md).

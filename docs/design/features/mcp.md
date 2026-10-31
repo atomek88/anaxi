@@ -4,6 +4,8 @@ depth: D3
 risk: 2·2·1·0
 about: [agents]
 uses: ["@engine"]
+parts:
+  - "../../../tools/SPEC.md#83-anaxi-mcp (D3)"
 ---
 # The MCP server (`anaxi-mcp`)
 

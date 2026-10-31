@@ -5,6 +5,8 @@ risk: 1·1·2·0
 about: [ui]
 uses: ["@engine"]
 later: search, a static export, per-item git history (when a pilot asks for them)
+parts:
+  - "../../../tools/SPEC.md#82-anaxi-watch (D3)"
 ---
 # The reader (`anaxi watch`)
 

@@ -4,6 +4,8 @@ depth: D3
 risk: 2·2·1·1
 target: D3 (a method has no build step; its contract is its text)
 about: [method]
+parts:
+  - "../../../METHOD.md (D3)"
 ---
 # The method
 

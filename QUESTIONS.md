@@ -1,6 +1,4 @@
 # Anaxi questions and principles
-<!-- anaxi: part-of: @questions -->
-<!-- D3 -->
 
 What each level means, in three layers. Only the first two are maintained here.
 

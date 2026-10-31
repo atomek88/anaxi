@@ -4,6 +4,8 @@ depth: D3
 risk: 1·1·1·1
 about: [method]
 uses: ["@method"]
+parts:
+  - "../../../QUESTIONS.md (D3)"
 ---
 # The questions
 

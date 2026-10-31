@@ -10,18 +10,17 @@
 | 🎯 | [The reader (anaxi watch)](features/reader.md) `@reader` · parts: [8.2 anaxi-watch](../../tools/SPEC.md#82-anaxi-watch) | D3 | D3 | [@engine](shared/engine.md) | — | 0 |
 | 🎯 | [Related items for agents (anaxi_related)](features/related.md) `@related` | D2 | D2 | [@mcp](features/mcp.md), [@engine](shared/engine.md) | — | 0 |
 | ❓ | [Releasing the plugin](features/release.md) `@release` | D2 | D2 | [@check](features/check.md) | — | 1 |
-| ❓ | [The skill](features/skill.md) `@skill` · parts: [Anaxi](../../skills/anaxi/SKILL.md#anaxi) | D3 | D3 | [@mcp](features/mcp.md), [@check](features/check.md), [@method](shared/method.md), [@questions](shared/questions.md) | — | 1 |
-| 🎯 | [The engine](shared/engine.md) `@engine` · parts: [Anaxi nudges](../../NUDGES.md#anaxi-nudges), [3. Parsing](../../tools/SPEC.md#3-parsing), [4. Structural rules](../../tools/SPEC.md#4-structural-rules), [5. JSON output](../../tools/SPEC.md#5-json-output), [8.1 Reading an item](../../tools/SPEC.md#81-reading-an-item) | D3 | D3 | [@format](shared/format.md), [@method](shared/method.md), [@questions](shared/questions.md) | @check, @mcp, @reader, @related | 0 |
-| 🎯 | [The markup](shared/format.md) `@format` · parts: [Anaxi format: marking up ordinary markdown](../../FORMAT.md#anaxi-format-marking-up-ordinary-markdown) | D3 | D3 | [@method](shared/method.md) | @engine | 0 |
-| ❓ | [The method](shared/method.md) `@method` · parts: [Anaxi method](../../METHOD.md#anaxi-method) | D3 | D3 | — | @skill, @engine, @format, @questions | 1 |
-| 🎯 | [The questions](shared/questions.md) `@questions` · parts: [Anaxi questions and principles](../../QUESTIONS.md#anaxi-questions-and-principles) | D3 | D3 | [@method](shared/method.md) | @skill, @engine | 0 |
+| ❓ | [The skill](features/skill.md) `@skill` · parts: [SKILL.md](../../skills/anaxi/SKILL.md) | D3 | D3 | [@mcp](features/mcp.md), [@check](features/check.md), [@method](shared/method.md), [@questions](shared/questions.md) | — | 1 |
+| 🎯 | [The engine](shared/engine.md) `@engine` · parts: [Anaxi nudges](../../NUDGES.md), [3. Parsing](../../tools/SPEC.md#3-parsing), [4. Structural rules](../../tools/SPEC.md#4-structural-rules), [5. JSON output](../../tools/SPEC.md#5-json-output), [8.1 Reading an item](../../tools/SPEC.md#81-reading-an-item) | D3 | D3 | [@format](shared/format.md), [@method](shared/method.md), [@questions](shared/questions.md) | @check, @mcp, @reader, @related | 0 |
+| 🎯 | [The markup](shared/format.md) `@format` · parts: [Anaxi format: marking up ordinary markdown](../../FORMAT.md) | D3 | D3 | [@method](shared/method.md) | @engine | 0 |
+| ❓ | [The method](shared/method.md) `@method` · parts: [Anaxi method](../../METHOD.md) | D3 | D3 | — | @skill, @engine, @format, @questions | 1 |
+| 🎯 | [The questions](shared/questions.md) `@questions` · parts: [Anaxi questions and principles](../../QUESTIONS.md) | D3 | D3 | [@method](shared/method.md) | @skill, @engine | 0 |
 
 ## Nudges
 
 - ❓ **Releasing the plugin** 1 open: Where does the marketplace repo live (GitHub owner and name), and who can push a release tag? (D2)
 - ❓ **The skill** 1 open: Does "blocked means stop" hold when the headless test is re-run on the new skill text? (D3)
 - ❓ **The method** 1 open: Should an item's role (feature, shared, foundation) change which questions apply to it? (ROADMAP §7) (D2)
-- ℹ️ **Anaxi scripts: specification** "Anaxi scripts: specification" (tools/SPEC.md:1) has 145 words and no tag
 
 ## Later
 

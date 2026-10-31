@@ -4,8 +4,6 @@ description: Track and steer how deep technical design docs go, using Anaxi dept
 ---
 
 # Anaxi
-<!-- anaxi: part-of: @skill -->
-<!-- D3 -->
 
 Anaxi marks every design item with how deep it has been taken (D0–D4 by default; a project's `anaxi.json` can change the ladder), how deep it needs to go, and what it
 uses. Your job is to read the marks, check them against the principles and questions, write the questions this

@@ -4,6 +4,11 @@ depth: D3
 risk: 2·2·0·0
 about: [cli]
 uses: ["@engine"]
+parts:
+  - "../../../tools/SPEC.md#1-anaxi-checkmjs (D3)"
+  - "../../../tools/SPEC.md#11-anaxi-cish (D3)"
+  - "../../../tools/SPEC.md#6-exit-codes (D3)"
+  - "../../../tools/SPEC.md#7-plugin-hooks (D3)"
 ---
 # The checker (`anaxi-check`)
 

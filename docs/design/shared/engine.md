@@ -5,13 +5,20 @@ risk: 2·1·1·0
 about: [engine]
 uses: ["@format", "@method", "@questions"]
 caveats: the word floor per level (nudges.levelWords, 10) is not calibrated on real docs yet
+parts:
+  - "../../../NUDGES.md (D3)"
+  - "../../../tools/SPEC.md#3-parsing (D3)"
+  - "../../../tools/SPEC.md#4-structural-rules (D3)"
+  - "../../../tools/SPEC.md#5-json-output (D3)"
+  - "../../../tools/SPEC.md#81-reading-an-item (D3)"
 ---
 # The engine
 
 **Why.** The CLI, CI, the reader, the MCP server and the skill all have to give the same answer about an item:
 its depth, its target, what blocks it. Five surfaces with their own logic would drift within a release.
 
-**What.** Loads `anaxi.json` and its profile; finds the doc files; finds items in all four forms and their
+**What.** Finds `anaxi.json` (upward, else in the repo's design folder: `docs/design`, `docs`, `design`, `doc`,
+`.anaxi`) and its profile; finds the doc files, and the parts items list outside the folder; finds items in all four forms and their
 sections, checklists, parts and uses; measures what the text shows at each level (words per level, and the
 deepest level with nothing missing before it); works out targets and caps; raises the structural nudges; answers
 the gate; applies lifecycle marks; and reads an item at a depth (blocks, and the bounded context for building).

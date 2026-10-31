@@ -27,9 +27,10 @@ claude plugin marketplace add <anaxi repo: a git URL or a local path>
 claude plugin install anaxi@anaxi
 ```
 
-In the project, `/anaxi:init` (or `/anaxi:init --profile service --stage shaping`) writes `anaxi.json` and
-`docs/anaxi-questions.md` (leave it nearly empty for now), starts `docs/shared/stack.md` and installs a pre-commit
-hook that keeps `docs/INDEX.md` fresh. Nothing is copied into the project: the plugin brings the skill, the
+In the project, `/anaxi:init` (or `/anaxi:init --profile service --stage shaping`) sets up one design folder,
+`docs/design/`: `anaxi.json`, `anaxi-questions.md` (leave it nearly empty for now), `shared/stack.md`, and a
+pre-commit hook that keeps `docs/design/INDEX.md` fresh. Nothing outside that folder changes; the tools find it from
+the repo root. Nothing is copied into the project: the plugin brings the skill, the
 checker and the commands (`/anaxi:status`, `/anaxi:assess`, `/anaxi:gate`). Updating: [TOOLING.md §5](TOOLING.md#5-installing).
 
 **Without Claude Code** (other agents, or CI): one script copies the method into the project.

@@ -6,7 +6,7 @@
 #   TARGET       the project folder (default: current folder; created if missing)
 #   --profile    default · service · mobile · data · integration · library · spike · regulated (default: default)
 #   --stage      discovery · shaping · pre-build · building · change (default: shaping)
-#   --docs       where the design docs live, relative to TARGET (default: docs)
+#   --docs       the design folder, relative to TARGET; it holds the docs and their settings (default: docs/design)
 #   --no-vendor  don't copy the method into TARGET/tools/anaxi; use $ANAXI_HOME or this copy instead
 #   --no-hook    don't install the pre-commit hook
 #   --no-skill   don't link the agent skill into .claude/skills/
@@ -14,7 +14,7 @@
 set -euo pipefail
 
 METHOD="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TARGET="."; PROFILE="default"; STAGE="shaping"; DOCS="docs"; VENDOR=1; HOOK=1; SKILL=1; PLUGIN=0
+TARGET="."; PROFILE="default"; STAGE="shaping"; DOCS="docs/design"; VENDOR=1; HOOK=1; SKILL=1; PLUGIN=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -61,17 +61,20 @@ else
 fi
 
 # 2. settings, questions, the stack, a place for features
-put anaxi.json <<EOF
+# the settings live in the docs folder, so everything Anaxi adds is in one place (found from the repo root)
+if [ -e anaxi.json ] && [ "$DOCS" != "." ]; then say "kept     anaxi.json (already at the root; it stays the project's settings)"
+else put "$DOCS/anaxi.json" <<EOF
 {
   "profile": "$PROFILE",
   "stage": "$STAGE",
-  "docs": ["$DOCS/**/*.md"],
-  "shared": "$DOCS/shared",
-  "questions": "$DOCS/anaxi-questions.md",
-  "index": "$DOCS/INDEX.md",
-  "archive": "$DOCS/archive"
+  "docs": ["**/*.md"],
+  "shared": "shared",
+  "questions": "anaxi-questions.md",
+  "index": "INDEX.md",
+  "archive": "archive"
 }
 EOF
+fi
 put "$DOCS/anaxi-questions.md" <"$METHOD/templates/anaxi-questions.md"
 put "$DOCS/shared/stack.md" <<'EOF'
 # Shared: project stack

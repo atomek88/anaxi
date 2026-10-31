@@ -1,6 +1,4 @@
 # Anaxi format: marking up ordinary markdown
-<!-- anaxi: part-of: @format -->
-<!-- D3 -->
 
 Anaxi adds marks to markdown you already write. It doesn't impose a document structure. A doc that follows
 a common TDD template works as-is once it has one tag; a loose page of notes works too. Everything here
@@ -216,6 +214,13 @@ or, for a whole file, front matter `part-of: "@recurring"`. Then link to it from
 | **One appendix can hold parts of many items**, one heading each | a single place for detail, if the team prefers it |
 | **`INDEX.md` lists each item's parts** | the super-TDD shows where everything is |
 | **Move parts freely** as the docs grow: inline into the TDD, out to an appendix, into their own file | where content lives is a reading choice; only `part-of:` has to stay |
+
+**Listed from the item's side.** When the detail is a file that shouldn't carry Anaxi marks (a spec, a README,
+anything outside the design folder), list it on the item instead: `parts: ["../../tools/SPEC.md#3-parsing (D3)"]`
+(front matter) or `parts: [Spec §3](../../tools/SPEC.md#3-parsing) (D3)` (tag line). The path is relative to the
+item's file, like a link; the anchor picks a heading and everything under it, or leave it out for the whole file;
+`(D3)` sets the level of all of it, subsections included (without it, heading names decide). Nothing is written in
+the listed file; a part whose file or heading is gone is an error. This is how a design folder stays self-contained.
 
 A part is committed content. Exploration still goes in a canvas: a heading named `Appendix` *inside* a TDD is
 canvas (§6); a `part-of:` section in `APPENDIX.md` is not. When a part grows into something other items use

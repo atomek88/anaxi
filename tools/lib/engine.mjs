@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile } from './config.mjs';
-import { parseFile, SECTION_NAMES, slug } from './parse.mjs';
+import { parseFile, SECTION_NAMES, slug, sectionByName } from './parse.mjs';
 import { questionSet, questionsFor } from './questions.mjs';
 import { blocks } from './read.mjs';
 
@@ -64,6 +64,31 @@ export function evaluate(cfg, { read, files } = {}) {
     for (const m of p.mentions) host.mentions.add(m);
     for (const m of p.historyMentions) host.historyMentions.add(m);
     for (const c of p.children) { c.parent = host; host.children.push(c); }
+  }
+  // parts listed from the item's side (`parts: path#anchor (D3)`): detail kept in a file that carries no Anaxi marks,
+  // even outside the design folder; the path is relative to the item's file, like a link
+  for (const it of items) for (const ref of it.partRefs || []) {
+    const where = `${it.file}:${it.line}`;
+    const file = path.posix.normalize(path.posix.join(path.posix.dirname(it.file), ref.path));
+    let lines;
+    try { lines = read(file).split('\n'); } catch { errors.push(`${where}: part ${ref.raw}: no file ${file}`); continue; }
+    let from = 0, end = lines.length, inF = false, h = 0;
+    if (ref.anchor) {
+      from = lines.findIndex((l, i) => { if (/^\s*(```|~~~)/.test(l)) inF = !inF; const m = !inF && l.match(/^(#+)\s+(.*)$/); return m && slug(m[2]) === ref.anchor && (h = m[1].length); });
+      if (from < 0) { errors.push(`${where}: part ${ref.raw}: no heading #${ref.anchor} in ${file}`); continue; }
+      inF = false;
+      for (let i = from + 1; i < lines.length; i++) { if (/^\s*(```|~~~)/.test(lines[i])) inF = !inF; const m = !inF && lines[i].match(/^(#+)\s/); if (m && m[1].length <= h) { end = i; break; } }
+    } else if (lines[0]?.trim() === '---') from = lines.findIndex((l, i) => i > 0 && l.trim() === '---') + 1;
+    const title = (lines[from]?.match(/^#+\s+(.*)$/)?.[1] || path.posix.basename(file)).replace(/`/g, '');
+    (it.parts ||= []).push({ file, line: from + 1, anchor: ref.anchor, title, listed: true });
+    // every heading in it is a section at the level given (or named), so the part is read and measured as a whole
+    inF = false; let sec = null;
+    for (let i = from; i < end; i++) {
+      if (/^\s*(```|~~~)/.test(lines[i])) { inF = !inF; continue; }
+      const m = !inF && lines[i].match(/^(#+)\s+(.*)$/);
+      if (m) { const t = m[2].replace(/`[^`]*`/g, '').trim(); sec = { heading: t, level: ref.level || sectionByName(t, names), by: ref.level ? 'part' : 'name', line: i + 1, words: 0, file }; it.sections.push(sec); }
+      else if (sec) sec.words += lines[i].split(/\s+/).filter(Boolean).length;
+    }
   }
   // lifecycle (FORMAT.md §10): superseded, retired or archived items stay readable but stop counting
   const archiveDir = cfg.archive ? `${path.posix.normalize(cfg.archive)}/` : null;

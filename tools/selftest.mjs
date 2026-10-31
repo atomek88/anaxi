@@ -127,6 +127,18 @@ fs.writeFileSync(path.join(ev, 'anaxi.json'), '{ "nudges": { "levelWords": 0 } }
 evm = evaluate(loadConfig(ev));
 ok(evm.byId.get('@gap').depthN === 3 && !ncodes('@gap').includes('N05'), 'evidence: levelWords 0 turns the check off');
 fs.rmSync(ev, { recursive: true });
+// one design folder: anaxi.json in docs/design is found from the repo root; parts are listed from the item's side
+const iso = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
+fs.mkdirSync(path.join(iso, 'docs', 'design'), { recursive: true }); fs.mkdirSync(path.join(iso, 'src'));
+fs.writeFileSync(path.join(iso, 'docs', 'design', 'anaxi.json'), '{ "docs": ["**/*.md"] }');
+fs.writeFileSync(path.join(iso, 'src', 'SPEC.md'), `# Spec\n## 1. Wire format\n${ten}\n### 1.1 Errors\n${ten}\n## 6. Canvas of ideas\n${ten}\n`);
+fs.writeFileSync(path.join(iso, 'docs', 'design', 'api.md'), `---\nanaxi: "@api"\ndepth: D3\nrisk: 2·1·1·0\nparts: ["../../src/SPEC.md#1-wire-format (D3)", "[the spec](../../src/SPEC.md#9-nothing)"]\n---\n# API\n**Why.** ${ten}\n\n**What.** ${ten}\n\n**Shape.** ${ten}\n`);
+const isoCfg = loadConfig(iso), isoM = evaluate(isoCfg), api1 = isoM.byId.get('@api');
+ok(isoCfg.file === path.join(iso, 'docs', 'design', 'anaxi.json'), 'config: anaxi.json in docs/design is found from the repo root');
+ok(api1.levelWords[3] === 20 && api1.parts.length === 1 && api1.parts[0].file === '../../src/SPEC.md', `parts: listed from the item's side, outside the design folder, at the level given, subsections too (${api1.levelWords})`);
+ok(isoM.errors.some((e) => /no heading #9-nothing/.test(e)), 'parts: a listed part whose heading is gone is an error');
+ok(fs.readFileSync(path.join(iso, 'src', 'SPEC.md'), 'utf8').indexOf('anaxi') < 0, 'parts: the referenced file carries no marks');
+fs.rmSync(iso, { recursive: true });
 const ar = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
 fs.writeFileSync(path.join(ar, 'anaxi.json'), '{ "docs": ["docs/**/*.md"] }');
 fs.mkdirSync(path.join(ar, 'archive')); fs.mkdirSync(path.join(ar, 'docs'));

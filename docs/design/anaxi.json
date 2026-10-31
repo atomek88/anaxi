@@ -1,0 +1,12 @@
+{
+  "profile": "default",
+  "stage": "building",
+  "docs": [
+    "**/*.md"
+  ],
+  "ignore": [
+    "README.md"
+  ],
+  "shared": "shared",
+  "index": "INDEX.md"
+}

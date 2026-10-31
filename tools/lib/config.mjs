@@ -70,15 +70,25 @@ export function loadProfile(name) {
   return readJson(p);
 }
 
-/** Find anaxi.json searching upward from `start`. The project root is its folder (or `start` if none). */
+// Where a project keeps its design folder when anaxi.json isn't at the repo root: the docs stay in one folder, with
+// their settings, and nothing outside it changes.
+export const DESIGN_DIRS = ['docs/design', 'docs', 'design', 'doc', '.anaxi'];
+
+/** Find anaxi.json searching upward from `start`, then in `start`'s design folder (DESIGN_DIRS, first match). The project
+ *  root is its folder (or `start` if none). */
 export function findRoot(start) {
   let dir = path.resolve(start);
   for (;;) {
     if (fs.existsSync(path.join(dir, 'anaxi.json'))) return { root: dir, file: path.join(dir, 'anaxi.json') };
     const up = path.dirname(dir);
-    if (up === dir) return { root: path.resolve(start), file: null };
+    if (up === dir) break;
     dir = up;
   }
+  for (const d of DESIGN_DIRS) {
+    const f = path.join(path.resolve(start), d, 'anaxi.json');
+    if (fs.existsSync(f)) return { root: path.dirname(f), file: f };
+  }
+  return { root: path.resolve(start), file: null };
 }
 
 /** Settings for a project: defaults, then its profile, then its anaxi.json. */

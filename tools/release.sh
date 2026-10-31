@@ -15,7 +15,7 @@ V="${1:?usage: tools/release.sh VERSION [--push]}"; PUSH="${2:-}"
 grep -Eq "^## ($V|${V%.0})( |$)" CHANGELOG.md || { echo "release: add a '## $V' entry to CHANGELOG.md first" >&2; exit 2; }
 node tools/selftest.mjs
 bash tools/anaxi-ci.sh --dir example
-bash tools/anaxi-ci.sh --dir .                   # Anaxi's own design (docs/design)
+bash tools/anaxi-ci.sh --dir .                   # Anaxi's own design (found in docs/design)
 node -e "const f='.claude-plugin/plugin.json',fs=require('fs'),j=JSON.parse(fs.readFileSync(f));j.version='$V';fs.writeFileSync(f,JSON.stringify(j,null,2)+'\n')"
 claude plugin validate . --strict
 claude plugin validate .claude-plugin/plugin.json --strict

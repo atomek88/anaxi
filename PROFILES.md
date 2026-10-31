@@ -21,7 +21,8 @@ Later layers override earlier ones:
 ```
 method defaults      METHOD.md, QUESTIONS.md
   → profile          profiles/<name>.json
-    → project        anaxi.json + anaxi-questions.md at the docs root
+    → project        anaxi.json + anaxi-questions.md in the design folder (found upward, else in docs/design, docs,
+                     design, doc or .anaxi under the repo root; paths in it are relative to its folder)
       → folder       anaxi.json in a sub-folder (optional; e.g. mobile/ and services/; not read by the scripts yet)
         → item       the tag: profile:, target:, skip:, focus:
 ```

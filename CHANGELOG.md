@@ -24,8 +24,12 @@ Newest first. Format: `date · area · change · why`.
   changes went together, which is a reason to look, not a dependency.
 - tooling · Old notes in the archive folder aren't nudged as untagged · any repo with an `archive/` folder got a hint
   per heading.
-- docs · **Anaxi documents itself** in `docs/design/`: one item per part of the tool, the reference docs joined as
-  parts.
+- format · **One design folder.** `anaxi.json` can live in the design folder (`docs/design`, `docs`, `design`, `doc` or
+  `.anaxi`) and is found from the repo root; `/anaxi:init` now writes everything into `docs/design/`. Parts can be
+  listed from the item's side (`parts: ["../../tools/SPEC.md#3-parsing (D3)"]`), so specs and code carry no marks ·
+  dogfooding needed comments in six reference docs and a root `anaxi.json`.
+- docs · **Anaxi documents itself** in `docs/design/`: one item per part of the tool, the reference docs listed as
+  its parts; nothing outside the folder is marked.
 
 ## 0.9 · 2026-10-25
 

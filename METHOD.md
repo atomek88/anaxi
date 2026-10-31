@@ -1,6 +1,4 @@
 # Anaxi method
-<!-- anaxi: part-of: @method -->
-<!-- D3 -->
 
 ## 0. Defaults, not rules
 
