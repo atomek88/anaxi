@@ -9,8 +9,9 @@ so a task is never lost and never created twice. Not a goal: scheduling. The API
 place them.
 
 **What.** A client submits a task and gets "queued" back as soon as it is stored durably, never "scheduled".
-Resubmitting the same task returns the same answer and creates nothing new. Acceptance: a task submitted
-offline and retried ten times shows up exactly once.
+Resubmitting the same task returns the same answer and creates nothing new. A client can withdraw a task it
+submitted, whether it's still queued or already placed. Acceptance: a task submitted offline and retried ten
+times shows up exactly once; a withdrawn task never reaches the calendar, or leaves it.
 
 **Shape.** `POST /v1/tasks` on the TaskFlow API, writing to the `intake.fifo` queue; the project stack, nothing
 new (@stack). Decision: the client generates the `submissionId` and the queue deduplicates on it. Rejected:
@@ -22,8 +23,13 @@ retry, which that decision handles.
 | Method and path | Body | Success | Errors |
 |---|---|---|---|
 | `POST /v1/tasks` | `{submissionId, text, title?, durationMinutes?, deadline?, doNow}` | `202 {submissionId, status: "queued"}` | `400` invalid · `401` · `409` same id, different body · `429` |
+| `DELETE /v1/tasks/{submissionId}` | none | `204`, also when already withdrawn | `401` · `404` never submitted · `429` |
 
-Auth: every call carries the user's bearer token; the user ID comes from the token, never from the body.
+Auth: every call carries a bearer token for one user; the user ID comes from the token, never from the body. A
+person's app uses their session token. A server job acting for a user (the @recurring daily job) uses a delegated
+token: a service credential scoped to that one user and to `tasks:write`, minted per run, so the rule still holds.
+Withdrawing: a queued task is dropped before planning; a placed one has its calendar event removed by the next
+planning run.
 Failure: the client retries on network errors, `429` and `5xx` with backoff (2 s, doubling, capped at 5 min),
 always with the same `submissionId`. Versioning: `/v1/` is frozen; any breaking change is `/v2/`, because old
 app versions stay installed.

@@ -22,10 +22,7 @@
 
 ## Nudges
 
-- ⚠️ **The hard gate (a hook that refuses to build what isn't designed)** built, but its design changed after the code (design 2026-10-31, not committed, code 2026-10-31): check the code still matches, then write the day you checked (built: yes (2026-10-31)), or set built: partly
-- ⚠️ **The reader (anaxi watch)** built, but its design changed after the code (design 2026-10-31, code 2026-10-30): check the code still matches, then write the day you checked (built: yes (2026-10-31)), or set built: partly
 - ❓ **Releasing the plugin** 1 open: Where does the marketplace repo live (GitHub owner and name), and who can push a release tag? (D2)
-- ⚠️ **The markup** built, but its design changed after the code (design 2026-10-31, code 2026-10-30): check the code still matches, then write the day you checked (built: yes (2026-10-31)), or set built: partly
 - ❓ **The method** 1 open: Should an item's role (feature, shared, foundation) change which questions apply to it? (ROADMAP §7) (D2)
 
 ## Later

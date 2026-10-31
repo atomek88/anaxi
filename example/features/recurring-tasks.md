@@ -30,8 +30,9 @@ In the task sheet, a user picks "repeat weekly on …" or "repeat monthly on day
 task, created one week ahead of its date and scheduled like any other. Editing the series changes future
 occurrences only; deleting asks "this one or all future".
 
-- Acceptance: a weekly series created on Monday has its next four occurrences placed in the calendar within a
-  day; deleting "all future" removes them and nothing else.
+- Acceptance: a weekly series created on Monday has its next occurrence placed in the calendar within a day,
+  and each later one a week ahead of its date; deleting "all future" removes the placed and queued ones and
+  nothing else.
 - Edge cases: a monthly task on the 31st falls on the last day of shorter months; a missed occurrence doesn't
   block the next one; a series created offline syncs like any task.
 - While saving, the sheet shows "repeats every Monday", not a list of dates.
@@ -45,8 +46,10 @@ occurrences only; deleting asks "this one or all future".
 ## Proposed design
 
 The series is stored with the user's tasks. A daily job materializes occurrences seven days ahead and submits
-each one through @task-api with a deterministic `submissionId` (series ID + date), so a job retry can't create
-a duplicate.
+each one through @task-api with a deterministic `submissionId` (series ID + revision + date), so a job retry
+can't create a duplicate. The job calls @task-api with a delegated token for the series' owner. Editing a series
+raises its revision: the job withdraws the future occurrences already submitted (`DELETE`) and submits the new
+ones, whose ids are new, so an edit never meets a `409`. Deleting "all future" withdraws them the same way.
 
 The series record is in the [appendix](APPENDIX.md#recurring-tasks-series-record-d3).
 
@@ -71,7 +74,7 @@ sequenceDiagram
   participant J as daily job
   participant A as @task-api
   participant S as @scheduler
-  J->>A: submit occurrence (series ID + date)
+  J->>A: submit occurrence (series ID + revision + date)
   A-->>J: 202 queued
   S->>S: next planning run places it
 ```
