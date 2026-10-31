@@ -18,7 +18,13 @@ a scroll each. Nobody reads a design that way twice.
 **What.** A local, read-only page that reloads on save: an overview grouped by what needs attention, topic pages,
 an item page in three panes (a file tree with lines to connected files, the doc with deeper levels folded to one
 line each, a minimap of its levels with uses and used-by as branches), and a 2D map. Hovering a name previews
-it; keys `0`–`4` set the depth. Out of scope: editing, which stays in the editor or with an agent.
+it; keys `0`–`4` set the depth. **Which levels are open when an item page opens:** the reading depth is `?at=N`
+in the link when there is one (the depth buttons, the keys and the pager set it), else the item's claimed `depth:`
+(D0 when it has none). Every level up to it is open, each deeper level is one folded line, the canvas and the decision
+log are always folded, and text before any level is always shown. A level the claim or the target needs with nothing
+written shows as a red "nothing written yet" line where it would be. Unfolding one by hand, from the outline or a parts
+chip opens it and every level before it; it stays open across live reloads and visits to other items, until the
+browser page itself is reloaded. Out of scope: editing, which stays in the editor or with an agent.
 
 **Shape.** A zero-dependency Node server (`tools/anaxi-watch.mjs`) serves one model (`/api/model`) and a static
 page (`tools/watch/app.js`); server-sent events say when to reload. Linked pages plus a 2D depth-bar map won a
