@@ -188,7 +188,7 @@ No new ceremonies, and the tracker is untouched.
 With Claude Code, Anaxi is a plugin: install it once per machine, then run `/anaxi:init` in any repo.
 
 ```bash
-claude plugin marketplace add <anaxi repo>
+claude plugin marketplace add atomek88/anaxi
 claude plugin install anaxi@anaxi
 ```
 

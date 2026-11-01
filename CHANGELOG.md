@@ -3,7 +3,10 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
-## 0.10 · unreleased
+## 0.10 · 2026-10-31
+
+- plugin · Published at github.com/atomek88/anaxi: `claude plugin marketplace add atomek88/anaxi` · the repo had
+  no remote, so only one machine had a release.
 
 - skill · **Blocked means stop.** Asked to build a blocked item, the agent reports N09, offers to draft the missing
   answers and waits; a proposal goes on the open question (`→ proposed: …`) with the box unchecked, so the agent

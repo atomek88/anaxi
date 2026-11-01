@@ -23,7 +23,7 @@ factors, or skip scoring and write the target yourself: [METHOD.md §0](METHOD.m
 **With Claude Code (recommended):** install the plugin once per machine, then run `/anaxi:init` in any project.
 
 ```bash
-claude plugin marketplace add <anaxi repo: a git URL or a local path>
+claude plugin marketplace add atomek88/anaxi
 claude plugin install anaxi@anaxi
 ```
 

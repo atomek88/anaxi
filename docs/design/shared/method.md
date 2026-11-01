@@ -4,6 +4,7 @@ depth: D3
 risk: 2·2·1·1
 target: D3 (a method has no build step; its contract is its text)
 about: [method]
+later: role marks and role-aware questions, ROADMAP §7.4 (when two pilot projects ask for them)
 parts:
   - "../../../METHOD.md (D3)"
 ---
@@ -27,4 +28,4 @@ suggests and never decides (`target:` overrides with a reason), because a score 
 none. The riskiest part is the rubric's thresholds, which come from judgement, not data; pilots calibrate them.
 Roles change the shape: a shared item that others build on is judged by its contracts first.
 
-- [ ] D2 · Should an item's role (feature, shared, foundation) change which questions apply to it? (ROADMAP §7)
+- [x] D2 · Should an item's role (feature, shared, foundation) change which questions apply to it? → yes, in time: roles stay inferred from the folder for now; how a role is said and how it changes the questions evolves with pilot evidence (ROADMAP §7.4, 2026-10-31)

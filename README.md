@@ -12,7 +12,7 @@ method for reading them ([TOOLING.md](TOOLING.md)).
 
 **New here? Start with the one-page [QUICKSTART.md](QUICKSTART.md).** Evaluating it for a team? Read [OVERVIEW.md](OVERVIEW.md).
 
-**Using Claude Code?** This repo is a plugin: `claude plugin marketplace add <this repo>`, then
+**Using Claude Code?** This repo is a plugin: `claude plugin marketplace add atomek88/anaxi`, then
 `claude plugin install anaxi@anaxi`, then `/anaxi:init` in any project ([TOOLING.md §5](TOOLING.md#5-installing)).
 `/anaxi:watch` opens the docs as linked pages you can read at any depth, and agents get `anaxi_context` (MCP).
 

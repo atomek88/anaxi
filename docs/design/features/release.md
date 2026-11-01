@@ -4,7 +4,7 @@ depth: D2
 risk: 1·1·0·0
 about: [cli]
 uses: ["@check"]
-built: partly (2026-10-30)
+built: yes (2026-10-31)
 code: [../../../tools/release.sh, ../../../.claude-plugin]
 ---
 # Releasing the plugin
@@ -18,7 +18,8 @@ Users update with `claude plugin marketplace update anaxi && claude plugin updat
 the plugin loads live from the repo through a symlink.
 
 **Shape.** One script, no CI service: the checks are the ones that already run locally. The version lives only in
-`plugin.json`; the changelog is the release notes. The risky part is that nothing is published yet: there is no
-remote, so only this machine has 0.9.0.
+`plugin.json`; the changelog is the release notes. The repo is published at github.com/atomek88/anaxi (`claude plugin marketplace add atomek88/anaxi`);
+`--push` sends the tag there. The risky part is a release pushed without the checks, which the script makes the
+only way to tag.
 
-- [ ] D2 · Where does the marketplace repo live (GitHub owner and name), and who can push a release tag?
+- [x] D2 · Where does the marketplace repo live (GitHub owner and name), and who can push a release tag? → github.com/atomek88/anaxi; the owner pushes release tags, with `tools/release.sh <version> --push` (2026-10-31)

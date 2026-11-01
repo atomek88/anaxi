@@ -67,7 +67,8 @@ Still to do:
 
 - **Pin a version per project:** an optional `"requires": ">=0.8"` in `anaxi.json`; the checker warns when the
   plugin is a major version off.
-- **Publish the repo** (GitHub) so `claude plugin marketplace add <owner>/anaxi` works for a team.
+- [x] **Publish the repo** (2026-10-31): github.com/atomek88/anaxi, so `claude plugin marketplace add atomek88/anaxi`
+  works for a team.
 - [x] **The MCP server (step 4)** is in the same plugin, as an `mcpServers` entry in `plugin.json` (0.9; a root `.mcp.json` also loaded as a broken project server inside this repo).
 
 ### 3. Seeing the design: `anaxi watch` · built in 0.9
@@ -184,17 +185,41 @@ still used, as the Strata files were in 0.8.
 
 ### 7. Follow-ups from 0.9
 
-- [x] **Release 0.9.0** (2026-10-25, tagged locally). Still to do: push the tag once the GitHub remote exists (step 2).
-- [ ] **Item roles beyond the folder.** Today an item is shared only because it lives in the `shared` folder, and
-  a foundation only because it uses nothing. Pilots may want an explicit `role:` mark (feature, shared,
-  foundation), and role-aware questions: a stack's D1 is "what it applies to", not user behaviour. The levels
-  stay the same; the questions per role come from the project's `anaxi-questions.md` (`when: role:foundation`).
+- [x] **Release 0.9.0** (2026-10-25), tag pushed with 0.10.0 (2026-10-31).
+- [ ] **Item roles beyond the folder**: see §7.4.
 - [ ] **Calibrate the gap check** (`nudges.levelWords`, default 10) on pilot docs: how often a level with a few
   real words is flagged, and whether N22 (content past the claim) helps or is noise.
 - [ ] **Explicit `related:`**, only if pilots find mentions too noisy or too sparse; mentions in the text are the
   related links today.
 - [ ] **A browser check in CI** for the reader: open the example, unfold a level, hover a chip, follow a link
   (Playwright), alongside the self-test.
+
+### 7.4 Roles: how an item's role is said, and how it changes the questions · open (@method)
+
+Today a role is inferred: an item in the `shared` folder is shared, a shared item that uses nothing is a
+foundation, everything else is a feature. Roles already change one thing (a shared item is judged by its contracts
+first), but every item is asked the same questions, so a stack or a design system gets "what does the user do,
+step by step" at D1. To evolve, with the pilot's docs as the evidence:
+
+- [ ] **Which roles exist.** Start from the three, and collect what pilots actually write: feature, shared (an API,
+  a service others call), foundation (stack, infrastructure, a design system, conventions), and candidates seen
+  in practice, such as integration (a third party), data (a schema or pipeline), policy (a rule others follow),
+  or, outside software, deliverable and process. Keep the list a project default, renamable like levels.
+- [ ] **How a role is said.** An optional `role:` mark on an item (front matter or tag line), overriding the
+  folder; the folder stays the default, so nobody has to write it. Open: whether a sub-item inherits its parent's
+  role, and whether one item can have two (a feature that is also shared). The checker reports where the mark and
+  the folder disagree.
+- [ ] **How a role changes the questions.** The levels stay the same; what changes is the questions asked at each
+  one, by the selectors that already exist in `anaxi-questions.md` (`when: role:foundation`). A first draft per
+  role, written as a table in METHOD.md and tried on the pilot: a foundation's D1 is "what it applies to and what
+  it rules out"; its D2 the choices and why; its D3 the version and upgrade policy. A shared item's D1 is who
+  calls it and what they rely on; its D3 the contract and its versioning. A feature keeps today's questions.
+- [ ] **How a role changes the target and the gate.** Whether the rubric weighs roles (a foundation that many items
+  use needs depth before they do), and whether a feature's gate checks that its foundations are written down
+  at all, not only its uses.
+- [ ] **Evidence before rules.** For each pilot item, note which default questions felt wrong for its kind, and
+  which questions people added; a role and its questions join the defaults only when two projects ask for
+  them. Until then, `when: role:` in a project's own questions is the way to try one.
 
 ### 7.1 Dogfooding: Anaxi documents itself · started 2026-10-25
 

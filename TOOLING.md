@@ -184,7 +184,7 @@ self-contained page with a depth slider; the [Strata viewer](archive/strata-view
 This repo is a Claude Code plugin and its own marketplace (`.claude-plugin/plugin.json`, `marketplace.json`).
 
 ```bash
-claude plugin marketplace add <anaxi repo: a git URL or a local path>
+claude plugin marketplace add atomek88/anaxi   # or a local path to a clone
 claude plugin install anaxi@anaxi
 ```
 
