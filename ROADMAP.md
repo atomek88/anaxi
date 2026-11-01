@@ -34,6 +34,16 @@ copying anything into it. Without Claude Code, `tools/anaxi-init.sh` copies the 
 - **One engine.** `tools/lib/` is the only place rules live; the CLI, CI, watcher, viewer and MCP server all
   call it, so they can't disagree.
 
+## Left now · as of 0.10.0 (2026-10-31)
+
+0.10.0 is released and published at github.com/atomek88/anaxi; Anaxi's own design is 🎯 throughout, with no drift.
+Two things remain before anything below:
+
+- [ ] **Reserve `anaxi` on npm** with a placeholder 0.0.x package (step 1). Needs the owner's npm login.
+- [ ] **The pilot on a real project** ([PILOT.md](PILOT.md)): `/anaxi:init`, design one or two features through it,
+  and watch whether the gate holds, gaps surface onto items, and the docs stay current while it's built. The pilot
+  decides the order of everything below, starting with §9 and the roles in §7.4.
+
 ## Next steps, roughly in order
 
 ### 1. A package instead of a copied folder
