@@ -48,7 +48,8 @@ export function parseDepth(s) {
   return m ? { depth: m[1], arrow: m[2] || null, enough: !!m[3] } : null;
 }
 
-const asList = (v) => (Array.isArray(v) ? v.map(String) : v == null ? [] : splitTop(String(v)));
+// a tag line writes lists bare (`a, b`) or in brackets (`[a, b]`), like front matter
+const asList = (v) => (Array.isArray(v) ? v.map(String) : v == null ? [] : splitTop(String(v).trim().replace(/^\[([^]*)\]$/, '$1')));
 
 function parseRefs(v) {
   const s = Array.isArray(v) ? v.join(', ') : String(v ?? '');

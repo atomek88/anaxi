@@ -372,10 +372,11 @@ const isBuilt = (it) => it.built === 'yes' || it.built === 'partly';
 
 /** The hard gate (@hard-gate): the items that refuse an edit to `file` (relative to the project root): current
  *  items that map it in `code:`, aren't built (`built:` no or unmarked) and whose gate isn't ready. A file a built
- *  item also maps is shared code that keeps moving: nothing holds it, and `fileReport` notes the plans instead. */
+ *  item also maps is shared code that keeps moving: nothing holds it, and `fileReport` notes the plans instead. A
+ *  file that a ready item plans is open too: that item may build there, even while others planning it aren't ready. */
 export function gateFor(model, file) {
   const items = itemsForFile(model, file);
-  if (items.some(isBuilt)) return [];
+  if (items.some((it) => isBuilt(it) || gate(model, it).ready)) return [];
   return items.filter((it) => !isBuilt(it))
     .map((it) => ({ it, g: gate(model, it) })).filter(({ g }) => !g.ready)
     .map(({ it, g }) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: at(it), target: LV(it.targetN), why: g.why }));

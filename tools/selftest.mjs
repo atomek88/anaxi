@@ -207,6 +207,9 @@ fs.writeFileSync(rct, rct0.replace('code: [../src/recurring/, ../ios/Recurring/]
 const shr = fileReport(evaluate(loadConfig(hg)), 'api/handler.ts');
 ok(pre('api/handler.ts') === '' && /"deny"/.test(pre('src/recurring/series.ts')), 'hard gate: shared code a built item maps stays writable; the new item\'s own paths stay held');
 ok(shr.some((x) => x.id === '@recurring' && x.plans && !x.blocks) && gateFor(evaluate(loadConfig(hg)), 'api/handler.ts').length === 0, 'code map: an unready item\'s plans on shared code are a note, not a block');
+fs.writeFileSync(tpa, tpa0.replace('built: no · code: ../api/', 'built: no · code: [../api/, ../src/recurring/series.ts]'));
+ok(evaluate(loadConfig(hg)).byId.get('@task-api').codePaths.join() === 'api/,src/recurring/series.ts', 'tag line: a bracketed list reads like a bare one');
+ok(pre('src/recurring/series.ts') === '' && /"deny"/.test(pre('src/recurring/other.ts')), 'hard gate: a path a ready item plans is open to it, even while another item planning it isn\'t ready');
 fs.writeFileSync(tpa, tpa0); fs.writeFileSync(rct, rct0);
 const preE = (f, old_string, new_string) => execFileSync('node', [path.join(HERE, '..', 'hooks', 'before-edit.mjs')], { encoding: 'utf8', input: JSON.stringify({ cwd: hg, tool_name: 'Edit', tool_input: { file_path: f, old_string, new_string } }) });
 ok(/"deny"/.test(preE('anaxi.json', '"index": "INDEX.md"', '"index": "INDEX.md", "hooks": { "gate": false }')), 'hard gate: it can\'t be switched off from inside a session');
