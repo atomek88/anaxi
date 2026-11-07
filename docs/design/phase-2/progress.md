@@ -32,8 +32,8 @@ progress back into markdown (state the docs shouldn't hold).
 
 ## Open questions
 
-- [ ] D0 · (decide: person) Keep progress out of the docs: they hold acceptance criteria and `built:`; the tracker holds the work. Confirm? → proposed: yes; you leaned this way on 2026-11-07
-- [ ] D1 · (decide: person) Should Anaxi ever write `built: yes` itself from evidence? → proposed: never; it suggests, a person or the building agent writes it
+- [x] D0 · (decide: person) Keep progress out of the docs: they hold acceptance criteria and `built:`; the tracker holds the work. Confirm? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes; you leaned this way on 2026-11-07
+- [x] D1 · (decide: person) Should Anaxi ever write `built: yes` itself from evidence? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): never; it suggests, a person or the building agent writes it
 - [ ] D2 · Criterion syntax and stable ids? → proposed: acceptance bullets get an optional `{#ac-weekly}` id and `→ checks: <path> "<test name>"` at the end
 - [ ] D2 · Which test reports? → proposed: JUnit XML first (most runners write it), TAP later
 - [ ] D2 · (decide: person) Tracker adapters need tokens. → proposed: read-only, from environment variables only (`GITHUB_TOKEN`, `LINEAR_API_KEY`), never stored or logged; git trailers need none

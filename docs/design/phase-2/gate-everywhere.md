@@ -32,8 +32,8 @@ staged files that some item maps are checked, and the model is built once.
 
 ## Open questions
 
-- [ ] D1 · (decide: person) A feature that only changes existing shared code now holds nothing. Is a note enough? → proposed: yes: the code-map note at edit time (built) and one line in the pre-commit output; never a block, since blocking shared code is the freeze we just removed
-- [ ] D2 · (decide: person) Start the merge-time override with GitHub only? → proposed: yes, a PR label `anaxi: override` read from the event payload; any other CI sets `ANAXI_OVERRIDE=1`, so it can be wired anywhere
+- [x] D1 · (decide: person) A feature that only changes existing shared code now holds nothing. Is a note enough? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes: the code-map note at edit time (built) and one line in the pre-commit output; never a block, since blocking shared code is the freeze we just removed
+- [x] D2 · (decide: person) Start the merge-time override with GitHub only? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes, a PR label `anaxi: override` read from the event payload; any other CI sets `ANAXI_OVERRIDE=1`, so it can be wired anywhere
 - [ ] D2 · On a PR, is the design read from the PR itself or from the base branch? → proposed: from the PR, so design and code can land together; @decided keeps a PR from ticking a person's question itself
 - [ ] D2 · How fast must the pre-commit check be? → proposed: under 0.3 s for 200 items; measure on a generated project before release
 - [ ] D2 · Adapters for other agent tools' pre-edit hooks? → proposed: not in this item: research which tools offer one and write each as its own item; commit and merge cover them meanwhile

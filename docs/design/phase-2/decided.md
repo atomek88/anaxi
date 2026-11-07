@@ -32,8 +32,8 @@ answers (heavy, and nobody would use them) and over trusting the skill (tested, 
 
 ## Open questions
 
-- [ ] D1 · (decide: person) Are why and what (D0–D1) a person's to decide by default, and shape and contract (D2+) anyone's? → proposed: yes, as `questions.decideBy`; a question's own `(decide: …)` overrides it
-- [ ] D1 · (decide: person) When you give the agent an answer in the chat, may it tick the box? Options: (a) strict, you always tick; (b) the agent ticks and records `decided: <you> (in session)`, flagged for review; (c) the hook checks the session transcript for your words. → proposed: (a), made easy: you type `! anaxi-check decide @recurring 2 "series time zone"` in the session (the hook never sees a command you run yourself), or answer in the reader. (b) reopens the hole with a label on it; (c) is clever but fragile
+- [x] D1 · (decide: person) Are why and what (D0–D1) a person's to decide by default, and shape and contract (D2+) anyone's? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes, as `questions.decideBy`; a question's own `(decide: …)` overrides it
+- [x] D1 · (decide: person) When you give the agent an answer in the chat, may it tick the box? Options: (a) strict, you always tick; (b) the agent ticks and records `decided: <you> (in session)`, flagged for review; (c) the hook checks the session transcript for your words. → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): (a): you always tick, made easy: `! anaxi-check decide @id <n> "answer"` in the session (the hook never sees a command you run yourself), or the reader
 - [ ] D2 · Only on items the gate holds, or on every item? → proposed: refused only where ticking would open a gate; elsewhere it's listed by `decisions --who`
 - [ ] D2 · Where does the name come from? → proposed: `git config user.name` when written through `decide` or the reader; by hand, what the person writes; if blank, the commit author from blame
 - [ ] D2 · Which agent trailers are recognised? → proposed: `Co-Authored-By:` naming Claude, Codex, Cursor or Copilot by default; `decisions.agentTrailers` adds patterns

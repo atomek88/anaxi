@@ -38,8 +38,8 @@ outside an item's section counted for it), so per-section drift for parts is par
 
 ## Open questions
 
-- [ ] D1 · (decide: person) May an agent settle drift (run `verify`, write the `no-design-impact` trailer), or only a person? → proposed: an agent may, and it's recorded: an agent's `verify` writes `built: yes (2026-11-07, agent)`, status and the reader show agent-checked items apart, and a person's check replaces it. Anyone may write the trailer; `anaxi-check since` lists those commits
-- [ ] D2 · (decide: person) Add the `contract:` mark, a subset of `code:` where any change warns? → proposed: yes, optional; the cheapest signal that the D3 text is wrong, and most items won't need it
+- [x] D1 · (decide: person) May an agent settle drift (run `verify`, write the `no-design-impact` trailer), or only a person? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): an agent may, and it's recorded: an agent's `verify` writes `built: yes (2026-11-07, agent)`, status and the reader show agent-checked items apart, and a person's check replaces it. Anyone may write the trailer; `anaxi-check since` lists those commits
+- [x] D2 · (decide: person) Add the `contract:` mark, a subset of `code:` where any change warns? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes, optional; the cheapest signal that the D3 text is wrong, and most items won't need it
 - [ ] D2 · The baseline is a day, so code changed later that same day is missed. → proposed: keep the day in the text for people; the engine takes the commit that last changed the `built:` line (git blame) as the exact baseline, and the day only while that line isn't committed
 - [ ] D2 · Default threshold, and do test files count? → proposed: warn at 5 commits or 200 changed lines, whichever comes first; tests count (a changed test usually means changed behaviour); `nudges.drift.ignore` takes globs
 - [ ] D2 · Per-section drift for parts now, or later? → proposed: now, for parts only: a part's heading range in its file, through `git log -L`; whole files stay per file

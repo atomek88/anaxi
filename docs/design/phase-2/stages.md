@@ -31,5 +31,5 @@ from the marks it summarises) and over a kanban tool (Anaxi reads state, it does
 ## Open questions
 
 - [ ] D1 · What is the difference between an idea and a parked item? → proposed: an idea is below D1 and not `focus: later`; parked is `focus: later` below its target; so nine stages, with parked folded on the board
-- [ ] D1 · (decide: person) Should the runway be judged before kinds of project (@project-kinds) set healthy bands? → proposed: show the number without judging it; one nudge only, when the runway is 0 while items are designing (builders will wait)
+- [x] D1 · (decide: person) Should the runway be judged before kinds of project (@project-kinds) set healthy bands? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): show the number without judging it; one nudge only, when the runway is 0 while items are designing (builders will wait)
 - [ ] D2 · Unmarked items and sub-items? → proposed: unmarked counts as idea; sub-items have stages but show inside their parent's card

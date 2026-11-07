@@ -29,6 +29,6 @@ re-reading the whole item set (the reason `anaxi_context` exists).
 
 ## Open questions
 
-- [ ] D1 · (decide: person) Does an agent's "verified" count like a person's? → proposed: decided together with @drift-both's first question
+- [x] D1 · (decide: person) Does an agent's "verified" count like a person's? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes, recorded as the agent's (`built: yes (<day>, agent)`), shown apart, and replaced by a person's check (decided with @drift-both)
 - [ ] D2 · The word budget? → proposed: 3,000 words by default, `--words` to change it
 - [ ] D2 · May an agent edit the design from the code? → proposed: for descriptive facts only (names, paths, counts), with `→ from code <day>`; anything about behaviour or a decision goes as a question
