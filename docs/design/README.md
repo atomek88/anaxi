@@ -8,6 +8,7 @@ written twice.
 - `anaxi.json`: the settings, found from the repo root (docs/design is a conventional design folder)
 - `shared/`: what the tool's features build on (the method, the markup, the questions, the engine)
 - `features/`: what people and agents use (the CLI, the reader, the MCP server, the skill, init, release)
+- `phase-2/`: what comes next, designed before it is built ([PHASE_2.md](../../PHASE_2.md) is the overview)
 - [INDEX.md](INDEX.md): generated; `node tools/anaxi-check.mjs index`
 
 Read it with `/anaxi:watch` from the repo root, or `node tools/anaxi-check.mjs status`.

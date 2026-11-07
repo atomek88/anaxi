@@ -203,10 +203,14 @@ ok(pre('api/handler.ts') === '', 'hard gate: a ready item\'s planned code is wri
 // the shared-file freeze: an unready item that plans changes to a file a built item maps doesn't lock it
 const tpa = path.join(hg, 'shared', 'task-api.md'), rct = path.join(hg, 'features', 'recurring-tasks.md'), tpa0 = fs.readFileSync(tpa, 'utf8'), rct0 = fs.readFileSync(rct, 'utf8');
 fs.writeFileSync(tpa, tpa0.replace('built: no', 'built: yes'));
+fs.mkdirSync(path.join(hg, 'api'), { recursive: true }); fs.writeFileSync(path.join(hg, 'api', 'handler.ts'), '');
 fs.writeFileSync(rct, rct0.replace('code: [../src/recurring/, ../ios/Recurring/]', 'code: [../src/recurring/, ../ios/Recurring/, ../api/handler.ts]'));
 const shr = fileReport(evaluate(loadConfig(hg)), 'api/handler.ts');
 ok(pre('api/handler.ts') === '' && /"deny"/.test(pre('src/recurring/series.ts')), 'hard gate: shared code a built item maps stays writable; the new item\'s own paths stay held');
 ok(shr.some((x) => x.id === '@recurring' && x.plans && !x.blocks) && gateFor(evaluate(loadConfig(hg)), 'api/handler.ts').length === 0, 'code map: an unready item\'s plans on shared code are a note, not a block');
+fs.writeFileSync(rct, rct0.replace('code: [../src/recurring/, ../ios/Recurring/]', 'code: [../src/recurring/, ../ios/Recurring/, ../api/series.ts]'));
+ok(/"deny"/.test(pre('api/series.ts')), 'hard gate: a new file inside a built item\'s folder is held, if an unready item plans it');
+fs.writeFileSync(rct, rct0);
 fs.writeFileSync(tpa, tpa0.replace('built: no · code: ../api/', 'built: no · code: [../api/, ../src/recurring/series.ts]'));
 ok(evaluate(loadConfig(hg)).byId.get('@task-api').codePaths.join() === 'api/,src/recurring/series.ts', 'tag line: a bracketed list reads like a bare one');
 ok(pre('src/recurring/series.ts') === '' && /"deny"/.test(pre('src/recurring/other.ts')), 'hard gate: a path a ready item plans is open to it, even while another item planning it isn\'t ready');

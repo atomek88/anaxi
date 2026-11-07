@@ -4,31 +4,62 @@
 
 | | Item | Depth | Target | Built | Uses | Used by | Open |
 |---|---|---|---|---|---|---|---|
-| 🎯 | [What's built (built:, code:, drift)](features/built.md) `@built` | D3 | D3 | ✓ | [@format](shared/format.md), [@engine](shared/engine.md) | @code-map, @hard-gate | 0 |
-| 🎯 | [The checker (anaxi-check)](features/check.md) `@check` · parts: [1. anaxi-check.mjs](../../tools/SPEC.md#1-anaxi-checkmjs), [1.1 anaxi-ci.sh](../../tools/SPEC.md#11-anaxi-cish), [6. Exit codes](../../tools/SPEC.md#6-exit-codes), [7. Plugin hooks](../../tools/SPEC.md#7-plugin-hooks) | D3 | D3 | ✓ | [@engine](shared/engine.md) | @init, @release, @skill | 0 |
-| 🎯 | [Code → design lookup (code: as the map)](features/code-map.md) `@code-map` | D2 | D2 | ✓ | [@built](features/built.md), [@engine](shared/engine.md), [@mcp](features/mcp.md) | @hard-gate | 0 |
-| 🎯 | [The hard gate (a hook that refuses to build what isn't designed)](features/hard-gate.md) `@hard-gate` | D3 | D3 | ✓ | [@code-map](features/code-map.md), [@built](features/built.md), [@skill](features/skill.md) | — | 0 |
+| 🎯 | [What's built (built:, code:, drift)](features/built.md) `@built` | D3 | D3 | ✓ | [@format](shared/format.md), [@engine](shared/engine.md) | @code-map, @hard-gate, @drift-both, @progress, @stages | 0 |
+| 🎯 | [The checker (anaxi-check)](features/check.md) `@check` · parts: [1. anaxi-check.mjs](../../tools/SPEC.md#1-anaxi-checkmjs), [1.1 anaxi-ci.sh](../../tools/SPEC.md#11-anaxi-cish), [6. Exit codes](../../tools/SPEC.md#6-exit-codes), [7. Plugin hooks](../../tools/SPEC.md#7-plugin-hooks) | D3 | D3 | ✓ | [@engine](shared/engine.md) | @init, @release, @skill, @drift-both, @gate-everywhere | 0 |
+| 🎯 | [Code → design lookup (code: as the map)](features/code-map.md) `@code-map` | D2 | D2 | ✓ | [@built](features/built.md), [@engine](shared/engine.md), [@mcp](features/mcp.md) | @hard-gate, @gate-everywhere | 0 |
+| 🎯 | [The hard gate (a hook that refuses to build what isn't designed)](features/hard-gate.md) `@hard-gate` | D3 | D3 | ✓ | [@code-map](features/code-map.md), [@built](features/built.md), [@skill](features/skill.md) | @cross-repo, @decided, @gate-everywhere | 0 |
 | 🎯 | [Setting up a project (/anaxi:init)](features/init.md) `@init` | D1 | D1 | ✓ | [@check](features/check.md) | — | 0 |
-| 🎯 | [The MCP server (anaxi-mcp)](features/mcp.md) `@mcp` · parts: [8.3 anaxi-mcp](../../tools/SPEC.md#83-anaxi-mcp) | D3 | D3 | ✓ | [@engine](shared/engine.md) | @code-map, @outline, @related, @skill | 0 |
+| 🎯 | [The MCP server (anaxi-mcp)](features/mcp.md) `@mcp` · parts: [8.3 anaxi-mcp](../../tools/SPEC.md#83-anaxi-mcp) | D3 | D3 | ✓ | [@engine](shared/engine.md) | @code-map, @outline, @related, @skill, @reverify, @stages | 0 |
 | 🎯 | [Outline with anchors (anaxi_outline)](features/outline.md) `@outline` | D2 | D2 | ✓ | [@engine](shared/engine.md), [@mcp](features/mcp.md), [@reader](features/reader.md) | — | 0 |
-| 🎯 | [The reader (anaxi watch)](features/reader.md) `@reader` · parts: [8.2 anaxi-watch](../../tools/SPEC.md#82-anaxi-watch) | D3 | D3 | ✓ | [@engine](shared/engine.md) | @outline | 0 |
+| 🎯 | [The reader (anaxi watch)](features/reader.md) `@reader` · parts: [8.2 anaxi-watch](../../tools/SPEC.md#82-anaxi-watch) | D3 | D3 | ✓ | [@engine](shared/engine.md) | @outline, @decide-reader, @stages | 0 |
 | 🎯 | [Related items for agents (anaxi_related)](features/related.md) `@related` | D2 | D2 | ✓ | [@mcp](features/mcp.md), [@engine](shared/engine.md) | — | 0 |
 | 🎯 | [Releasing the plugin](features/release.md) `@release` | D2 | D2 | ✓ | [@check](features/check.md) | — | 0 |
 | 🎯 | [The skill](features/skill.md) `@skill` · parts: [SKILL.md](../../skills/anaxi/SKILL.md) | D3 | D3 | ✓ | [@mcp](features/mcp.md), [@check](features/check.md), [@method](shared/method.md), [@questions](shared/questions.md) | @hard-gate | 0 |
-| 🎯 | [The engine](shared/engine.md) `@engine` · parts: [Anaxi nudges](../../NUDGES.md), [3. Parsing](../../tools/SPEC.md#3-parsing), [4. Structural rules](../../tools/SPEC.md#4-structural-rules), [5. JSON output](../../tools/SPEC.md#5-json-output), [8.1 Reading an item](../../tools/SPEC.md#81-reading-an-item) | D3 | D3 | ✓ | [@format](shared/format.md), [@method](shared/method.md), [@questions](shared/questions.md) | @built, @check, @code-map, @mcp, @outline, @reader, @related | 0 |
-| 🎯 | [The markup](shared/format.md) `@format` · parts: [Anaxi format: marking up ordinary markdown](../../FORMAT.md) | D3 | D3 | ✓ | [@method](shared/method.md) | @built, @engine | 0 |
-| 🎯 | [The method](shared/method.md) `@method` · parts: [Anaxi method](../../METHOD.md) | D3 | D3 | — | — | @skill, @engine, @format, @questions | 0 |
-| 🎯 | [The questions](shared/questions.md) `@questions` · parts: [Anaxi questions and principles](../../QUESTIONS.md) | D3 | D3 | ✓ | [@method](shared/method.md) | @skill, @engine | 0 |
+| ⏸️ | [Cross-repo projects and a portfolio](phase-2/cross-repo.md) `@cross-repo` | D1 | D4 (now D1) | · | [@engine](shared/engine.md), [@hard-gate](features/hard-gate.md) | — | 3 |
+| ⛔ | [A writable reader, for decisions only](phase-2/decide-reader.md) `@decide-reader` | D2 | D3 (now D2) | · | [@reader](features/reader.md), [@decided](phase-2/decided.md) | — | 3 |
+| ⬇️ | [Who decided](phase-2/decided.md) `@decided` | D2 | D3 | · | [@questions](shared/questions.md), [@hard-gate](features/hard-gate.md), [@format](shared/format.md) | @decide-reader, @hub | 6 |
+| ⬇️ | [Drift in both directions](phase-2/drift-both.md) `@drift-both` | D2 | D3 | · | [@built](features/built.md), [@engine](shared/engine.md), [@check](features/check.md) | @reverify, @time-machine | 6 |
+| ⬇️ | [The gate everywhere (commit and merge)](phase-2/gate-everywhere.md) `@gate-everywhere` | D2 | D3 | · | [@hard-gate](features/hard-gate.md), [@code-map](features/code-map.md), [@check](features/check.md) | — | 6 |
+| ⏸️ | [The hub loop](phase-2/hub.md) `@hub` | D1 | D3 (now D1) | — | [@decided](phase-2/decided.md), [@stages](phase-2/stages.md), [@reverify](phase-2/reverify.md) | — | 1 |
+| ❓ | [Progress: what must be true in the docs, the work in a tracker](phase-2/progress.md) `@progress` | D2 | D3 (now D2) | · | [@built](features/built.md), [@stages](phase-2/stages.md) | — | 6 |
+| ⏸️ | [Kinds of project, and stages of a project's life](phase-2/project-kinds.md) `@project-kinds` | D1 | D4 (now D1) | · | [@method](shared/method.md), [@stages](phase-2/stages.md) | — | 5 |
+| ⛔ | [The re-verify loop](phase-2/reverify.md) `@reverify` | D2 | D2 | · | [@drift-both](phase-2/drift-both.md), [@mcp](features/mcp.md), [@engine](shared/engine.md) | @hub | 3 |
+| ❓ | [Lifecycle stages, a board, and the design runway](phase-2/stages.md) `@stages` | D2 | D2 | · | [@built](features/built.md), [@engine](shared/engine.md), [@reader](features/reader.md), [@mcp](features/mcp.md) | @hub, @progress, @project-kinds, @time-machine | 3 |
+| ⛔ | [A time machine](phase-2/time-machine.md) `@time-machine` | D2 | D3 (now D2) | · | [@engine](shared/engine.md), [@drift-both](phase-2/drift-both.md), [@stages](phase-2/stages.md) | — | 5 |
+| 🎯 | [The engine](shared/engine.md) `@engine` · parts: [Anaxi nudges](../../NUDGES.md), [3. Parsing](../../tools/SPEC.md#3-parsing), [4. Structural rules](../../tools/SPEC.md#4-structural-rules), [5. JSON output](../../tools/SPEC.md#5-json-output), [8.1 Reading an item](../../tools/SPEC.md#81-reading-an-item) | D3 | D3 | ✓ | [@format](shared/format.md), [@method](shared/method.md), [@questions](shared/questions.md) | @built, @check, @code-map, @mcp, @outline, @reader, @related, @cross-repo, @drift-both, @reverify, @stages, @time-machine | 0 |
+| 🎯 | [The markup](shared/format.md) `@format` · parts: [Anaxi format: marking up ordinary markdown](../../FORMAT.md) | D3 | D3 | ✓ | [@method](shared/method.md) | @built, @decided, @engine | 0 |
+| 🎯 | [The method](shared/method.md) `@method` · parts: [Anaxi method](../../METHOD.md) | D3 | D3 | — | — | @skill, @project-kinds, @engine, @format, @questions | 0 |
+| 🎯 | [The questions](shared/questions.md) `@questions` · parts: [Anaxi questions and principles](../../QUESTIONS.md) | D3 | D3 | ✓ | [@method](shared/method.md) | @skill, @decided, @engine | 0 |
 
 ## Nudges
 
-None.
+- ❓ **Cross-repo projects and a portfolio** 3 open: Local paths only, or git URLs too? (D1) · Id clashes between projects? (D1) · What does a pin mean when the other repo moves on? (D1)
+- ⛔ **A writable reader, for decisions only** uses @decided, which is at D2 of its target D3
+- ❓ **A writable reader, for decisions only** 3 open: (decide: person) A narrow exception to "the reader never writes": answering questions only, behind a flag? (D0) · (decide: person) How does a person who never runs Node reach it? (D1) · Two people answering at once? (D2)
+- ❓ **Who decided** 6 open: (decide: person) Are why and what (D0–D1) a person's to decide by default, and shape and contract (D2+) anyone's? (D1) · (decide: person) When you give the agent an answer in the chat, may it tick the box? Options: (a) strict, you always tick; (b) the agent ticks and records `decided: <you> (in session)`, flagged for review; (c) the hook checks the session transcript for your words. (D1) · Only on items the gate holds, or on every item? (D2) · Where does the name come from? (D2) · Which agent trailers are recognised? (D2) · The contract: the question and answer syntax in FORMAT.md, `decide` and `decisions` output, the refusal text (D3)
+- ⬇️ **Who decided** D2 → D3. Questions for D3: D3.contracts, D3.failure + 1 of its own · 2 items wait on it: @decide-reader (next), @hub (later)
+- ❓ **Drift in both directions** 6 open: (decide: person) May an agent settle drift (run `verify`, write the `no-design-impact` trailer), or only a person? (D1) · (decide: person) Add the `contract:` mark, a subset of `code:` where any change warns? (D2) · The baseline is a day, so code changed later that same day is missed. (D2) · Default threshold, and do test files count? (D2) · Per-section drift for parts now, or later? (D2) · The contract: N26's message and JSON (`drift: { side, commits, added, removed, since }`), `verify`'s output and exit codes, the pre-commit warning's text (D3)
+- ⬇️ **Drift in both directions** D2 → D3. Questions for D3: D3.contracts, D3.failure + 1 of its own · 2 items wait on it: @reverify (next), @time-machine (next)
+- ❓ **The gate everywhere (commit and merge)** 6 open: (decide: person) A feature that only changes existing shared code now holds nothing. Is a note enough? (D1) · (decide: person) Start the merge-time override with GitHub only? (D2) · On a PR, is the design read from the PR itself or from the base branch? (D2) · How fast must the pre-commit check be? (D2) · Adapters for other agent tools' pre-edit hooks? (D2) · The contract: `gate-files` output and exit codes, the workflow file, the override's exact form (D3)
+- ⬇️ **The gate everywhere (commit and merge)** D2 → D3. Questions for D3: D3.contracts, D3.failure + 1 of its own
+- ❓ **The hub loop** 1 open: (decide: person) Which first, after the pilot? (D1)
+- ❓ **Progress: what must be true in the docs, the work in a tracker** 6 open: (decide: person) Keep progress out of the docs: they hold acceptance criteria and `built:`; the tracker holds the work. Confirm? (D0) · (decide: person) Should Anaxi ever write `built: yes` itself from evidence? (D1) · Criterion syntax and stable ids? (D2) · Which test reports? (D2) · (decide: person) Tracker adapters need tokens. (D2) · Export: how safe? (D2)
+- ❓ **Kinds of project, and stages of a project's life** 5 open: (decide: person) Kinds beside today's profiles (mobile, service, library, spike…), or as more profiles? (D0) · (decide: person) The project stages? (D1) · Renaming `code:` for non-software work? (D1) · Explain from code: in this item or its own? (D1) · Which example? (D1)
+- ⛔ **The re-verify loop** uses @drift-both, which is at D2 of its target D3
+- ❓ **The re-verify loop** 3 open: (decide: person) Does an agent's "verified" count like a person's? (D1) · The word budget? (D2) · May an agent edit the design from the code? (D2)
+- ❓ **Lifecycle stages, a board, and the design runway** 3 open: What is the difference between an idea and a parked item? (D1) · (decide: person) Should the runway be judged before kinds of project (@project-kinds) set healthy bands? (D1) · Unmarked items and sub-items? (D2)
+- ⛔ **A time machine** uses @drift-both, which is at D2 of its target D3
+- ❓ **A time machine** 5 open: Old docs are measured with today's rules, which may differ from what the tool said then. (D2) · Past changes to `anaxi.json`? (D2) · Moved files and changed ids? (D2) · How many snapshots, how fast? (D2) · When is the cache invalid? (D2)
 
 ## Later
 
 - **What's built (built:, code:, drift)**: per-section drift with `git log -L` (when shared docs make the file-level check noisy)
 - **The reader (anaxi watch)**: search, a static export, per-item git history (when a pilot asks for them)
 - **The skill**: re-test blocked-means-stop, with pushback ("just build it") (when the first real project pilots Anaxi)
+- **Cross-repo projects and a portfolio**: when a pilot product spans more than one repo
+- **The hub loop**: after the pilot, picked one at a time
+- **The hub loop**: each becomes its own item
+- **Kinds of project, and stages of a project's life**: when the pilot and a second kind of project show which kinds and signals matter
 - **The method**: role marks and role-aware questions, ROADMAP §7.4 (when two pilot projects ask for them)
 
 <sub>🎯 enough · ⬇️ go deeper · ⛔ blocked · ❓ open · ✂️ over-documented · ⏸️ later · built ✓ yes, ◐ partly, · no, k/n of its parts. Structural nudges only; the skill and reviewers add the ones that need reading (N05, N07, N08, N12, N16, N17).</sub>

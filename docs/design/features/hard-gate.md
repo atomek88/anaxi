@@ -36,13 +36,14 @@ decision; Claude Code doesn't run the edit, so no wording in a prompt gets past 
 text, which the test showed is skipped when the user says to skip the design, and over blocking every unmapped file,
 which would stop ordinary work in any repo. The risky part was a false block on a file several items share: a new
 feature that lists an existing file (`engine.mjs`) would lock it for all work until the feature was ready. Decided
-2026-11-07: a file a built item also maps is shared code and is never held; the new item's plans on it are a note
+2026-11-07: an existing file a built item also maps is shared code and is never held (a new file in a built item's
+folder is still held: the gate holds what an item creates); the new item's plans on it are a note
 (the code-map hook says "not ready: it plans changes here"). The gate holds what the new item adds. Likewise a path
 that a ready item plans is open, even while another item planning it isn't ready: the ready one may build there.
 
 **Contract.** Input: the hook JSON (`cwd`, `tool_name`, `tool_input.file_path` or `notebook_path`). Allowed when: the
 project has no `anaxi.json`; `hooks.gate` is `false`; the file is markdown (design docs are always writable); no current
-item maps it; any item that maps it has `built: partly` or `yes` (shared code), or is ready. Otherwise output
+item maps it; it exists and an item that maps it has `built: partly` or `yes` (shared code); or an item that maps it is ready. Otherwise output
 `{ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason } }`, the
 reason naming each blocking item, its depth and target, the gate's reasons, every path its `code:` refuses ("stop
 trying files there", no shell commands, no other path), and "draft the missing design as proposals, or ask the user

@@ -7,7 +7,8 @@ Newest first. Format: `date · area · change · why`.
 
 - format · A tag line's list may be bracketed (`code: [../api/, ../src/x.ts]`), like front matter · it was read as
   one literal path.
-- plugin · **Shared code isn't frozen by the gate.** A file that a built item also maps in `code:` is never held; an
+- plugin · **Shared code isn't frozen by the gate.** An existing file that a built item also maps in `code:` is never
+  held (a new file in a built item's folder still is); an
   unready item's plans on it are a note (`plans: true`, and the code-map hook says so). The gate holds what a new
   item adds; a path a ready item plans is open to it, even while another item planning it isn't ready · reviewing 0.10: a new feature listing `engine.mjs` would have locked it for all work.
 

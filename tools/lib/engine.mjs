@@ -369,14 +369,16 @@ export function itemsForFile(model, file) {
 }
 
 const isBuilt = (it) => it.built === 'yes' || it.built === 'partly';
+const isShared = (model, file, items) => items.some(isBuilt) && fs.existsSync(path.join(model.cfg.root, file));
 
 /** The hard gate (@hard-gate): the items that refuse an edit to `file` (relative to the project root): current
  *  items that map it in `code:`, aren't built (`built:` no or unmarked) and whose gate isn't ready. A file a built
- *  item also maps is shared code that keeps moving: nothing holds it, and `fileReport` notes the plans instead. A
+ *  item also maps, and that exists, is shared code that keeps moving: nothing holds it, and `fileReport` notes the
+ *  plans instead. A new file stays held even inside a built item's folder: the gate holds what an item creates. A
  *  file that a ready item plans is open too: that item may build there, even while others planning it aren't ready. */
 export function gateFor(model, file) {
   const items = itemsForFile(model, file);
-  if (items.some((it) => isBuilt(it) || gate(model, it).ready)) return [];
+  if (items.some((it) => !isBuilt(it) && gate(model, it).ready) || isShared(model, file, items)) return [];
   return items.filter((it) => !isBuilt(it))
     .map((it) => ({ it, g: gate(model, it) })).filter(({ g }) => !g.ready)
     .map(({ it, g }) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: at(it), target: LV(it.targetN), why: g.why }));
@@ -386,7 +388,7 @@ export function gateFor(model, file) {
  *  (relative to `base`, the folder the reader works in; default the project root). */
 export function fileReport(model, file, base = model.cfg.root) {
   const at = (p) => path.relative(base, path.resolve(model.cfg.root, p)).split(path.sep).join('/');
-  const items = itemsForFile(model, file), shared = items.some(isBuilt);
+  const items = itemsForFile(model, file), shared = isShared(model, file, items);
   return items.map((it) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: it.depth, shown: LV(it.depthN),
     target: LV(it.targetN), status: it.status, ...(it.built ? { built: it.built } : {}), ...(it.drift ? { drift: it.drift } : {}),
     ...(!isBuilt(it) && !gate(model, it).ready ? (shared ? { plans: true } : { blocks: true }) : {}),

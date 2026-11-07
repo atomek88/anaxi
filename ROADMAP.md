@@ -44,8 +44,8 @@ Two things remain before anything below:
 - [ ] **The pilot on a real project** ([PILOT.md](PILOT.md)): `/anaxi:init`, design one or two features through it,
   and watch whether the gate holds, gaps surface onto items, and the docs stay current while it's built.
 
-Before the pilot, PHASE_2 §0 closes four holes found reviewing 0.10 (drift only one way, the gate only in Claude
-Code, agents able to tick a person's decisions, dogfooding behind the build) and §A adds stages and a board, so the
+Before the pilot, PHASE_2's first items close the holes found reviewing 0.10 (@drift-both, @gate-everywhere,
+@decided; the shared-file freeze is fixed in 0.11) and @stages adds stages and a board, so the
 pilot can be read at a glance. The pilot decides the rest.
 
 ## Phase 1, step by step
@@ -112,7 +112,7 @@ items, and 17 of 40 at 40, with no readable labels); the city is kept as a later
 
 **Not built yet:**
 
-- [ ] **Search, what changed and history** moved to PHASE_2 (§B the time machine, §H search).
+- [ ] **Search, what changed and history** moved to PHASE_2 (@time-machine; search in @hub).
 - [ ] **A static export** (`anaxi watch --export site/`) for people without the tool, or GitHub Pages.
 - [ ] **Open in editor** per section (`vscode://` or a file link).
 - [ ] **Images and mermaid** in the reader (vendored, loaded only by the page).
@@ -154,7 +154,7 @@ So a reader (or an agent) can see where a design came from and check it against 
   evidence pack. The checker verifies what it can (a local path exists, a URL is well formed) and lists them in
   `INDEX.md`, the viewer and `anaxi_context`.
 - **`owner:`**, optional: who to ask. Not a sign-off.
-- **Last changed, and by whom**, from git per item: part of PHASE_2 §B, which N11 (recheck after a shared item
+- **Last changed, and by whom**, from git per item: part of @time-machine (PHASE_2), which N11 (recheck after a shared item
   changes) also needs.
 
 ### 6. Superseding and archiving design knowledge · built in 0.9
@@ -219,7 +219,7 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
 - [ ] **Keep the design current:** a change to the tool changes its item in the same commit; the index is checked by
   `anaxi-ci.sh` at the root like any project.
 - [ ] **Design ahead of the build:** 14 of 15 self-doc items are built, and only @related was designed before its
-  code; phase 2's features enter `docs/design/` first (PHASE_2 §0.4).
+  code; phase 2's features enter `docs/design/` first (PHASE_2's rules); they're in `docs/design/phase-2/`.
 - [x] **@related** went through Anaxi before it was built: D1, two open questions with an agent's proposals, decided
   by the user, D2 written, gate ready, built (2026-10-30).
 
@@ -236,7 +236,7 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
   `anaxi_for_file`, `anaxi-check file`, and a hook the first time Claude edits a mapped file.
 - [ ] **Map coverage**: list the code files no item covers (`anaxi-check file --unmapped`), so a project sees what
   its design doesn't describe yet. Proposed.
-- [ ] **Drift both ways, what changed since, per-section drift:** moved to PHASE_2 (§0.1, §B).
+- [ ] **Drift both ways, what changed since, per-section drift:** moved to PHASE_2 (@drift-both, @time-machine).
 
 ### 7.3 The hard gate · built 2026-10-31
 
@@ -246,11 +246,12 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
   (@hard-gate has the evidence).
 - [x] **The blocked run found four real design gaps** in the example while drafting (no withdraw in @task-api, no
   token for the daily job, a `409` on a series edit, acceptance against the 7-day horizon), fixed in the example.
-  Gaps surfacing is a main benefit, which PHASE_2 §H builds on.
+  Gaps surfacing is a main benefit, which PHASE_2's @hub builds on.
 - [ ] **Shell writes** (`echo >`, `node -e`) into a held path aren't seen at edit time; the commit and merge checks
-  in PHASE_2 §0.2 catch them, for every tool.
+  in PHASE_2's @gate-everywhere catch them, for every tool.
 - [ ] **Unmapped code** isn't guarded; map coverage (§7.2) shows how much of a project that is.
-- [ ] **The shared-file freeze, an agent ticking a person's decision:** PHASE_2 §0.2 and §0.3.
+- [x] **The shared-file freeze** (fixed in 0.11): an existing file a built item maps is never held.
+- [ ] **An agent ticking a person's decision:** PHASE_2's @decided.
 
 ### 7.4 Roles: how an item's role is said, and how it changes the questions · open (@method)
 
@@ -293,12 +294,12 @@ step by step" at D1. To evolve, with the pilot's docs as the evidence:
 After the pilot, ask:
 
 - Did people use the CLI, the reader, or only the agent? Put the next effort where they were.
-- Did anyone open `anaxi watch` more than once? If yes, search and "what changed" next (PHASE_2 §B, §H); if not, why.
+- Did anyone open `anaxi watch` more than once? If yes, search and "what changed" next (@time-machine, @hub); if not, why.
 - Did reviewers ask "where did this come from?" If yes, `refs:` (step 5).
 - Did a design change after something was built from it? Then superseding (step 6), before more docs pile up.
 - Is a second team asking to use it? Then package it (step 1) before anything else.
-- Did building find gaps the design missed? If they stayed in chat, close the loop first (PHASE_2 §H); if they
+- Did building find gaps the design missed? If they stayed in chat, close the loop first (@hub); if they
   landed on items, count them per project to see where the method pays off.
 - Did anyone who doesn't write code use it to decide something? If yes, the decisions inbox and the writable
-  reader (PHASE_2 §H, §F), and profiles for other kinds of project (§E).
-- Did the docs fall behind the code? Then drift both ways and re-verify (PHASE_2 §0.1, §D).
+  reader (@hub, @decide-reader), and kinds of project (@project-kinds).
+- Did the docs fall behind the code? Then drift both ways and re-verify (@drift-both, @reverify).
