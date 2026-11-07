@@ -29,7 +29,7 @@ quiet(async () => {
     if (!items.length) return;
     fs.appendFileSync(seen, `${abs}\n`);
     say([`Anaxi: ${path.relative(cwd, abs)} is part of the design of ${items.map((x) => x.id).join(', ')}.`,
-      ...items.map((x) => `- ${x.id} (${x.title}): ${x.shown || 'nothing'} of ${x.target || '—'}${x.built ? `, built ${x.built}` : ''}${x.drift ? ', its design changed after the code' : ''}${x.ready ? '' : ', not ready to build'}; design: ${x.doc}${x.contract.length ? `, contract: ${x.contract.join(', ')}` : ''}`),
+      ...items.map((x) => `- ${x.id} (${x.title}): ${x.shown || 'nothing'} of ${x.target || '—'}${x.built ? `, built ${x.built}` : ''}${x.drift ? ', its design changed after the code' : ''}${x.ready ? '' : x.plans ? ', not ready: it plans changes here, so keep this edit to what the built items need' : ', not ready to build'}; design: ${x.doc}${x.contract.length ? `, contract: ${x.contract.join(', ')}` : ''}`),
       'If this edit changes what one of them does, read it (anaxi_context) and check the change against it; update the design in the same change, or say why not.'].join('\n'));
     return;
   }

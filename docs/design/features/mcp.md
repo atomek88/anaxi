@@ -6,7 +6,7 @@ about: [agents]
 uses: ["@engine"]
 parts:
   - "../../../tools/SPEC.md#83-anaxi-mcp (D3)"
-built: yes (2026-10-30)
+built: yes (2026-11-07)
 code: [../../../tools/anaxi-mcp.mjs]
 ---
 # The MCP server (`anaxi-mcp`)

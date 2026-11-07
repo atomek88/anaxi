@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, lv } from './lib/config.mjs';
-import { evaluate, builtText, itemsForFile, gate } from './lib/engine.mjs';
+import { evaluate, builtText, itemsForFile, gate, gateFor, fileReport } from './lib/engine.mjs';
 import { transition } from './lib/lifecycle.mjs';
 import { blocks, visible, words, context, outline } from './lib/read.mjs';
 import { spawn, execFileSync } from 'node:child_process';
@@ -200,6 +200,14 @@ ok(/"permissionDecision":"deny"/.test(denied) && /@recurring/.test(denied) && /D
 ok(/"deny"/.test(pre('ios/Recurring/Picker.swift', 'Edit')), 'hard gate: edits too, in every mapped folder');
 ok(pre('src/elsewhere.ts') === '' && pre('features/recurring-tasks.md') === '', 'hard gate: unmapped code and design docs are never blocked');
 ok(pre('api/handler.ts') === '', 'hard gate: a ready item\'s planned code is writable');
+// the shared-file freeze: an unready item that plans changes to a file a built item maps doesn't lock it
+const tpa = path.join(hg, 'shared', 'task-api.md'), rct = path.join(hg, 'features', 'recurring-tasks.md'), tpa0 = fs.readFileSync(tpa, 'utf8'), rct0 = fs.readFileSync(rct, 'utf8');
+fs.writeFileSync(tpa, tpa0.replace('built: no', 'built: yes'));
+fs.writeFileSync(rct, rct0.replace('code: [../src/recurring/, ../ios/Recurring/]', 'code: [../src/recurring/, ../ios/Recurring/, ../api/handler.ts]'));
+const shr = fileReport(evaluate(loadConfig(hg)), 'api/handler.ts');
+ok(pre('api/handler.ts') === '' && /"deny"/.test(pre('src/recurring/series.ts')), 'hard gate: shared code a built item maps stays writable; the new item\'s own paths stay held');
+ok(shr.some((x) => x.id === '@recurring' && x.plans && !x.blocks) && gateFor(evaluate(loadConfig(hg)), 'api/handler.ts').length === 0, 'code map: an unready item\'s plans on shared code are a note, not a block');
+fs.writeFileSync(tpa, tpa0); fs.writeFileSync(rct, rct0);
 const preE = (f, old_string, new_string) => execFileSync('node', [path.join(HERE, '..', 'hooks', 'before-edit.mjs')], { encoding: 'utf8', input: JSON.stringify({ cwd: hg, tool_name: 'Edit', tool_input: { file_path: f, old_string, new_string } }) });
 ok(/"deny"/.test(preE('anaxi.json', '"index": "INDEX.md"', '"index": "INDEX.md", "hooks": { "gate": false }')), 'hard gate: it can\'t be switched off from inside a session');
 ok(/"deny"/.test(preE('features/recurring-tasks.md', 'built: no', 'built: partly')), 'hard gate: marking a blocked item built to open the gate is refused');

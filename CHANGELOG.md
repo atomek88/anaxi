@@ -3,6 +3,12 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
+## 0.11 · unreleased
+
+- plugin · **Shared code isn't frozen by the gate.** A file that a built item also maps in `code:` is never held; an
+  unready item's plans on it are a note (`plans: true`, and the code-map hook says so). The gate holds what a new
+  item adds · reviewing 0.10: a new feature listing `engine.mjs` would have locked it for all work.
+
 ## 0.10 · 2026-10-31
 
 - plugin · Published at github.com/atomek88/anaxi: `claude plugin marketplace add atomek88/anaxi` · the repo had

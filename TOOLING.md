@@ -200,7 +200,7 @@ Then, in any project, `/anaxi:init [--profile P] [--stage S] [--docs DIR]`. The 
 | `/anaxi:watch` | the reader (§4.3), in the background; prints its URL |
 | MCP server `anaxi` | `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_uses`, `anaxi_related`, `anaxi_for_file`, `anaxi_index` for any agent in the session |
 | hook: session start | in a project with `anaxi.json`, gives Claude the status table. Off: `"hooks": {"sessionStart": false}` |
-| hook: the hard gate | on by default (`"hooks": {"gate": false}` to turn off): an edit to the planned `code:` of an item that isn't built and isn't ready is refused before it runs, with what's missing. Built items, design docs and unmapped files are never blocked |
+| hook: the hard gate | on by default (`"hooks": {"gate": false}` to turn off): an edit to the planned `code:` of an item that isn't built and isn't ready is refused before it runs, with what's missing. Built items, design docs, unmapped files, and shared code a built item also maps are never blocked |
 | hook: editing code | on by default (`"hooks": {"codeMap": false}` to turn off): the first time Claude edits a file that items list in `code:`, it's told which items, their depth and built state, and where their design and contract are. Never blocks |
 | hook: after an edit | opt-in, `"hooks": {"afterEdit": true}`: after Claude edits a markdown doc, it sees that file's nudges. Never blocks |
 
