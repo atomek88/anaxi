@@ -1,7 +1,8 @@
 # Anaxi roadmap
 
-Where Anaxi could go after the pilot. Nothing here is committed; the pilot decides the order. Today's state is
-in [TOOLING.md](TOOLING.md).
+Phase 1 of Anaxi (up to 0.10): what was built, and the smaller follow-ups still open. The next design, seeing a
+project at any point in time, is [PHASE_2.md](PHASE_2.md). Nothing here is committed; the pilot decides the order.
+How to use what exists today: [TOOLING.md](TOOLING.md).
 
 ## What Anaxi is today
 
@@ -41,10 +42,13 @@ Two things remain before anything below:
 
 - [ ] **Reserve `anaxi` on npm** with a placeholder 0.0.x package (step 1). Needs the owner's npm login.
 - [ ] **The pilot on a real project** ([PILOT.md](PILOT.md)): `/anaxi:init`, design one or two features through it,
-  and watch whether the gate holds, gaps surface onto items, and the docs stay current while it's built. The pilot
-  decides the order of everything below, starting with §9 and the roles in §7.4.
+  and watch whether the gate holds, gaps surface onto items, and the docs stay current while it's built.
 
-## Next steps, roughly in order
+Before the pilot, PHASE_2 §0 closes four holes found reviewing 0.10 (drift only one way, the gate only in Claude
+Code, agents able to tick a person's decisions, dogfooding behind the build) and §A adds stages and a board, so the
+pilot can be read at a glance. The pilot decides the rest.
+
+## Phase 1, step by step
 
 ### 1. A package instead of a copied folder
 
@@ -53,9 +57,8 @@ Two things remain before anything below:
   upgrading is a version bump plus the changelog.
 - **For non-JS repos:** `npx` still works where Node is installed. Otherwise, a single-file binary (Node SEA or
   `bun build --compile`).
-- **Name:** `anaxi`, free on npm (checked 2026-10-21); the command is `anaxi`.
-- [ ] **To do: reserve `anaxi` on npm** with a placeholder 0.0.x package, before someone else takes it. Needs an
-  npm login and a go-ahead, since it publishes to the public registry.
+- **Name:** `anaxi`, free on npm (checked 2026-10-21); the command is `anaxi`. Reserving it is the first item under
+  "Left now".
 
 ### 2. A Claude Code plugin · built in 0.8
 
@@ -75,7 +78,7 @@ Decided along the way:
 
 Still to do:
 
-- **Pin a version per project:** an optional `"requires": ">=0.8"` in `anaxi.json`; the checker warns when the
+- [ ] **Pin a version per project:** an optional `"requires": ">=0.8"` in `anaxi.json`; the checker warns when the
   plugin is a major version off.
 - [x] **Publish the repo** (2026-10-31): github.com/atomek88/anaxi, so `claude plugin marketplace add atomek88/anaxi`
   works for a team.
@@ -109,9 +112,7 @@ items, and 17 of 40 at 40, with no readable labels); the city is kept as a later
 
 **Not built yet:**
 
-- [ ] **Search** over titles, `@id`s, headings and text.
-- [ ] **What changed** since a git ref (changed sections marked, new nudges listed), and a short per-item history
-  from git (depth over time, last changed, by whom).
+- [ ] **Search, what changed and history** moved to PHASE_2 (§B the time machine, §H search).
 - [ ] **A static export** (`anaxi watch --export site/`) for people without the tool, or GitHub Pages.
 - [ ] **Open in editor** per section (`vscode://` or a file link).
 - [ ] **Images and mermaid** in the reader (vendored, loaded only by the page).
@@ -137,13 +138,13 @@ The same engine, exposed so any agent can query the design instead of grepping i
 | `anaxi_questions(id, level)` | the questions that apply at a level |
 | `anaxi_uses(id)` | what it uses, and who uses it, transitively |
 | `anaxi_index(check?)` | regenerate the index, so agents never edit it by hand |
+| `anaxi_related(id)` | everything it's connected to, both ways: uses, used by, mentions, parts, supersedes, changed with (built 2026-10-30, @related) |
+| `anaxi_outline(id, at)` | its sections to a depth, with anchors, words and first sentences, to pick what to read (built 2026-10-30, @outline) |
+| `anaxi_for_file(path)` | the items a code file belongs to, and whether the gate holds it (built 2026-10-30, @code-map) |
 | `anaxi_context(id, at)` | the item at the depth asked for, plus the contracts of everything it `uses:`, each once: exactly what an agent needs before building, and no more |
 
 `anaxi_context` is the important one. It turns "read the design docs" into one bounded, depth-aware call, and
 it could run in the same process as `anaxi watch`.
-
-- [x] **`anaxi_related(id)`** (built 2026-10-30, through @related): the reader's `related` list (uses, used by, mentions, supersedes) for agents, so an
-  agent sees what else a change touches without reading every doc.
 
 ### 5. References and attribution
 
@@ -153,8 +154,8 @@ So a reader (or an agent) can see where a design came from and check it against 
   evidence pack. The checker verifies what it can (a local path exists, a URL is well formed) and lists them in
   `INDEX.md`, the viewer and `anaxi_context`.
 - **`owner:`**, optional: who to ask. Not a sign-off.
-- **Last changed, and by whom**, from git per item, which is also what N11 (recheck after a shared item changes)
-  needs.
+- **Last changed, and by whom**, from git per item: part of PHASE_2 §B, which N11 (recheck after a shared item
+  changes) also needs.
 
 ### 6. Superseding and archiving design knowledge · built in 0.9
 
@@ -196,13 +197,60 @@ still used, as the Strata files were in 0.8.
 ### 7. Follow-ups from 0.9
 
 - [x] **Release 0.9.0** (2026-10-25), tag pushed with 0.10.0 (2026-10-31).
-- [ ] **Item roles beyond the folder**: see §7.4.
 - [ ] **Calibrate the gap check** (`nudges.levelWords`, default 10) on pilot docs: how often a level with a few
   real words is flagged, and whether N22 (content past the claim) helps or is noise.
 - [ ] **Explicit `related:`**, only if pilots find mentions too noisy or too sparse; mentions in the text are the
   related links today.
 - [ ] **A browser check in CI** for the reader: open the example, unfold a level, hover a chip, follow a link
   (Playwright), alongside the self-test.
+
+### 7.1 Dogfooding: Anaxi documents itself · started 2026-10-25
+
+`docs/design/` holds one item per part of the tool; the reference docs are listed on the items as `parts:`, so
+nothing is written twice and nothing outside the folder carries a mark. `node tools/anaxi-check.mjs status` and `/anaxi:watch` at the repo root read it.
+It found three bugs on its first run, all fixed and self-tested: lead-ins quoted in inline code counted as levels,
+`<!-- D3 -->` comments were ignored when measuring, and titles lost their inline code.
+
+- [x] **Agents stop at a blocked gate**, measured headless: 3 of 3 called `anaxi_gate` and `anaxi_context` unprompted;
+  the blocked ones built nothing. One wrote the missing contracts itself, so the skill now has proposals go on the open
+  question, unchecked. Agents without a shell hand-edited `INDEX.md`, so MCP gained `anaxi_index`.
+- [x] **An unmeasured claim got full credit** (fixed 2026-10-30): a doc with no levelled text, tagged `depth: D4`,
+  showed plain D4. It now shows nothing until its levels are marked (N05), and isn't ready.
+- [ ] **Keep the design current:** a change to the tool changes its item in the same commit; the index is checked by
+  `anaxi-ci.sh` at the root like any project.
+- [ ] **Design ahead of the build:** 14 of 15 self-doc items are built, and only @related was designed before its
+  code; phase 2's features enter `docs/design/` first (PHASE_2 §0.4).
+- [x] **@related** went through Anaxi before it was built: D1, two open questions with an agent's proposals, decided
+  by the user, D2 written, gate ready, built (2026-10-30).
+
+### 7.2 Living docs while a project is built · decided 2026-10-30
+
+- [x] **One design folder.** `anaxi.json` lives in the design folder and is found from the repo root; parts are listed
+  from the item's side, so specs and code carry no marks; `/anaxi:init` writes `docs/design/`.
+- [x] **What's built.** `built: no | partly | yes (date)` on items and sub-items, `code:` paths, the roll-up, and drift
+  from git (N23), built ahead of its design (N24), a missing code path (N25).
+- [x] **Outline with anchors** (`anaxi_outline`, `outline`, the reader's Outline).
+- [ ] **A summary line per item in `INDEX.md` and `anaxi_status`**: the first Why/What sentence, so many questions are
+  answered from the index without opening an item. Proposed.
+- [x] **Code → design lookup** (built 2026-10-30, @code-map): `code:` paths, folders and globs are the map;
+  `anaxi_for_file`, `anaxi-check file`, and a hook the first time Claude edits a mapped file.
+- [ ] **Map coverage**: list the code files no item covers (`anaxi-check file --unmapped`), so a project sees what
+  its design doesn't describe yet. Proposed.
+- [ ] **Drift both ways, what changed since, per-section drift:** moved to PHASE_2 (§0.1, §B).
+
+### 7.3 The hard gate · built 2026-10-31
+
+- [x] **The gate holds against "just build it".** A PreToolUse hook refuses writes to an unbuilt, unready item's planned
+  `code:`; it can't be lifted from inside a session; tool results lead with "NOT READY". Four headless runs: advice
+  alone was ignored, the first hook was switched off by the agent, the final one held and the agent stopped
+  (@hard-gate has the evidence).
+- [x] **The blocked run found four real design gaps** in the example while drafting (no withdraw in @task-api, no
+  token for the daily job, a `409` on a series edit, acceptance against the 7-day horizon), fixed in the example.
+  Gaps surfacing is a main benefit, which PHASE_2 §H builds on.
+- [ ] **Shell writes** (`echo >`, `node -e`) into a held path aren't seen at edit time; the commit and merge checks
+  in PHASE_2 §0.2 catch them, for every tool.
+- [ ] **Unmapped code** isn't guarded; map coverage (§7.2) shows how much of a project that is.
+- [ ] **The shared-file freeze, an agent ticking a person's decision:** PHASE_2 §0.2 and §0.3.
 
 ### 7.4 Roles: how an item's role is said, and how it changes the questions · open (@method)
 
@@ -231,114 +279,6 @@ step by step" at D1. To evolve, with the pilot's docs as the evidence:
   which questions people added; a role and its questions join the defaults only when two projects ask for
   them. Until then, `when: role:` in a project's own questions is the way to try one.
 
-### 7.1 Dogfooding: Anaxi documents itself · started 2026-10-25
-
-`docs/design/` holds one item per part of the tool; the reference docs are listed on the items as `parts:`, so
-nothing is written twice and nothing outside the folder carries a mark. `node tools/anaxi-check.mjs status` and `/anaxi:watch` at the repo root read it.
-It found three bugs on its first run, all fixed and self-tested: lead-ins quoted in inline code counted as levels,
-`<!-- D3 -->` comments were ignored when measuring, and titles lost their inline code.
-
-- [x] **Agents stop at a blocked gate**, measured headless: 3 of 3 called `anaxi_gate` and `anaxi_context` unprompted;
-  the blocked ones built nothing. One wrote the missing contracts itself, so the skill now has proposals go on the open
-  question, unchecked. Agents without a shell hand-edited `INDEX.md`, so MCP gained `anaxi_index`.
-- [x] **An unmeasured claim gets full credit** (fixed 2026-10-30: it now shows nothing until marked, N05). A doc with no levelled text, tagged `depth: D4`, shows plain D4. Show
-  it as unmeasured ("D4 ?") in status, the index and the reader, without a nudge, so a claim never looks verified.
-- [ ] **Keep the design current:** a change to the tool changes its item in the same commit; the index is checked by
-  `anaxi-ci.sh` at the root like any project.
-- [x] **@related** went through Anaxi before it was built: D1, two open questions with an agent's proposals, decided
-  by the user, D2 written, gate ready, built (2026-10-30).
-
-### 7.2 Living docs while a project is built · decided 2026-10-30
-
-- [x] **One design folder.** `anaxi.json` lives in the design folder and is found from the repo root; parts are listed
-  from the item's side, so specs and code carry no marks; `/anaxi:init` writes `docs/design/`.
-- [x] **What's built.** `built: no | partly | yes (date)` on items and sub-items, `code:` paths, the roll-up, and drift
-  from git (N23), built ahead of its design (N24), a missing code path (N25).
-- [x] **Outline with anchors** (`anaxi_outline`, `outline`, the reader's Outline).
-- [ ] **A summary line per item in `INDEX.md` and `anaxi_status`**: the first Why/What sentence, so many questions are
-  answered from the index without opening an item. Proposed.
-- [x] **Code → design lookup** (built 2026-10-30, @code-map): `code:` paths, folders and globs are the map;
-  `anaxi_for_file`, `anaxi-check file`, and a hook the first time Claude edits a mapped file.
-- [ ] **Map coverage**: list the code files no item covers (`anaxi-check file --unmapped`), so a project sees what
-  its design doesn't describe yet. Proposed.
-- [ ] **What changed since**: from git, which items' depth, decisions or contracts changed since a date or a commit,
-  so a returning reader reads only the difference. Proposed.
-- [ ] **Per-section drift** with `git log -L`, if file-level drift is noisy in docs that hold several items.
-
-### 7.3 The hard gate · built 2026-10-31
-
-- [x] **The gate holds against "just build it".** A PreToolUse hook refuses writes to an unbuilt, unready item's planned
-  `code:`; it can't be lifted from inside a session; tool results lead with "NOT READY". Four headless runs: advice
-  alone was ignored, the first hook was switched off by the agent, the final one held and the agent stopped
-  (@hard-gate has the evidence).
-- [x] **The blocked run found four real design gaps** in the example while drafting (no withdraw in @task-api, no
-  token for the daily job, a `409` on a series edit, acceptance against the 7-day horizon), fixed in the example.
-  Gaps surfacing is a main benefit, which is what §9 builds on.
-- [ ] **Shell writes** (`echo >`, `node -e`) into a held path aren't seen. A PostToolUse check on Bash that compares
-  `git status` before and after, and reports (or reverts) new files under held paths.
-- [ ] **Unmapped code** isn't guarded; map coverage (§7.2) shows how much of a project that is.
-
-### 9. The hub: a living design that improves itself while the project is built · proposed 2026-10-31
-
-The aim: the design folder is where every person and agent on a project, technical or not, starts, finds context
-fast, and leaves the design better than they found it. The parts so far (depth, gate, built, drift, code map,
-outline, related) are the steps of one cycle; what's missing is mostly the arrows between them.
-
-```
-   decide ──► design to target ──► gate ──► build ──► mark built ──► drift
-     ▲                                        │                       │
-     └──── questions and proposals ◄──── gaps found while building ◄──┘
-                     │
-                     └──► the project's question list grows (the next item is asked them up front)
-```
-
-**Close the loop from building back to design.**
-- [ ] **Gaps found while building go on the item, not in the chat.** The run-4 gaps were only in a terminal reply.
-  The skill writes each one as an unchecked question on the item it belongs to, with a proposal and where it came
-  from (`found: build 2026-10-31`); a gap in a used item (@task-api) goes on that item and lowers its depth
-  until answered. An MCP tool (`anaxi_propose @id "question" "proposal"`) does it without hand-editing markdown,
-  for agents with no file access.
-- [ ] **Questions that caught a gap become the project's questions.** "Does a server job have credentials to call
-  this?" and "Can queued work be withdrawn?" go into `anaxi-questions.md` at the level where they'd have been
-  asked, so the next item gets them up front. A count of gaps found by building versus by design review shows
-  whether the method is working on this project.
-- [ ] **Retro on built.** When an item goes `built: yes`, one prompt: what did building teach that the design
-  missed? The answer lands in its decision log, and if many gaps came from one kind of item, a nudge suggests a
-  higher target for similar items (the rubric calibrating itself per project).
-- [ ] **Acceptance tied to evidence.** `checks:` on an item links its acceptance criteria to tests or demos; N26
-  for a criterion with nothing behind it, so `built: yes` means shown, not claimed.
-
-**Make the hub the first stop, for people and agents.**
-- [ ] **A "where we are" page**, generated like `INDEX.md`: current focus, what's blocked and on what, decisions
-  waiting for a person, what changed since last week, what's built. The session-start hook shows its top lines,
-  so every session (and every new team member) starts from it.
-- [ ] **A decisions inbox.** Every open question with a proposal on it, in one list: `anaxi-check decisions`, a
-  reader page, and `anaxi_decisions`. Answering is checking the box and keeping or editing the proposal, so a
-  product owner or a client can unblock the build without reading code.
-- [ ] **A summary line per item** (§7.2) and **what changed since** (§7.2): together they let a returning reader,
-  or an agent with a small context, read the difference and nothing else.
-- [ ] **Search in the reader**, and `anaxi_search` for agents: across items, at a depth, returning anchors from the
-  outline, so an answer comes with the link to follow and nothing more.
-- [ ] **Links outward** (step 5, `refs:` and `owner:`), and the commits touching an item's `code:` in
-  `anaxi_context`, so the hub points to tickets, PRs and people instead of copying them.
-
-**Beyond software.**
-- [ ] **Non-technical projects.** `code:` generalizes to the item's outputs: any paths or links where the work
-  lands (a report draft, a campaign folder, a policy page). Built, drift, the code map and the gate then work for
-  research, operations, content or policy projects as they do for code. A profile for each, with level names
-  and questions in that field's words (levels are already renamable in `anaxi.json`), and an example project
-  that isn't software, to test it on.
-- [ ] **Several people and agents at once.** `owner:` on an item, and a short-lived claim (`working: @who since`)
-  that the reader and `anaxi_status` show, so two agents don't design or build the same item in parallel.
-
-**Keep the cycle honest.**
-- [ ] **Agent behaviour as a test suite.** The headless runs in this repo (build a ready item, build a blocked one,
-  "just build it", a design question, a code change) as `tools/agent-eval/`: scratch copy, scripted prompt, checks
-  on what was written and which tools were called, cost recorded. Run before each release, because a skill or
-  hook change can break behaviour the self-test can't see.
-- [ ] **Anaxi on itself, continuously.** Every change to the tool changes its item in the same commit (§7.1);
-  drift at zero is part of `release.sh`; the cycle above is tried on Anaxi's own items first.
-
 ### 8. Smaller things
 
 - `anaxi render` to a single file, for people who want one to attach; the reader's super-TDD covers reading
@@ -353,11 +293,12 @@ outline, related) are the steps of one cycle; what's missing is mostly the arrow
 After the pilot, ask:
 
 - Did people use the CLI, the reader, or only the agent? Put the next effort where they were.
-- Did anyone open `anaxi watch` more than once? If yes, search and "what changed" next (step 3); if not, why.
+- Did anyone open `anaxi watch` more than once? If yes, search and "what changed" next (PHASE_2 §B, §H); if not, why.
 - Did reviewers ask "where did this come from?" If yes, `refs:` (step 5).
 - Did a design change after something was built from it? Then superseding (step 6), before more docs pile up.
 - Is a second team asking to use it? Then package it (step 1) before anything else.
-- Did building find gaps the design missed? If they stayed in chat, close the loop first (§9); if they landed on
-  items, count them per project to see where the method pays off.
-- Did anyone who doesn't write code use it to decide something? If yes, the decisions inbox and non-software
-  profiles (§9).
+- Did building find gaps the design missed? If they stayed in chat, close the loop first (PHASE_2 §H); if they
+  landed on items, count them per project to see where the method pays off.
+- Did anyone who doesn't write code use it to decide something? If yes, the decisions inbox and the writable
+  reader (PHASE_2 §H, §F), and profiles for other kinds of project (§E).
+- Did the docs fall behind the code? Then drift both ways and re-verify (PHASE_2 §0.1, §D).
