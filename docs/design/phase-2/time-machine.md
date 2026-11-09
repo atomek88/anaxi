@@ -17,7 +17,7 @@ ahead of the build. The docs are markdown in git, so all of this is already stor
 **What.** `--as-of <date | ref>` on `status`, `index`, the reader and MCP shows the project as it stood then.
 `anaxi-check since <ref>` lists the items whose stage, depth, decisions or contracts changed; the reader marks
 changed sections and remembers, per viewer, when they last looked. Per item, a timeline: the day it entered each
-stage (@stages), time designing, waiting ready, building, drifting, with commits and PRs that mention its `@id`.
+stage (@stages), time designing, waiting ready, building, drifting, with the commits that mention its `@id`.
 For the project, a burn-up: levels designed against items built over time, and the runway over time. Done when
 `since` on Anaxi's own repo lists exactly the items changed in phase 2, and the burn-up renders its history.
 

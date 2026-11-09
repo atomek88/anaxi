@@ -22,8 +22,8 @@ warning: reconcile). The same act settles any of them: someone checks the two st
 measured, not just flagged: commits and lines since the baseline always show; a warning only past a threshold; an
 optional `contract:` subset of `code:` warns on any change; a commit trailer `Anaxi: no-design-impact` leaves a commit
 out. It works for every tool because the engine computes it from git: status, CI, the reader, MCP. The pre-commit
-hook warns when a built item's code changes without its doc, and CI can require a PR to touch the doc, the day, or
-carry the trailer (`ci.sameChange`). Done when an item whose code moved past the threshold shows N26 in status, the
+hook warns when a built item's code changes without its doc; it never fails the commit, and nothing runs on pull
+requests (Anaxi stops at git, @gate-everywhere). Done when an item whose code moved past the threshold shows N26 in status, the
 index, the reader and `anaxi_status`, and `verify` clears it. Out of scope: judging whether a change matters; that's
 the person or agent who checks.
 
@@ -71,8 +71,7 @@ The skill and `anaxi_verify` always pass `--by agent`. *Pre-commit.* On every co
 items through the code map → built items whose file and part files aren't staged → one line each on stderr:
 `anaxi: rules.ts changes @recurring (built yes, checked 2026-10-31) without its design; if the design still holds,
 add "Anaxi: no-design-impact" to the message, else update features/recurring-tasks.md`. This never fails the commit.
-*CI.* With `ci.sameChange: true`, `anaxi-ci.sh --pr BASE` exits 1 when the PR's counted commits change a built item's
-code and don't touch its file. The default is off. `anaxi_status` rows carry `drift`.
+`anaxi_status` rows carry `drift`.
 
 ## Open questions
 

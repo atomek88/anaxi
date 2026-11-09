@@ -18,7 +18,7 @@ to, and the pushback tests showed that advice doesn't hold under pressure.
 answer records who did and when (`→ decided: <name> 2026-11-07`). Every edit the Claude Code hook sees is an agent's,
 so it refuses an agent ticking a person's question on an item the gate holds, and points to the proposal form (`→
 proposed: …`, box unchecked). The person answers in their editor, from the terminal (`anaxi-check decide`), or in the
-reader (@decide-reader). At commit and merge time, a commit that ticks a person's question and carries an agent's
+reader (@decide-reader). At commit time, a commit that ticks a person's question and carries an agent's
 `Co-Authored-By:` trailer is flagged, and `anaxi-check decisions --who` lists who answered what, from git blame. Done
 when an agent's edit ticking `(decide: person)` on a held item is refused, a person's isn't, and the record shows
 both. Out of scope: proving identity; an agent outside every hook, writing a person's name in a commit, can still
@@ -33,7 +33,7 @@ answers (heavy, and nobody would use them) and over trusting the skill (tested, 
 **Call out, don't stop.** Decided on 2026-11-09 that Anaxi blocks only one thing here: an agent ticking a person's
 question on an item the gate holds, because that would open the gate. Everything else about decisions is a call-out:
 - every surface shows how many open questions wait on a person, and which items each one unblocks;
-- commits and PRs where an agent ticked a person's question are flagged, never failed.
+- commits where an agent ticked a person's question are flagged, never failed.
 
 **Contract.** *Syntax (FORMAT.md §5).* `- [ ] Dn · [(decide: person|anyone)] question [→ proposed: text]`. An answer:
 `- [x] Dn · [(decide: …)] question → decided: <name> <YYYY-MM-DD>[ (note)]: answer`. A name ending in `(agent)` is an
@@ -72,7 +72,8 @@ The agent trailers are a `Co-Authored-By:` matching `/claude|codex|cursor|copilo
 - `status` adds a `⚑ 2` column (open person questions) and a summary line: `⚑ 6 decisions wait on a person; first
   @recurring #2 (unblocks 2)`.
 - The session-start hook shows that summary line.
-- `anaxi-ci.sh --pr` prints the `agent-ticked` flags for the PR's commits as warnings.
+- the pre-commit hook prints an `agent-ticked` warning when the staged docs tick a person's question and
+  `CLAUDECODE` or another agent's variable is set; it never fails the commit.
 - N29 (info) on an item with an agent-ticked person question.
 
 ## Open questions

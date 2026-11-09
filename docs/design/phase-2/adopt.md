@@ -19,7 +19,7 @@ an instruction: "map the project in". It shouldn't be a chore.
 - The agent reads the code, tests, README, tracker and git log. For a folder no item covers, it drafts items at
   D1–D3 from the code, marked `source: code`, with `code:` filled in.
 - For existing items, it proposes `code:` paths, acceptance `checks:` (@progress) and `Anaxi: @id` links to issues
-  and PRs.
+  and commits.
 - It marks what it inferred as `→ proposed:`, on unchecked questions, and leaves every why and what to a person
   (@decided).
 

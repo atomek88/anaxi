@@ -18,7 +18,7 @@ is the relation between the work and the design, not a second tracker.
 checked day. A tracker holds the work: tasks, subtasks, estimates, who does what. Anaxi reads the link. An acceptance
 criterion may name what shows it (`→ checks: tests/recurring.spec.ts "four occurrences"`), so progress becomes "4 of
 6 criteria shown", from the repo, and "4 of 6 passing" with a test report configured; N27 for a built item with a
-criterion nothing shows. When every criterion is shown, Anaxi suggests `built: yes`. Issues, PRs and commits link
+criterion nothing shows. When every criterion is shown, Anaxi suggests `built: yes`. Issues and commits link
 to items by `@id` (a label, the title, or a trailer `Anaxi: @recurring`); the baseline reads only git, and tracker
 adapters (GitHub Issues, Linear) are optional and read-only. `anaxi-check export-tasks @id --to github` turns an
 item's criteria into issues once, after which the tracker owns them. A planner for projects without a tracker would

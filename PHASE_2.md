@@ -17,8 +17,9 @@ the source of truth. Phase 1's record and the smaller follow-ups are in [ROADMAP
   are derived and deletable.
 - **Progress stays out of the docs.** The docs say what must be true; tasks, subtasks, estimates and who is doing
   what live in a tracker (@progress). The only progress marks in the docs are `built:` and the day it was checked.
-- **Enforce where everyone passes.** Editor hooks are a convenience for one tool; commits and merges are where
-  every person, agent and editor goes through (@gate-everywhere).
+- **Enforce where everyone passes, through git.** Editor hooks are a convenience for one tool; the commit is where
+  every person, agent and editor goes through (@gate-everywhere). Anaxi uses git's history, index and local hooks,
+  and stays out of pull requests, merges and CI workflows.
 - **People decide.** An agent drafts and proposes; a decision that opens a gate is a person's (@decided).
 - **Call out, don't block.** The gate holds one thing, code for an item that isn't designed. Everything else is
   highlighted, never stopped: decisions waiting on a person (⚑), complex items (◆), drift, an empty runway.
@@ -32,7 +33,7 @@ the source of truth. Phase 1's record and the smaller follow-ups are in [ROADMAP
 | Item | What | Focus |
 |---|---|---|
 | [@drift-both](docs/design/phase-2/drift-both.md) | drift in both directions: the code moving on without the design is flagged too (N26) | now |
-| [@gate-everywhere](docs/design/phase-2/gate-everywhere.md) | the gate at commit and merge, for every tool and person | now |
+| [@gate-everywhere](docs/design/phase-2/gate-everywhere.md) | the gate at commit, for every tool and person | now |
 | [@decided](docs/design/phase-2/decided.md) | questions say who decides; an agent can't tick a person's decision | now |
 | [@stages](docs/design/phase-2/stages.md) | a derived lifecycle stage per item, a board, the design runway | now |
 | [@time-machine](docs/design/phase-2/time-machine.md) | the project as of any date; what changed since; timelines and burn-up | next |

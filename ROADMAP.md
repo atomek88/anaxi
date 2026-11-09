@@ -247,8 +247,8 @@ It found three bugs on its first run, all fixed and self-tested: lead-ins quoted
 - [x] **The blocked run found four real design gaps** in the example while drafting (no withdraw in @task-api, no
   token for the daily job, a `409` on a series edit, acceptance against the 7-day horizon), fixed in the example.
   Gaps surfacing is a main benefit, which PHASE_2's @hub builds on.
-- [ ] **Shell writes** (`echo >`, `node -e`) into a held path aren't seen at edit time; the commit and merge checks
-  in PHASE_2's @gate-everywhere catch them, for every tool.
+- [ ] **Shell writes** (`echo >`, `node -e`) into a held path aren't seen at edit time; the commit check
+  in PHASE_2's @gate-everywhere catches them, for every tool.
 - [ ] **Unmapped code** isn't guarded; map coverage (§7.2) shows how much of a project that is.
 - [x] **The shared-file freeze** (fixed in 0.11): an existing file a built item maps is never held.
 - [ ] **An agent ticking a person's decision:** PHASE_2's @decided.

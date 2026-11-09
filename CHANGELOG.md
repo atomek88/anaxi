@@ -8,7 +8,8 @@ Newest first. Format: `date · area · change · why`.
 - plugin · `anaxi-check file` and the code-map hook agree with the gate: where a ready item opens a path, an unready
   item planning it is a note, not a block · it said "blocks" for a file the hook allowed.
 - design · Phase 2 ready: every question answered; D3 contracts for @drift-both, @gate-everywhere and @decided; new
-  item @adopt; rules "call out, don't block" and "catch up by instruction" · PHASE_2.md.
+  item @adopt; rules "call out, don't block" and "catch up by instruction"; Anaxi uses git and stays out of pull requests,
+  merges and CI workflows (@gate-everywhere stops at the commit) · PHASE_2.md.
 - format · A tag line's list may be bracketed (`code: [../api/, ../src/x.ts]`), like front matter · it was read as
   one literal path.
 - plugin · **Shared code isn't frozen by the gate.** An existing file that a built item also maps in `code:` is never
