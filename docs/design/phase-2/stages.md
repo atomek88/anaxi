@@ -28,8 +28,17 @@ counts them with the runway and debt. The reader gets a board page (`tools/watch
 the built icon, red where blocked), linked from the overview. Chosen over a stage mark people set (it would drift
 from the marks it summarises) and over a kanban tool (Anaxi reads state, it doesn't track work, @progress).
 
+**Highlights.** Decided on 2026-11-09: the board calls out where attention is needed and never blocks.
+- Cards that wait on a person show `⚑ n` (@decided).
+- Complex items show `◆`, for a risk sum of 6 or more, or a target of D4.
+- Drifting cards show the drift size.
+
+The overview's stage line ends with the same call-outs: `⚑ 6 for a person · ◆ 2 complex`. The runway's one nudge is
+N28 (info): `runway 0: nothing is ready to build while 4 items are designing`.
+
 ## Open questions
 
-- [ ] D1 · What is the difference between an idea and a parked item? → proposed: an idea is below D1 and not `focus: later`; parked is `focus: later` below its target; so nine stages, with parked folded on the board
+- [x] D1 · What is the difference between an idea and a parked item? → decided: Tomasz Michalik 2026-11-09 (delegated in session: "go ahead … with your answers", recorded by the agent): an idea is below D1 and not `focus: later`; parked is `focus: later` below its target; nine stages (idea, designing, ready, building, built, drifting, parked, superseded, retired), with parked, superseded and retired folded on the board
 - [x] D1 · (decide: person) Should the runway be judged before kinds of project (@project-kinds) set healthy bands? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): show the number without judging it; one nudge only, when the runway is 0 while items are designing (builders will wait)
-- [ ] D2 · Unmarked items and sub-items? → proposed: unmarked counts as idea; sub-items have stages but show inside their parent's card
+- [x] D2 · Unmarked items and sub-items? → decided: Claude (agent) 2026-11-09: unmarked counts as idea; sub-items have stages but show inside their parent's card
+- [x] D2 · The JSON? → decided: Claude (agent) 2026-11-09: every item gains `stage` and `highlights: ["person", "complex", "drift"]`; `stages(model)` returns `{ counts: { idea, designing, … }, runway, debt, person, complex }`; `anaxi_board` returns that plus the cards per stage

@@ -30,4 +30,4 @@ the agent found four real gaps, and they landed only in a chat reply.
 
 ## Open questions
 
-- [ ] D1 · (decide: person) Which first, after the pilot? → proposed: gaps onto items and the decisions inbox: they carry the benefit you named (gaps surfacing) and they serve people who don't write code
+- [x] D1 · (decide: person) Which first, after the pilot? → decided: Tomasz Michalik 2026-11-09 (delegated in session: "go ahead … with your answers", recorded by the agent): the decisions inbox first (it is the call-out: what waits on a person, sorted by what it unblocks; @decided builds its core now), then gaps onto items; both serve people who don't write code

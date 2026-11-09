@@ -22,6 +22,6 @@ example's app and a split-out backend gate each other correctly.
 
 ## Open questions
 
-- [ ] D1 · Local paths only, or git URLs too? → proposed: local paths first; git URLs later, read-only through the person's own git credentials, cached as derived data
-- [ ] D1 · Id clashes between projects? → proposed: other projects' ids are always qualified (`backend@task-api`); local ids stay bare
-- [ ] D1 · What does a pin mean when the other repo moves on? → proposed: the pin is read at that ref, and a nudge says when the current contract differs
+- [x] D1 · Local paths only, or git URLs too? → decided: Tomasz Michalik 2026-11-09 (delegated in session: "go ahead … with your answers", recorded by the agent): local paths first; git URLs later, read-only through the person's own git credentials, cached as derived data
+- [x] D1 · Id clashes between projects? → decided: Tomasz Michalik 2026-11-09 (delegated in session: "go ahead … with your answers", recorded by the agent): other projects' ids are always qualified (`backend@task-api`); local ids stay bare
+- [x] D1 · What does a pin mean when the other repo moves on? → decided: Tomasz Michalik 2026-11-09 (delegated in session: "go ahead … with your answers", recorded by the agent): the pin is read at that ref, and a nudge says when the current contract differs

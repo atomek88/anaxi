@@ -29,8 +29,8 @@ repo (state the docs don't hold) and over a database.
 
 ## Open questions
 
-- [ ] D2 · Old docs are measured with today's rules, which may differ from what the tool said then. → proposed: accept it, and show the engine version used with every chart
-- [ ] D2 · Past changes to `anaxi.json`? → proposed: read `anaxi.json` at each commit too
-- [ ] D2 · Moved files and changed ids? → proposed: follow tagged items by `@id`, untagged ones by file with git's rename detection
-- [ ] D2 · How many snapshots, how fast? → proposed: at most 365, lazily; a year of 50 items in under 5 s, measured on Anaxi's own history first
-- [ ] D2 · When is the cache invalid? → proposed: keyed by commit and engine version; anything else deletes it
+- [x] D2 · Old docs are measured with today's rules, which may differ from what the tool said then. → decided: Claude (agent) 2026-11-09: accept it, and show the engine version used with every chart
+- [x] D2 · Past changes to `anaxi.json`? → decided: Claude (agent) 2026-11-09: read `anaxi.json` at each commit too
+- [x] D2 · Moved files and changed ids? → decided: Claude (agent) 2026-11-09: follow tagged items by `@id`, untagged ones by file with git's rename detection
+- [x] D2 · How many snapshots, how fast? → decided: Claude (agent) 2026-11-09: at most 365, lazily; a year of 50 items in under 5 s, measured on Anaxi's own history first
+- [x] D2 · When is the cache invalid? → decided: Claude (agent) 2026-11-09: keyed by commit and engine version; anything else deletes it

@@ -388,10 +388,10 @@ export function gateFor(model, file) {
  *  (relative to `base`, the folder the reader works in; default the project root). */
 export function fileReport(model, file, base = model.cfg.root) {
   const at = (p) => path.relative(base, path.resolve(model.cfg.root, p)).split(path.sep).join('/');
-  const items = itemsForFile(model, file), shared = isShared(model, file, items);
+  const items = itemsForFile(model, file), open = !gateFor(model, file).length; // shared, or a ready item plans it
   return items.map((it) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: it.depth, shown: LV(it.depthN),
     target: LV(it.targetN), status: it.status, ...(it.built ? { built: it.built } : {}), ...(it.drift ? { drift: it.drift } : {}),
-    ...(!isBuilt(it) && !gate(model, it).ready ? (shared ? { plans: true } : { blocks: true }) : {}),
+    ...(!isBuilt(it) && !gate(model, it).ready ? (open ? { plans: true } : { blocks: true }) : {}),
     doc: at(it.file), ready: gate(model, it).ready, contract: (it.parts || []).map((p) => `${at(p.file)}${p.anchor ? `#${p.anchor}` : ''}`) }));
 }
 

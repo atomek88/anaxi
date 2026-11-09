@@ -20,6 +20,10 @@ the source of truth. Phase 1's record and the smaller follow-ups are in [ROADMAP
 - **Enforce where everyone passes.** Editor hooks are a convenience for one tool; commits and merges are where
   every person, agent and editor goes through (@gate-everywhere).
 - **People decide.** An agent drafts and proposes; a decision that opens a gate is a person's (@decided).
+- **Call out, don't block.** The gate holds one thing, code for an item that isn't designed. Everything else is
+  highlighted, never stopped: decisions waiting on a person (⚑), complex items (◆), drift, an empty runway.
+- **Catch up by instruction.** When the docs fall behind the work, an agent maps the project in (@adopt) and a person
+  accepts what it proposes; nobody keeps progress by hand.
 - **Design ahead of the build.** Each phase 2 feature is an item at D1 or deeper, with `built: no` and planned
   `code:`, before any of its code. Checked on 2026-11-07: in phase 1, only @related was designed before it was built.
 
@@ -34,6 +38,7 @@ the source of truth. Phase 1's record and the smaller follow-ups are in [ROADMAP
 | [@time-machine](docs/design/phase-2/time-machine.md) | the project as of any date; what changed since; timelines and burn-up | next |
 | [@progress](docs/design/phase-2/progress.md) | acceptance criteria with evidence in the docs; the work in a tracker | next |
 | [@reverify](docs/design/phase-2/reverify.md) | one bounded call that settles drift, or leaves proposals | next |
+| [@adopt](docs/design/phase-2/adopt.md) | an agent maps a project's code, tests and tracker into its docs, as proposals | next |
 | [@decide-reader](docs/design/phase-2/decide-reader.md) | the reader can answer a decision, and nothing else | next |
 | [@project-kinds](docs/design/phase-2/project-kinds.md) | kinds of project and stages of a project's life; work that isn't software | later |
 | [@cross-repo](docs/design/phase-2/cross-repo.md) | uses across repos, and a portfolio | later |
@@ -43,11 +48,21 @@ Already decided and built (0.11): **shared code isn't frozen by the gate.** An e
 is never held, and an unready item's plans on it are a note; a new file is held while the items that plan it
 aren't ready, and open to any of them that is (@hard-gate).
 
+## Where it stands (2026-11-09)
+
+Every phase 2 question is answered: yours from 2026-11-07, the rest on 2026-11-09, the technical ones by the agent
+(D2 and deeper are anyone's) and the remaining why/what ones delegated to the agent's proposals, each recorded as such
+on its line. **Ready to build (🎯, gate open):** @drift-both, @gate-everywhere and @decided (D3, contracts written),
+@stages and @reverify (D2 is their target). The rest wait on depth, not on people: @time-machine, @progress and
+@decide-reader need their D3 contracts, written when they're picked up; @adopt needs D2 and D3; @project-kinds,
+@cross-repo and @hub stay parked at D1 until their triggers.
+
 ## Order
 
 1. **Now, before the pilot:** @drift-both, @gate-everywhere, @decided and @stages: answer their questions, write their
    contracts, build them in that order (each gate says when).
 2. **The pilot**, on a project where the design runs ahead of the build ([PILOT.md](PILOT.md)).
-3. **After it, by what it shows:** @reverify and @time-machine for living docs; @hub's first ideas with @decide-reader
+3. **After it, by what it shows:** @adopt early (the pilot is a real project, so mapping it in is the first job);
+   @reverify and @time-machine for living docs; @hub's first ideas with @decide-reader
    if people who don't code take part; @project-kinds when a second kind of project appears; @progress when a team
    links its tracker; @cross-repo when a product spans repos.

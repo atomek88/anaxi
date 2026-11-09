@@ -26,6 +26,6 @@ narrow write) and over a hosted service (later, if at all).
 
 ## Open questions
 
-- [ ] D0 · (decide: person) A narrow exception to "the reader never writes": answering questions only, behind a flag? → proposed: yes
-- [ ] D1 · (decide: person) How does a person who never runs Node reach it? → proposed: for now, `anaxi-check decisions --export` to a shared page or an issue, answered there and turned into a PR by an agent; a hosted reader that writes PRs is its own item later
-- [ ] D2 · Two people answering at once? → proposed: the file's hash at page load is checked before writing; a mismatch refuses and reloads
+- [x] D0 · (decide: person) A narrow exception to "the reader never writes": answering questions only, behind a flag? → decided: Tomasz Michalik 2026-11-09 (delegated in session: "go ahead … with your answers", recorded by the agent): yes
+- [x] D1 · (decide: person) How does a person who never runs Node reach it? → decided: Tomasz Michalik 2026-11-09 (delegated in session: "go ahead … with your answers", recorded by the agent): for now, `anaxi-check decisions --export` to a shared page or an issue, answered there and turned into a PR by an agent; a hosted reader that writes PRs is its own item later
+- [x] D2 · Two people answering at once? → decided: Claude (agent) 2026-11-09: the file's hash at page load is checked before writing; a mismatch refuses and reloads
