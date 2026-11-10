@@ -4,11 +4,16 @@ depth: D3
 risk: 2·1·1·1
 about: [living-docs]
 uses: ["@built", "@engine", "@check"]
-focus: now
+focus: next
 built: no
 code: [../../../tools/lib/git.mjs, ../../../tools/lib/engine.mjs, ../../../tools/anaxi-check.mjs, ../../../tools/hooks/pre-commit]
 ---
 # Drift in both directions
+
+**Optional.** Decided 2026-11-09: two-way drift is an opt-in job, not core. A project turns it on with `"drift": true`
+in `anaxi.json`, or runs `anaxi-check drift --fail` as a job in its own CI, if it has one. Off, Anaxi behaves as in
+0.11: N23 one way, and no extra git reads on `status`, the reader or the pre-commit hook. Anaxi's own repo opts in
+for its internal CI, which isn't shipped to other projects.
 
 **Why.** Docs usually go stale because the code moves on and nobody touches the doc. Today N23 fires only when the
 design changed after the code (`builtNudges` returns when `docT <= codeT`), so an item marked `built: yes` can take
@@ -21,7 +26,7 @@ warning: reconcile). The same act settles any of them: someone checks the two st
 (`anaxi-check verify @id`, or an agent through @reverify), or edits the side that's behind. The code side is
 measured, not just flagged: commits and lines since the baseline always show; a warning only past a threshold; an
 optional `contract:` subset of `code:` warns on any change; a commit trailer `Anaxi: no-design-impact` leaves a commit
-out. It works for every tool because the engine computes it from git: status, CI, the reader, MCP. The pre-commit
+out. When opted in, the engine computes it from git for every surface: status, the reader, MCP. The pre-commit
 hook warns when a built item's code changes without its doc; it never fails the commit, and nothing runs on pull
 requests (Anaxi stops at git, @gate-everywhere). Done when an item whose code moved past the threshold shows N26 in status, the
 index, the reader and `anaxi_status`, and `verify` clears it. Out of scope: judging whether a change matters; that's
@@ -46,7 +51,7 @@ or a higher level: `git log -L <start>,<end>:<file>` for commits, `git diff -U0`
 *Code side.* `git log --numstat <baseline>..HEAD` over the code paths, plus `git diff HEAD --numstat`. A commit with
 an `Anaxi: no-design-impact` trailer is left out (`Anaxi: no-design-impact @a @b` leaves it out for those items
 only). Test files count. Globs in `nudges.drift.ignore` are left out.
-*Thresholds.* Settings: `nudges.drift: { commits: 5, lines: 200, ignore: [] }`. The code side is over the threshold
+*Opt-in.* `drift` in `anaxi.json`, default `false`. When it's off, `drift` and `verify` still work on request, and nothing else reads git for drift. *Thresholds.* Settings: `nudges.drift: { commits: 5, lines: 200, ignore: [] }`. The code side is over the threshold
 at `commits ≥ 5` or `added + removed ≥ 200`, or on any counted change to a `contract:` path.
 *Nudges.*
 - Design side only: N23, as today but measured from the baseline.
@@ -67,13 +72,15 @@ the built icon whenever the code side has commits, and `↯` when `over` is true
   (2026-10-31) → built: yes (2026-11-09)` and the drift it clears. It exits 0 when written, and 2 for an item with no
   `built:` or with `built: no`.
 
-The skill and `anaxi_verify` always pass `--by agent`. *Pre-commit.* On every commit: staged non-markdown files →
+The skill and `anaxi_verify` always pass `--by agent`. *Pre-commit* (only when `drift` is on). On every commit: staged non-markdown files →
 items through the code map → built items whose file and part files aren't staged → one line each on stderr:
 `anaxi: rules.ts changes @recurring (built yes, checked 2026-10-31) without its design; if the design still holds,
 add "Anaxi: no-design-impact" to the message, else update features/recurring-tasks.md`. This never fails the commit.
 `anaxi_status` rows carry `drift`.
 
 ## Open questions
+
+- [x] D0 · (decide: person) Core, or optional? → decided: Tomasz Michalik 2026-11-09 (in session: "this should be an optional ci job", recorded by the agent): optional; off by default, `"drift": true` or `anaxi-check drift --fail` in a project's own CI; `focus: next`
 
 - [x] D1 · (decide: person) May an agent settle drift (run `verify`, write the `no-design-impact` trailer), or only a person? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): an agent may, and it's recorded: an agent's `verify` writes `built: yes (2026-11-07, agent)`, status and the reader show agent-checked items apart, and a person's check replaces it. Anyone may write the trailer; `anaxi-check drift` lists those commits (`since` later, @time-machine)
 - [x] D2 · (decide: person) Add the `contract:` mark, a subset of `code:` where any change warns? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes, optional; the cheapest signal that the D3 text is wrong, and most items won't need it

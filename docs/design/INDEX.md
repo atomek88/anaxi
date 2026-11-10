@@ -19,7 +19,7 @@
 | ⏸️ | [Cross-repo projects and a portfolio](phase-2/cross-repo.md) `@cross-repo` | D1 | D4 (now D1) | · | [@engine](shared/engine.md), [@hard-gate](features/hard-gate.md) | — | 0 |
 | 🎯 | [A writable reader, for decisions only](phase-2/decide-reader.md) `@decide-reader` | D2 | D3 (now D2) | · | [@reader](features/reader.md), [@decided](phase-2/decided.md) | — | 0 |
 | 🎯 | [Who decided](phase-2/decided.md) `@decided` | D3 | D3 | · | [@questions](shared/questions.md), [@hard-gate](features/hard-gate.md), [@format](shared/format.md) | @adopt, @decide-reader, @hub | 0 |
-| 🎯 | [Drift in both directions](phase-2/drift-both.md) `@drift-both` | D3 | D3 | · | [@built](features/built.md), [@engine](shared/engine.md), [@check](features/check.md) | @reverify, @time-machine | 0 |
+| ✂️ | [Drift in both directions](phase-2/drift-both.md) `@drift-both` | D3 | D3 (now D2) | · | [@built](features/built.md), [@engine](shared/engine.md), [@check](features/check.md) | @reverify, @time-machine | 0 |
 | 🎯 | [The gate everywhere (at commit, through git)](phase-2/gate-everywhere.md) `@gate-everywhere` | D3 | D3 | · | [@hard-gate](features/hard-gate.md), [@code-map](features/code-map.md), [@check](features/check.md) | — | 0 |
 | ⏸️ | [The hub loop](phase-2/hub.md) `@hub` | D1 | D3 (now D1) | — | [@decided](phase-2/decided.md), [@stages](phase-2/stages.md), [@reverify](phase-2/reverify.md) | — | 0 |
 | 🎯 | [Progress: what must be true in the docs, the work in a tracker](phase-2/progress.md) `@progress` | D2 | D3 (now D2) | · | [@built](features/built.md), [@stages](phase-2/stages.md) | — | 0 |
@@ -35,6 +35,7 @@
 ## Nudges
 
 - ⬇️ **Adopt: an agent maps a project into its docs** D1 → D2 (full target D3). Questions for D2: D2.shape, D2.decisions
+- ✂️ **Drift in both directions** at D3, but focus: next caps it at D2 for now: over-documented
 
 ## Later
 

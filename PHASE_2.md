@@ -32,7 +32,7 @@ the source of truth. Phase 1's record and the smaller follow-ups are in [ROADMAP
 
 | Item | What | Focus |
 |---|---|---|
-| [@drift-both](docs/design/phase-2/drift-both.md) | drift in both directions: the code moving on without the design is flagged too (N26) | now |
+| [@drift-both](docs/design/phase-2/drift-both.md) | drift in both directions, opt-in: the code moving on without the design is flagged too (N26) | next |
 | [@gate-everywhere](docs/design/phase-2/gate-everywhere.md) | the gate at commit, for every tool and person | now |
 | [@decided](docs/design/phase-2/decided.md) | questions say who decides; an agent can't tick a person's decision | now |
 | [@stages](docs/design/phase-2/stages.md) | a derived lifecycle stage per item, a board, the design runway | now |
@@ -53,17 +53,17 @@ aren't ready, and open to any of them that is (@hard-gate).
 
 Every phase 2 question is answered: yours from 2026-11-07, the rest on 2026-11-09, the technical ones by the agent
 (D2 and deeper are anyone's) and the remaining why/what ones delegated to the agent's proposals, each recorded as such
-on its line. **Ready to build (🎯, gate open):** @drift-both, @gate-everywhere and @decided (D3, contracts written),
+on its line. **Ready to build (🎯, gate open):** @gate-everywhere and @decided (D3, contracts written), @drift-both (D3, opt-in),
 @stages and @reverify (D2 is their target). The rest wait on depth, not on people: @time-machine, @progress and
 @decide-reader need their D3 contracts, written when they're picked up; @adopt needs D2 and D3; @project-kinds,
 @cross-repo and @hub stay parked at D1 until their triggers.
 
 ## Order
 
-1. **Now, before the pilot:** @drift-both, @gate-everywhere, @decided and @stages: answer their questions, write their
+1. **Now, before the pilot:** @gate-everywhere, @decided and @stages: answer their questions, write their
    contracts, build them in that order (each gate says when).
 2. **The pilot**, on a project where the design runs ahead of the build ([PILOT.md](PILOT.md)).
-3. **After it, by what it shows:** @adopt early (the pilot is a real project, so mapping it in is the first job);
+3. **After it, by what it shows:** @drift-both if the pilot's docs go stale unseen; @adopt early (the pilot is a real project, so mapping it in is the first job);
    @reverify and @time-machine for living docs; @hub's first ideas with @decide-reader
    if people who don't code take part; @project-kinds when a second kind of project appears; @progress when a team
    links its tracker; @cross-repo when a product spans repos.

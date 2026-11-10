@@ -16,7 +16,7 @@ drifting" means reading the whole status table.
 
 **What.** Every item gets a stage, derived from its marks, never set by hand: idea (below D1), designing (below
 target or open questions), ready (gate ready, not built), building (`built: partly`), built (`built: yes`, no drift),
-drifting (built, with drift on either side, @drift-both), superseded or retired. A line at the top of `status` and
+drifting (built, with N23, or with drift on either side when @drift-both is on), superseded or retired. A line at the top of `status` and
 `INDEX.md` ("2 designing · 1 ready · 1 building · 9 built · 1 drifting"); a board in the reader, a column per stage;
 the stage in every `anaxi_status` row; `anaxi_board` for agents. The design runway is one number: items ready and not
 built. Too few and builders will hit gates soon; too many and the design runs ahead of reality. Built-ahead items

@@ -56,7 +56,7 @@ codes: 0 when nothing is held or the branch is a spike, 1 when something is held
 *Pre-commit*, on every commit and no longer only on markdown commits:
 1. If markdown is staged, `anaxi-ci.sh --fix` runs as it does today.
 2. `gate-files --staged` runs; a 1 fails the commit, ending `bypass: git commit --no-verify`.
-3. The drift warning from @drift-both is printed.
+3. With `"drift": true` only, the drift warning from @drift-both is printed.
 
 Steps 2 and 3 share one model and take under 0.3 s for 200 items, checked by a self-test timing on a generated
 project. `anaxi-init.sh` already installs the hook; nothing else is installed.
