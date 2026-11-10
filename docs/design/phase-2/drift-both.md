@@ -10,6 +10,10 @@ code: [../../../tools/lib/git.mjs, ../../../tools/lib/engine.mjs, ../../../tools
 ---
 # Drift in both directions
 
+**Built already (0.11, 2026-11-09).** The per-part fix: N23 counts only a part's own section of a shared file (and a
+section item's own section), through `git log -L`, so an edit elsewhere in SPEC.md no longer flags every item with a
+part there. The rest of this item stays opt-in and unbuilt.
+
 **Optional.** Decided 2026-11-09: two-way drift is an opt-in job, not core. A project turns it on with `"drift": true`
 in `anaxi.json`, or runs `anaxi-check drift --fail` as a job in its own CI, if it has one. Off, Anaxi behaves as in
 0.11: N23 one way, and no extra git reads on `status`, the reader or the pre-commit hook. Anaxi's own repo opts in

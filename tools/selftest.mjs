@@ -6,7 +6,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, lv } from './lib/config.mjs';
-import { evaluate, builtText, itemsForFile, gate, gateFor, fileReport } from './lib/engine.mjs';
+import { evaluate, builtText, itemsForFile, gate, gateFor, fileReport, stageLine } from './lib/engine.mjs';
+import { decidedReport } from './lib/decisions.mjs';
 import { transition } from './lib/lifecycle.mjs';
 import { blocks, visible, words, context, outline } from './lib/read.mjs';
 import { spawn, execFileSync } from 'node:child_process';
@@ -338,6 +339,89 @@ ok(api.files.includes('features/APPENDIX.md'), 'watch: the file list includes pa
 const role = (k) => api.items.find((i) => i.key === k).role;
 ok(role('@stack') === 'foundation' && role('@task-api') === 'shared' && role('@recurring') === 'feature', 'watch: roles from the shared folder: foundation (uses nothing), shared, feature');
 watch.kill();
+
+// phase 2 (docs/design/phase-2): stages, the gate at commit, who decides, drift per part
+ok(ex.byId.get('@recurring').stage === 'designing' && ex.byId.get('@task-api').stage === 'ready' && ex.byId.get('@multi-calendar').stage === 'parked'
+  && /4 ready/.test(stageLine(ex)) && /runway 4/.test(stageLine(ex)), `stages: derived from the marks (${stageLine(ex)})`);
+ok(fs.readFileSync(path.join(HERE, '..', 'example', 'INDEX.md'), 'utf8').includes(`**${stageLine(ex)}**`), 'stages: INDEX.md leads with the stage line');
+const rw = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-')); fs.writeFileSync(path.join(rw, 'anaxi.json'), '{}');
+fs.writeFileSync(path.join(rw, 'a.md'), `---\nanaxi: "@a"\ndepth: D1\nrisk: 2·1·1·1\n---\n# A\n**Why.** ${ten}\n\n**What.** ${ten}\n`);
+const rwm = evaluate(loadConfig(rw));
+ok(rwm.byId.get('@a').stage === 'designing' && rwm.nudges.some((n) => n.code === 'N28'), 'stages: runway 0 while an item is designing is one nudge (N28)');
+fs.rmSync(rw, { recursive: true });
+const p2 = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
+fs.cpSync(path.join(HERE, '..', 'example'), p2, { recursive: true });
+const rec = path.join(p2, 'features', 'recurring-tasks.md');
+fs.writeFileSync(rec, fs.readFileSync(rec, 'utf8').replace('- [ ] D2 · Do paused', '- [ ] D1 · Does a paused series keep its history? → proposed: yes\n- [ ] D2 · Do paused'));
+const g2 = (args, o = {}) => execFileSync('git', args, { cwd: p2, encoding: 'utf8', env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t', ANAXI_HOME: path.join(HERE, '..') }, stdio: ['ignore', 'pipe', 'pipe'], ...o });
+g2(['init', '-q', '-b', 'main']); g2(['add', '-A']); g2(['commit', '-qm', 'start']);
+const gf = (...a) => { try { return { code: 0, out: execFileSync('node', [path.join(HERE, 'anaxi-check.mjs'), 'gate-files', ...a], { cwd: p2, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }) }; } catch (e) { return { code: e.status, out: `${e.stdout}${e.stderr}` }; } };
+fs.mkdirSync(path.join(p2, 'src', 'recurring'), { recursive: true }); fs.writeFileSync(path.join(p2, 'src', 'recurring', 'series.ts'), 'x');
+fs.writeFileSync(path.join(p2, 'notes.txt'), 'x'); g2(['add', 'notes.txt']);
+ok(gf('--staged').code === 0 && gf('--staged').out === '', 'gate at commit: a staged file no item plans says nothing');
+g2(['add', '-A']);
+const w = JSON.parse(gf('--staged', '--json').out);
+ok(w.mode === 'warn' && w.held[0]?.items[0].id === '@recurring' && gf('--staged').code === 0, 'gate at commit: by default a held file is a warning, and the commit goes ahead');
+const p2cfg = path.join(p2, 'anaxi.json'), p2cfg0 = fs.readFileSync(p2cfg, 'utf8');
+fs.writeFileSync(p2cfg, JSON.stringify({ ...JSON.parse(p2cfg0), gate: { commit: 'block' } }));
+ok(gf('--staged').code === 1 && /bypass: git commit --no-verify/.test(gf('--staged').out) && gf('src/recurring/series.ts').code === 1, 'gate at commit: "block" stops it, with the same reasons as the edit hook');
+fs.copyFileSync(path.join(HERE, 'hooks', 'pre-commit'), path.join(p2, '.git', 'hooks', 'pre-commit')); fs.chmodSync(path.join(p2, '.git', 'hooks', 'pre-commit'), 0o755);
+let blocked = false; try { g2(['commit', '-qm', 'held']); } catch { blocked = true; }
+ok(blocked, 'gate at commit: the pre-commit hook runs it on a code-only commit');
+g2(['checkout', '-qb', 'spike/try']);
+ok(gf('--staged').code === 0 && /spike branch/.test(gf('--staged').out), 'gate at commit: spike branches are not checked');
+g2(['checkout', '-q', 'main']);
+fs.writeFileSync(p2cfg, p2cfg0);
+let went = true; try { g2(['commit', '-qm', 'warned']); } catch { went = false; }
+ok(went, 'gate at commit: in "warn" mode the commit goes through');
+// who decides (@decided)
+const preP = (tool_input, tool_name = 'Edit') => execFileSync('node', [path.join(HERE, '..', 'hooks', tool_name === 'Bash' ? 'before-bash.mjs' : 'before-edit.mjs')], { encoding: 'utf8', input: JSON.stringify({ cwd: p2, tool_name, tool_input }) });
+const recE = (o, n) => preP({ file_path: 'features/recurring-tasks.md', old_string: o, new_string: n });
+ok(/"deny"/.test(recE('- [ ] D1 · Does a paused', '- [x] D1 · Does a paused')) && /proposed/.test(recE('- [ ] D1 · Does a paused', '- [x] D1 · Does a paused')), 'decided: an agent ticking a person\'s question on a held item is refused, and pointed to a proposal');
+ok(recE('- [ ] D2 · Do paused', '- [x] D2 · Do paused') === '', 'decided: a question anyone decides (D2) can be ticked');
+ok(/"deny"/.test(recE('- [ ] D1 · Does a paused', '- [ ] D1 · (decide: anyone) Does a paused')), 'decided: handing a person\'s question to anyone is refused');
+ok(/"deny"/.test(recE('## Open questions', '## Open questions\n\n- [x] D0 · Is it worth it? → yes')), 'decided: adding a person\'s question already answered is refused');
+ok(recE('- [ ] D1 · Does a paused series keep its history? → proposed: yes', '- [ ] D1 · Does a paused series keep its history? → proposed: yes, for a year') === '', 'decided: editing the proposal stays allowed');
+ok(/"deny"/.test(preP({ file_path: 'anaxi.json', old_string: '"index": "INDEX.md"', new_string: '"index": "INDEX.md", "decideBy": { "D1": "anyone" }' })), 'decided: making held person decisions anyone\'s through settings is refused');
+ok(/"deny"/.test(preP({ command: 'node tools/anaxi-check.mjs decide @recurring 2 "yes"' }, 'Bash')) && preP({ command: 'node tools/anaxi-check.mjs decisions' }, 'Bash') === '', 'decided: an agent can\'t run anaxi-check decide; decisions (the list) is fine');
+const dec = (...a) => { try { return { code: 0, out: execFileSync('node', [path.join(HERE, 'anaxi-check.mjs'), 'decide', ...a], { cwd: p2, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }) }; } catch (e) { return { code: e.status, out: `${e.stdout}${e.stderr}` }; } };
+const d1 = dec('@recurring', '2', '--accept', '--as', 'Tess');
+ok(d1.code === 0 && /- \[x\] D1 · Does a paused series keep its history\? → decided: Tess \d{4}-\d{2}-\d{2}: yes$/m.test(fs.readFileSync(rec, 'utf8')), `decided: decide --accept records the proposal with who and when (${d1.out.trim().split('\n').pop()})`);
+ok(dec('@recurring', '2', 'no', '--as', 'Tess').code === 1 && dec('@recurring', '9', 'no', '--as', 'Tess').code === 1, 'decided: an answered or missing question exits 1');
+const d2 = dec('@recurring', '3', 'No, paused series are left out', '--as', 'Claude (agent)');
+const pq = evaluate(loadConfig(p2));
+ok(d2.code === 0 && !pq.nudges.some((n) => n.code === 'N29'), 'decided: an agent answering a question anyone decides is not called out');
+fs.writeFileSync(rec, fs.readFileSync(rec, 'utf8').replace('decided: Tess', 'decided: Claude (agent)'));
+const pm2 = evaluate(loadConfig(p2));
+ok(pm2.nudges.some((n) => n.code === 'N29' && n.item === '@recurring') && decidedReport(pm2, [pm2.byId.get('@recurring')]).some((q) => q.flags.includes('agent-ticked')), 'decided: a person\'s question answered by an agent is called out (N29, agent-ticked), not blocked');
+ok(decidedReport(pm2, [pm2.byId.get('@recurring')]).find((q) => q.n === 1)?.flags.includes('unrecorded'), 'decided: a ticked question with no name is "unrecorded"');
+fs.rmSync(p2, { recursive: true });
+// the gate at commit is quick enough for every commit: 200 items, one staged file
+const sp = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
+fs.writeFileSync(path.join(sp, 'anaxi.json'), '{}');
+for (let i = 0; i < 200; i++) fs.writeFileSync(path.join(sp, `i${i}.md`), `---\nanaxi: "@i${i}"\ndepth: D1\nrisk: 1·1·1·1\nbuilt: no\ncode: [src/i${i}/]\n---\n# Item ${i}\n**Why.** ${ten}\n\n**What.** ${ten}\n\n- [ ] D1 · Question ${i}? → proposed: yes\n`);
+const gs = (args) => execFileSync('git', args, { cwd: sp, stdio: 'ignore', env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' } });
+gs(['init', '-q']); gs(['add', '-A']); gs(['commit', '-qm', 'x']);
+fs.mkdirSync(path.join(sp, 'src', 'i7'), { recursive: true }); fs.writeFileSync(path.join(sp, 'src', 'i7', 'a.ts'), 'x'); gs(['add', '-A']);
+const t0 = Date.now(); execFileSync('node', [path.join(HERE, 'anaxi-check.mjs'), 'gate-files', '--staged'], { cwd: sp, stdio: 'ignore' }); const ms = Date.now() - t0;
+ok(ms < 1500, `gate at commit: 200 items in ${ms} ms (budget about 300 ms; this fails only past 1.5 s)`);
+fs.rmSync(sp, { recursive: true });
+// drift per part: a change elsewhere in a shared file doesn't count for an item whose part is one section of it
+const pdir = fs.mkdtempSync(path.join(os.tmpdir(), 'anaxi-'));
+const gd = (args, date) => execFileSync('git', args, { cwd: pdir, env: { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t', GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date }, stdio: 'ignore' });
+fs.writeFileSync(path.join(pdir, 'anaxi.json'), '{ "docs": ["items/*.md"] }'); fs.mkdirSync(path.join(pdir, 'items'));
+fs.writeFileSync(path.join(pdir, 'items', 'p.md'), `---\nanaxi: "@p"\ndepth: D1\nrisk: 0·0·1·0\nbuilt: yes\ncode: [../p.js]\nparts: ["../SPEC.md#alpha (D1)"]\n---\n# P\n**Why.** ${ten}\n\n**What.** ${ten}\n`);
+const spec = (a, b) => `# Spec\n\n## Alpha\n${a}\n\n## Beta\n${b}\n`;
+fs.writeFileSync(path.join(pdir, 'SPEC.md'), spec('one', 'two')); fs.writeFileSync(path.join(pdir, 'p.js'), '1');
+gd(['init', '-q']); gd(['add', '-A']); gd(['commit', '-qm', 'a'], '2026-10-01T10:00:00Z');
+fs.writeFileSync(path.join(pdir, 'SPEC.md'), spec('one', 'two, changed')); gd(['add', '-A']); gd(['commit', '-qm', 'b'], '2026-10-03T10:00:00Z');
+const pdN = () => evaluate(loadConfig(pdir)).nudges.filter((n) => n.item === '@p' && n.code === 'N23').length;
+ok(pdN() === 0, 'drift: a change to another section of a shared file is not drift for this part');
+fs.writeFileSync(path.join(pdir, 'SPEC.md'), spec('one, changed', 'two, changed'));
+ok(pdN() === 1, 'drift: an uncommitted change to the part\'s own section is');
+gd(['add', '-A']); gd(['commit', '-qm', 'c'], '2026-10-04T10:00:00Z');
+ok(pdN() === 1, 'drift: and so is a committed one');
+fs.rmSync(pdir, { recursive: true });
 
 console.log(fails ? `${fails} failed` : 'selftest ok');
 process.exit(fails ? 1 : 0);

@@ -45,6 +45,11 @@ export const DEFAULTS = {
   },
   nudges: { off: [], severity: {}, untaggedWords: 80, levelWords: 10 },
   hooks: { sessionStart: true, afterEdit: false, codeMap: true, gate: true }, // the Claude Code plugin's hooks
+  // the gate at commit (@gate-everywhere): "warn" names held files and lets the commit through, "block" stops it, "off"
+  gate: { commit: 'warn', spikeBranches: ['spike/*'] },
+  // who decides a question by default, per level (@decided); a question's own `(decide: …)` wins; unlisted: anyone
+  decideBy: { D0: 'person', D1: 'person' },
+  decisions: { agentTrailers: [] }, // extra regexes for agent Co-Authored-By trailers
 };
 
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
@@ -171,3 +176,6 @@ export function docFiles(cfg) {
 
 /** The archive's list of deleted ids (ROADMAP step 6): `<archive>/RETIRED.md`. */
 export const retiredFile = (cfg) => (cfg.archive ? path.posix.join(cfg.archive, 'RETIRED.md') : null);
+
+/** Who decides a question (@decided): its own `(decide: …)`, else `decideBy` for its level, else anyone. */
+export const whoDecides = (cfg, q) => q.decide || (q.level && cfg.decideBy?.[q.level]) || 'anyone';

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig, LV } from './lib/config.mjs';
-import { evaluate, gate, dependents, renderIndex, related, roleOf, fileReport } from './lib/engine.mjs';
+import { evaluate, gate, dependents, renderIndex, related, roleOf, fileReport, STAGES } from './lib/engine.mjs';
 import { context, outline } from './lib/read.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -27,6 +27,7 @@ const TOOLS = [
   { name: 'anaxi_related', description: 'Everything an item is connected to, both ways, with each other item\'s depth and status: uses and used-by (with the level needed and whether it blocks), mentions, changed-with (named in a decision log: past changes went together), supersedes, sub-items; and the item\'s role (feature, shared, foundation). Call before changing an item, to see what else the change touches.', inputSchema: { type: 'object', properties: { ...ID, ...DIR }, required: ['id'] } },
   { name: 'anaxi_outline', description: 'Where each answer is in an item, without reading it: every section and lead-in in order with its level, label, link (file#anchor), word count and first sentence, plus its own questions and answers. Read this first, then only the section that answers your question.', inputSchema: { type: 'object', properties: { ...ID, at: { type: 'string', description: 'only up to this depth, e.g. D2' }, ...DIR }, required: ['id'] } },
   { name: 'anaxi_for_file', description: 'Which design items a code or config file belongs to (from each item\'s code: paths, folders and globs), with their depth, built state, whether the design changed after the code, and where their contract is. Call before changing a file\'s behaviour, then read those items.', inputSchema: { type: 'object', properties: { path: { type: 'string', description: 'the file, absolute or relative to the project folder' }, ...DIR }, required: ['path'] } },
+  { name: 'anaxi_board', description: 'The project at a glance: each item\'s lifecycle stage (idea, designing, ready, building, built, drifting, parked, superseded, retired), derived from its marks; counts per stage; the runway (ready, not built); and the call-outs: decisions waiting on a person (person), complex items, drift.', inputSchema: { type: 'object', properties: { ...DIR } } },
   { name: 'anaxi_uses', description: 'What an item uses, and who uses it (transitively): the blast radius of changing it.', inputSchema: { type: 'object', properties: { ...ID, ...DIR }, required: ['id'] } },
 ];
 
@@ -42,7 +43,7 @@ function find(model, q) {
   return it;
 }
 const brief = (it) => ({ id: it.id, title: it.title, file: it.file, line: it.line, depth: it.depth, shown: LV(it.depthN), target: LV(it.targetN), effective: LV(it.effectiveN),
-  status: it.status, ...(it.built ? { built: it.built } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.drift ? { drift: it.drift } : {}), open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
+  status: it.status, ...(it.stage ? { stage: it.stage, highlights: it.highlights } : {}), ...(it.built ? { built: it.built } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.drift ? { drift: it.drift } : {}), open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
   ...(it.lifecycle && it.lifecycle !== 'current' ? { lifecycle: it.lifecycle, successor: it.successor?.id || null } : {}) });
 
 // a closed gate is the first thing an agent reads, not a field it can skim past (@hard-gate)
@@ -75,6 +76,7 @@ const CALLS = {
   anaxi_for_file: (a) => { const m = load(a.dir); const abs = path.resolve(projectDir(a.dir), a.path), rel = path.relative(m.cfg.root, abs).split(path.sep).join('/');
     const items = fileReport(m, rel, projectDir(a.dir));
     return { file: path.relative(projectDir(a.dir), abs) || a.path, items, ...(items.length ? {} : { note: 'no item lists this file in code:; if it belongs to a feature, add it there' }) }; },
+  anaxi_board: (a) => { const m = load(a.dir); return { ...m.stages, stages: Object.fromEntries(STAGES.map((s) => [s, m.items.filter((it) => it.stage === s).map((it) => ({ id: it.id || it.title, title: it.title, depth: LV(it.depthN), target: LV(it.targetN), highlights: it.highlights, ...(it.highlights.includes('person') ? { person: it.openList.filter((q) => q.decideBy === 'person').map((q) => `${q.level || ''} · ${q.text}`) } : {}) }))])) }; },
   anaxi_uses: (a) => { const m = load(a.dir); const it = find(m, a.id); return { item: it.id, uses: it.uses.map((u) => ({ id: u.item?.id || u.raw, depth: u.item?.depth || null })),
     usedBy: dependents(m, it).map((d) => ({ id: d.item.id || d.item.title, hop: d.hop, depth: d.item.depth })) }; },
 };

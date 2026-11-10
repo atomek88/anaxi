@@ -120,3 +120,18 @@ li.check { list-style: none; margin-left: -20px; } li.check.open { color: var(--
 .pk-f { font-size: 11px; color: var(--ink3); margin-top: 6px; }
 @media (min-width: 981px) { .vw-nav, .vw-rail { position: sticky; top: 52px; align-self: start; max-height: calc(100vh - 60px); overflow-y: auto; } }
 @media (max-width: 980px) { .tree-key { display: none; } }
+/* the board (board.js, @stages) */
+.board { padding: 18px 22px 60px; }
+.board .cols { display: grid; grid-template-columns: repeat(6, minmax(170px, 1fr)); gap: 12px; overflow-x: auto; }
+@media (max-width: 980px) { .board .cols { grid-template-columns: repeat(2, minmax(150px, 1fr)); } }
+.board .col h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--ink3); margin: 6px 0; }
+.board .col h3 span { color: var(--ink2); }
+.card { border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; margin-bottom: 8px; cursor: pointer; background: var(--bg); font-size: 13px; }
+.card:hover { border-color: var(--accent); }
+.card.blocked { border-color: var(--bad); }
+.card .cs { color: var(--ink3); font-size: 12px; line-height: 1.35; margin: 2px 0 4px; }
+.card .cd { color: var(--ink3); font-size: 11.5px; }
+.card .ch { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.hl { font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; color: var(--ink2); }
+.hl.person { border-color: var(--accent); color: var(--accent); } .hl.complex { border-color: var(--trim); color: var(--trim); } .hl.drift { border-color: var(--bad); color: var(--bad); }
+.board .folded { margin-top: 18px; color: var(--ink3); }

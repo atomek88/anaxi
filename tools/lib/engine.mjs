@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile, globRe } from './config.mjs';
+import { lv, LV, top, docFiles, itemSettings, factorNames, retiredFile, globRe, whoDecides } from './config.mjs';
 import { parseFile, SECTION_NAMES, slug, sectionByName } from './parse.mjs';
 import { questionSet, questionsFor } from './questions.mjs';
 import { blocks } from './read.mjs';
@@ -10,7 +10,7 @@ import { blocks } from './read.mjs';
 const ICON = { blocked: '⛔', later: '⏸️', trim: '✂️', gap: '⬇️', open: '❓', enough: '🎯', none: '❓',
   superseded: '↪️', retired: '⏹️', archived: '🗄️' };
 const ORDER = ['N09', 'N02', 'N18', 'N15', 'N19', 'N21', 'N23', 'N24', 'N25', 'N03', 'N05', 'N22', 'N01', 'N08', 'N07', 'N06', 'N14', 'N12', 'N10',
-  'N11', 'N13', 'N16', 'N17', 'N20', 'N04'];
+  'N11', 'N13', 'N16', 'N17', 'N20', 'N29', 'N28', 'N04'];
 
 /**
  * Read and evaluate a project. `read(rel)` returns a file's text (default: from disk), so the same code can run
@@ -169,7 +169,7 @@ export function evaluate(cfg, { read, files } = {}) {
     it.openList = [
       ...it.open.map((text) => ({ text, level: null, source: 'open' })),
       ...it.checklist.filter((q) => !q.checked && (q.level == null || it.effectiveN == null || lv(q.level) <= it.effectiveN))
-        .map((q) => ({ text: q.text, level: q.level, source: 'checklist', line: q.line })),
+        .map((q) => ({ text: q.text, level: q.level, source: 'checklist', line: q.line, decideBy: whoDecides(c, q) })),
     ];
     it.allOpen = [...it.open, ...it.checklist.filter((q) => !q.checked)];
     it.questions = questionsFor(it, qs);
@@ -201,6 +201,12 @@ export function evaluate(cfg, { read, files } = {}) {
   model.nudges = nudges(model);
   for (const it of active) it.status = statusOf(it, model);
   for (const it of inactive) it.status = it.lifecycle;
+  for (const it of items) { it.stage = stageOf(model, it); it.highlights = highlightsOf(it); }
+  model.stages = stages(model);
+  const s = model.stages;
+  if (s.runway === 0 && s.counts.designing > 0 && !(cfg.nudges.off || []).includes('N28')) {
+    model.nudges.push({ code: 'N28', severity: cfg.nudges.severity?.N28 || 'info', item: null, title: 'Runway', message: `runway 0: nothing is ready to build while ${s.counts.designing} item${s.counts.designing > 1 ? 's are' : ' is'} designing` });
+  }
   return model;
 }
 
@@ -252,6 +258,9 @@ function nudges(model) {
       add('N22', 'info', it, `has content through ${LV(it.shownN)} but claims ${it.depth}: raise its depth if those questions are answered`);
     }
     if (it.built || it.codePaths.length) builtNudges(model, it, add);
+    for (const q of it.checklist) if (q.checked && q.decided?.agent && whoDecides(it.cfg, q) === 'person') {
+      add('N29', 'info', it, `"${q.text}" (${q.level}) is a person's to decide, but ${q.decided.by} answered it: a person should confirm it (anaxi-check decisions --who)`);
+    }
     if (it.targetN == null) { add('N14', 'warn', it, 'has no target. Score its risk, or write depth: Dn → Dt'); continue; }
     const capped = it.effectiveN < it.targetN;
     const d0 = it.sections.filter((s) => s.level === 'D0');
@@ -339,7 +348,11 @@ function builtNudges(model, it, add) {
   if (done && it.targetN != null && it.depthN < it.targetN) add('N24', 'warn', it, `built ${it.built}, but designed only to ${at(it)} of ${LV(it.targetN)}: built ahead of its design. Write the missing levels from the code, or lower the target`);
   const code = it.codePaths.filter((p) => !missing.includes(p));
   if (!done || !code.length || !model.clock) return;
-  const docT = model.clock([it.file, ...(it.parts || []).map((p) => p.file)]), codeT = model.clock(code.map((p) => (isGlob(p) ? `:(glob)${p}` : p)));
+  // the design side: whole files, but only its own section of a file shared with other items (a part's heading range)
+  const sectionOf = (file, line) => (model.clock.range ? sectionRange(root, file, line) : null);
+  const docTs = [it.declared !== 'front-matter' && it.anchor && sectionOf(it.file, it.line) ? model.clock.range(it.file, ...sectionOf(it.file, it.line)) : model.clock([it.file]),
+    ...(it.parts || []).map((p) => (p.anchor && sectionOf(p.file, p.line) ? model.clock.range(p.file, ...sectionOf(p.file, p.line)) : model.clock([p.file])))];
+  const docKnown = docTs.filter((t) => t != null), docT = docKnown.length ? Math.max(...docKnown) : null, codeT = model.clock(code.map((p) => (isGlob(p) ? `:(glob)${p}` : p)));
   const day = (t) => { const d = new Date(t * 1000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }; // local, as people write dates
   // `built: yes (2026-10-30)`: the code was checked against the design that day, so only later design changes count
   if (docT == null || codeT == null || docT <= codeT || (it.builtChecked && day(docT) <= it.builtChecked)) return;
@@ -369,16 +382,16 @@ export function itemsForFile(model, file) {
 }
 
 const isBuilt = (it) => it.built === 'yes' || it.built === 'partly';
-const isShared = (model, file, items) => items.some(isBuilt) && fs.existsSync(path.join(model.cfg.root, file));
+const isShared = (model, file, items, exists) => items.some(isBuilt) && (exists ? exists(file) : fs.existsSync(path.join(model.cfg.root, file)));
 
 /** The hard gate (@hard-gate): the items that refuse an edit to `file` (relative to the project root): current
  *  items that map it in `code:`, aren't built (`built:` no or unmarked) and whose gate isn't ready. A file a built
  *  item also maps, and that exists, is shared code that keeps moving: nothing holds it, and `fileReport` notes the
  *  plans instead. A new file stays held even inside a built item's folder: the gate holds what an item creates. A
  *  file that a ready item plans is open too: that item may build there, even while others planning it aren't ready. */
-export function gateFor(model, file) {
+export function gateFor(model, file, { exists } = {}) { // exists(file): whether it existed before this change (default: on disk)
   const items = itemsForFile(model, file);
-  if (items.some((it) => !isBuilt(it) && gate(model, it).ready) || isShared(model, file, items)) return [];
+  if (items.some((it) => !isBuilt(it) && gate(model, it).ready) || isShared(model, file, items, exists)) return [];
   return items.filter((it) => !isBuilt(it))
     .map((it) => ({ it, g: gate(model, it) })).filter(({ g }) => !g.ready)
     .map(({ it, g }) => ({ id: it.id || it.title, title: it.title, file: it.file, depth: at(it), target: LV(it.targetN), why: g.why }));
@@ -409,7 +422,72 @@ function gitClock(cfg) {
     return cache.get(k);
   };
   clock.now = now;
+  // when lines start…end of a file last changed: an uncommitted change touching them is now, else the last commit's time
+  clock.range = (file, start, end) => {
+    const k = `${file}\0${start}\0${end}`;
+    if (!cache.has(k)) {
+      try {
+        const st = run(['status', '--porcelain', '--', file]);
+        let t = null;
+        if (/^\?\?/.test(st)) t = now;
+        else if (st.trim()) {
+          for (const h of run(['diff', '-U0', 'HEAD', '--', file]).matchAll(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/gm)) {
+            const a = Number(h[1]), b = a + Math.max(Number(h[2] ?? 1), 1) - 1;
+            if (a <= end && b >= start) { t = now; break; }
+          }
+        }
+        if (t == null) t = Number(run(['log', '-1', '--no-patch', '--format=%ct', '-L', `${start},${end}:${file}`]).trim()) || null;
+        cache.set(k, t);
+      } catch { cache.set(k, null); }
+    }
+    return cache.get(k);
+  };
   return clock;
+}
+
+/** Lines [start, end] of the section whose heading is at `line` (1-based): up to the next heading at its level or above. */
+function sectionRange(root, file, line) {
+  let lines; try { lines = fs.readFileSync(path.join(root, file), 'utf8').split('\n'); } catch { return null; }
+  const h = lines[line - 1]?.match(/^(#+)\s/);
+  if (!h) return null;
+  let inF = false;
+  for (let i = line; i < lines.length; i++) {
+    if (/^\s*(```|~~~)/.test(lines[i])) inF = !inF;
+    const m = !inF && lines[i].match(/^(#+)\s/);
+    if (m && m[1].length <= h[1].length) return [line, i];
+  }
+  return [line, lines.length];
+}
+
+/** The lifecycle stage (@stages), derived from the marks, never set by hand. */
+export function stageOf(model, it) {
+  if (it.lifecycle && it.lifecycle !== 'current') return it.supersededBy ? 'superseded' : 'retired';
+  if (it.built === 'yes') return it.drift ? 'drifting' : 'built';
+  if (it.built === 'partly') return 'building';
+  if (it.focus === 'later' && (it.targetN == null || it.depthN < it.targetN)) return 'parked';
+  if (it.depthN == null || it.depthN < 1) return 'idea';
+  return gate(model, it).ready ? 'ready' : 'designing';
+}
+export const STAGES = ['idea', 'designing', 'ready', 'building', 'built', 'drifting', 'parked', 'superseded', 'retired'];
+/** What needs attention on an item: decisions waiting on a person, complexity (risk 6+ or the top target), drift. */
+function highlightsOf(it) {
+  const person = it.openList.filter((q) => q.decideBy === 'person').length;
+  const complex = (it.risk && it.risk.reduce((a, b) => a + b, 0) >= 6) || (it.targetN != null && it.targetN >= top());
+  return [person && 'person', complex && 'complex', it.drift && 'drift'].filter(Boolean);
+}
+/** Counts per stage, the runway (ready, not built), design debt (built ahead of the design, N24), and the call-outs. */
+export function stages(model) {
+  const counts = Object.fromEntries(STAGES.map((s) => [s, 0]));
+  for (const it of model.items) counts[it.stage]++;
+  return { counts, runway: counts.ready, debt: model.nudges.filter((n) => n.code === 'N24').length,
+    person: model.items.reduce((s, it) => s + it.openList.filter((q) => q.decideBy === 'person').length, 0),
+    complex: model.items.filter((it) => it.highlights.includes('complex')).length };
+}
+/** "2 designing · 1 ready · 9 built · runway 1 · ⚑ 6 for a person · ◆ 2 complex" */
+export function stageLine(model) {
+  const s = model.stages;
+  return [...STAGES.filter((k) => s.counts[k]).map((k) => `${s.counts[k]} ${k}`), `runway ${s.runway}`,
+    ...(s.debt ? [`${s.debt} built ahead of the design`] : []), ...(s.person ? [`⚑ ${s.person} for a person`] : []), ...(s.complex ? [`◆ ${s.complex} complex`] : [])].join(' · ');
 }
 
 /** "superseded by @new", "retired 2026-11-02 (why)", "archived". */
@@ -555,7 +633,7 @@ export function renderIndex(model, indexPath) {
     const parts = (it.parts || []).map((p) => `[${p.title.replace(/[[\]|]/g, '')}](${path.posix.relative(dir, p.file)}${p.anchor ? '#' + p.anchor : ''})`);
     return `| ${icon(it.status)} | ${it.parent ? '↳ ' : ''}${link(it)}${it.id ? ` \`${it.id}\`` : ''}${parts.length ? ` · parts: ${parts.join(', ')}` : ''} | ${it.depth ? at(it) : '—'} | ${targetText(it)} |${B ? ` ${builtText(it) || '—'} |` : ''} ${uses.join(', ') || '—'} | ${usedBy(it).join(', ') || '—'} | ${it.openList.length} |`;
   });
-  const NI = { N02: '⛔', N15: '⛔', N03: '❓', N01: '⬇️', N05: '⚠️', N06: '✂️', N14: '❓', N10: '⏸️', N13: 'ℹ️', N23: '⚠️', N24: '⚠️', N25: '⚠️' };
+  const NI = { N02: '⛔', N15: '⛔', N03: '❓', N01: '⬇️', N05: '⚠️', N06: '✂️', N14: '❓', N10: '⏸️', N13: 'ℹ️', N23: '⚠️', N24: '⚠️', N25: '⚠️', N28: 'ℹ️', N29: '⚑' };
   const nud = model.nudges.filter((n) => n.code !== 'N04' && !(n.code === 'N02' && n.severity === 'info'))
     .map((n) => `- ${NI[n.code] || 'ℹ️'} **${n.title}** ${n.message}`);
   const later = items.flatMap((it) => it.later.map((l) => `- **${it.title}**: ${l.text}`));
@@ -566,6 +644,8 @@ export function renderIndex(model, indexPath) {
   const gone = [...(model.retired || new Map())].map(([id, r]) => `${id}${r.successor ? ` → ${r.successor}` : ''}`);
   return [
     `# Design index · ${cfg.profile} profile · stage: ${cfg.stage}`,
+    '',
+    `**${stageLine(model)}**`,
     '',
     '<!-- Generated by `anaxi-check index`. Don\'t edit: change the docs and regenerate. -->',
     '',

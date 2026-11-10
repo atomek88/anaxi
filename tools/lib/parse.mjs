@@ -357,7 +357,13 @@ export function parseFile(text, file, names = SECTION_NAMES) {
       if (lm) { level = lm[1]; body = lm[2]; }
       const am = body.match(/^(.*?)\s+(?:→|->)\s+(.*)$/);
       if (am) { body = am[1]; answer = am[2]; }
-      t.item.checklist.push({ text: body, level, checked: c[1] !== ' ', answer, line: i + 1 });
+      // who decides it (@decided): `(decide: person|anyone)` before the question; who did: `→ decided: name day: answer`
+      let decide = null, decided = null;
+      const dm = body.match(/^\(decide:\s*(person|anyone)\)\s*(.*)$/i);
+      if (dm) { decide = dm[1].toLowerCase(); body = dm[2]; }
+      const dd = answer?.match(/^decided:\s+(.+?)\s+(\d{4}-\d{2}-\d{2})(?:\s+\(([^)]*)\))?:\s*(.*)$/);
+      if (dd) decided = { by: dd[1], day: dd[2], note: dd[3] || null, agent: /\(agent\)$/i.test(dd[1]), text: dd[4] };
+      t.item.checklist.push({ text: body, level, checked: c[1] !== ' ', answer, line: i + 1, ...(decide ? { decide } : {}), ...(decided ? { decided } : {}) });
     }
     for (const m of line.matchAll(/(?<![\w@./`-])@([A-Za-z][\w-]*)/g)) t.item.mentions.add(`@${m[1]}`);
   }

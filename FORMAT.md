@@ -153,6 +153,20 @@ A checklist inside the item ([QUESTIONS.md §5.2](QUESTIONS.md#52-item-questions
 
 Unchecked boxes count as open questions. Checked ones are answered.
 
+**Who decides, and who did.** A question can say who decides it, and an answer can say who gave it and when:
+
+```markdown
+- [ ] D1 · (decide: person) Weekly on which day? → proposed: the day it was created
+- [x] D2 · Store the rule or the dates? → decided: Sam Lee 2026-11-09: the rule, expanded a week ahead
+```
+
+Without a marker, `decideBy` in `anaxi.json` gives the default per level (`{ "D0": "person", "D1": "person" }`):
+why and what are a person's, shape and contract anyone's. A name ending in `(agent)` is an agent's answer. An
+agent proposes on a person's question (`→ proposed: …`, box unchecked), and the person records it, in their editor
+or with `anaxi-check decide @id N "answer"` (`--accept` takes the proposal). On an item the gate holds, the Claude
+Code hook refuses an agent ticking a person's question; everywhere else an agent's answer to one is called out
+(N29, `anaxi-check decisions --who`), never blocked. Old answers with no `decided:` stay valid.
+
 ## 6. Canvas: unbound space
 
 Every item can have a **canvas**: a place for the shape of the idea, sketches, visualizations, diagrams,

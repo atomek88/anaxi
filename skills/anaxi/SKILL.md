@@ -124,6 +124,10 @@ Next: answer D3.contracts and D3.failure; leave RRULEs in later:.
    decision is theirs: anything costly or one-way, or anything touching product scope. **A proposal is not an
    answer:** write it on the open question (`- [ ] D3 · Retry policy? → proposed: 3 tries, then dead-letter`) and
    leave the box unchecked. Check a box, or write an answer as settled, only when the user gave or accepted it.
+   Why and what (D0–D1, or a question marked `(decide: person)`) are the user's: the user records those
+   themselves, in their editor or with `! anaxi-check decide @id N "answer"` (`--accept` takes your proposal). Tell
+   them the command; don't run it (the hook refuses it). On questions anyone decides (D2 and deeper, by default), you
+   may answer, as `→ decided: <your name> (agent) <day>: …`. `anaxi-check decisions` lists what waits on whom.
 6. Update the marks: the new depth, `skip:`, `caveats:`, `later:`. Once the Shape says where the code will live,
    write it as `code:` (planned folders or globs) with `built: no`: that is what lets the hard gate guard it. Re-score if certainty changed (N12). Then
    regenerate the index (`anaxi_index`, or `anaxi-check index`) if the project commits one. Never edit the index by

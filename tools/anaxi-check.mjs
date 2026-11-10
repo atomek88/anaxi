@@ -16,13 +16,17 @@
 //   anaxi-check delete    @id [--force]                            remove an archived file; RETIRED.md keeps its id
 //   (the five lifecycle commands take --dry-run)
 //   anaxi-check context   @id [--at Dn] [--history] [--json]       the item at a depth + what it uses, for building
+//   anaxi-check gate-files [--staged | FILE…] [--json]             the gate for files (pre-commit): exit 1 when held
+//   anaxi-check decisions [@id] [--who] [--json]                    what waits on whom, or who answered what
+//   anaxi-check decide    @id N "answer" | --accept [--as NAME]     record a person's answer (the person runs it)
 //
 // Every command takes --dir DIR (default: the current folder); anaxi.json is found by searching upward.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { loadConfig, globRe, LV, lv, top as topLevel, METHOD_DIR } from './lib/config.mjs';
-import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt, fileReport } from './lib/engine.mjs';
+import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt, fileReport, gateFor, itemsForFile, stageLine } from './lib/engine.mjs';
+import { openDecisions, decidedReport, decide, gitName } from './lib/decisions.mjs';
 import { transition } from './lib/lifecycle.mjs';
 import { context, outline } from './lib/read.mjs';
 
@@ -30,7 +34,7 @@ const argv = process.argv.slice(2);
 const cmd = argv[0] && !argv[0].startsWith('--') ? argv.shift() : 'status';
 const flag = (n) => argv.includes(`--${n}`);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--json', '--all', '--check', '--path', '--repeated', '--skips', '--small', '--force', '--dry-run', '--history'].includes(argv[i - 1])));
+const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && argv[i - 1].startsWith('--') && !['--json', '--all', '--check', '--path', '--repeated', '--skips', '--small', '--force', '--dry-run', '--history', '--staged', '--accept', '--who', '--open'].includes(argv[i - 1])));
 
 function die(msg, code = 2) { console.error(`anaxi-check: ${msg}`); process.exit(code); }
 
@@ -60,6 +64,7 @@ const itemJson = (it) => ({
   skip: it.skip, sections: it.sections, lifecycle: it.lifecycle,
   supersededBy: it.supersededBy, supersedes: it.supersedes, retired: it.retired, successor: it.successor?.key || null,
   ...(it.built ? { built: it.built } : {}), ...(it.builtChecked ? { builtChecked: it.builtChecked } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.drift ? { drift: it.drift } : {}),
+  ...(it.stage ? { stage: it.stage, highlights: it.highlights } : {}),
 });
 // "D1 (D4?)": the text shows D1 of a claimed D4 (N05)
 const depthText = (it) => (!it.depth ? '—' : it.depthN < it.claimedN ? `${it.depthN < 0 ? '—' : LV(it.depthN)} (${it.depth}?)` : it.depth);
@@ -144,11 +149,12 @@ switch (cmd) {
     if (opt('focus')) items = items.filter((it) => (it.focus || 'now') === opt('focus'));
     if (opt('about')) items = items.filter((it) => it.about.includes(opt('about')));
     if (flag('json')) {
-      json({ format: 'anaxi/1', settings: { profile: cfg.profile, stage: cfg.stage }, items: items.map(itemJson), nudges: model.nudges,
+      json({ format: 'anaxi/1', settings: { profile: cfg.profile, stage: cfg.stage }, stages: model.stages, items: items.map(itemJson), nudges: model.nudges,
         inactive: model.inactive.map(itemJson), deleted: [...model.retired].map(([id, r]) => ({ id, ...r })) });
       break;
     }
     console.log(header());
+    console.log(stageLine(model));
     const B = usesBuilt(model.all);
     console.log(`\n   ${pad('Item', 34)} ${pad('Depth', 8)} ${pad('Target', 12)} ${B ? `${pad('Built', 6)} ` : ''}${pad('Open', 5)} Uses`);
     for (const it of items) {
@@ -164,6 +170,10 @@ switch (cmd) {
     } else if (past.length) console.log(dim(`\n${past.length} superseded, retired or archived (not counted): ${past.map(name).join(', ')} · --all lists them`));
     const skipped = model.questions.list.filter((q) => q.skippedAll);
     for (const q of skipped) console.log(`\nskip-all ${q.id}: ${q.skippedAll}`);
+    const waiting = openDecisions(model).filter((q) => q.decideBy === 'person');
+    if (waiting.length) console.log(`\n⚑ ${waiting.length} decision${waiting.length > 1 ? 's wait' : ' waits'} on a person; first ${waiting[0].item} #${waiting[0].n}${waiting[0].unblocks.length ? ` (unblocks ${waiting[0].unblocks.length})` : ''} · anaxi-check decisions`);
+    const runway = model.nudges.find((n) => n.code === 'N28');
+    if (runway) console.log(dim(`ℹ️ ${runway.message}`));
     if (model.errors.length) console.log(`\n${model.errors.length} error(s): run \`anaxi-check check\``);
     break;
   }
@@ -327,6 +337,87 @@ switch (cmd) {
     break;
   }
 
+  case 'gate-files': { // the gate at commit (@gate-everywhere): the same rule as the edit hook, for every tool
+    if (!cfg.file) break; // not an Anaxi project: nothing to say
+    const git = (args) => execFileSync('git', args, { cwd: cfg.root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    const staged = flag('staged'), mode = staged ? cfg.gate?.commit || 'warn' : 'block';
+    if (mode === 'off') break;
+    let m = model, files, exists, top = null;
+    try { top = git(['rev-parse', '--show-toplevel']).trim(); } catch { if (staged) break; }
+    let skipped = null;
+    if (staged) {
+      let branch = ''; try { branch = git(['rev-parse', '--abbrev-ref', 'HEAD']).trim(); } catch { /* no commits yet */ }
+      if ((cfg.gate?.spikeBranches || []).some((g) => globRe(g).test(branch))) skipped = 'spike';
+      const added = new Set();
+      files = git(['diff', '--cached', '--name-status', '--diff-filter=ACMR']).split('\n').filter(Boolean).map((l) => {
+        const [st, ...ps] = l.split('\t'), abs = path.join(top, ps.at(-1));
+        const rel = path.relative(cfg.root, abs).split(path.sep).join('/');
+        if (/^[ACR]/.test(st)) added.add(rel);
+        return abs;
+      });
+      exists = (rel) => !added.has(rel);
+      // the design as it will be committed: a doc with unstaged changes is read from the index, so an unstaged
+      // design edit can't pass a commit; the rest are the same on disk (one git call, not one per doc)
+      const unstaged = new Set(git(['diff', '--name-only']).split('\n').filter(Boolean).map((p) => path.join(top, p)));
+      const read = (rel) => { const abs = path.join(cfg.root, rel);
+        if (unstaged.has(abs)) { try { return git(['show', `:${path.relative(top, abs).split(path.sep).join('/')}`]); } catch { /* not in the index */ } }
+        return fs.readFileSync(abs, 'utf8'); };
+      if (!skipped && files.some((f) => !/\.(md|markdown)$/i.test(f))) m = unstaged.size ? evaluate(cfg, { read }) : model;
+    } else files = positional.map((p) => path.resolve(p));
+    const held = [], notes = [];
+    if (!skipped) for (const abs of files) {
+      const rel = path.relative(cfg.root, abs).split(path.sep).join('/');
+      if (/\.(md|markdown)$/i.test(rel) || path.basename(rel) === 'anaxi.json') continue;
+      const h = gateFor(m, rel, { exists });
+      if (h.length) { held.push({ file: path.relative(process.cwd(), abs), items: h }); continue; }
+      const plans = itemsForFile(m, rel).filter((it) => it.built !== 'yes' && it.built !== 'partly' && !gate(m, it).ready);
+      if (plans.length) notes.push({ file: path.relative(process.cwd(), abs), items: plans.map((it) => it.id || it.title) });
+    }
+    if (flag('json')) json({ format: 'anaxi/1', mode, held, notes, skipped });
+    else {
+      if (skipped) console.log(`anaxi: spike branch, the gate isn't checked`);
+      if (held.length) {
+        console.error(`anaxi: ${held.length} file${held.length > 1 ? 's are' : ' is'} held by the gate`);
+        for (const h of held) for (const b of h.items) console.error(`  ${h.file} → ${b.id} (${b.title}, ${b.file}): ${b.depth} of ${b.target || '—'}; ${b.why.join('; ')}`);
+      }
+      for (const n of notes) console.error(`note: ${n.file} is shared code; ${n.items.join(', ')} (not ready) plans changes here`);
+      if (held.length) console.error(`→ Design it first (answer its questions, write its levels), or explore on a spike/ branch.${
+        mode === 'warn' ? '\n  (warning only: gate.commit is "warn" in anaxi.json, so the commit goes ahead)' : staged ? '\n  bypass: git commit --no-verify' : ''}`);
+    }
+    process.exitCode = held.length && mode === 'block' ? 1 : 0;
+    break;
+  }
+
+  case 'decisions': { // what waits on whom (@decided), or who answered what (--who)
+    const items = positional[0] && !flag('all') ? [find(positional[0])] : model.items;
+    if (flag('who')) {
+      const r = decidedReport(model, items);
+      if (flag('json')) { json({ format: 'anaxi/1', decided: r, flags: r.filter((q) => q.flags.length) }); break; }
+      if (!r.length) { console.log('Nothing answered yet.'); break; }
+      for (const q of r) console.log(`${pad(`${q.item} #${q.n}`, 22)} ${pad(q.level || '·', 3)} ${pad(q.decideBy, 7)} ${q.text.slice(0, 60)}
+${' '.repeat(23)}${dim(`by ${q.by || '?'}${q.day ? ` ${q.day}` : ''}${q.commit ? ` · commit ${q.commit.sha} by ${q.commit.author}` : ''}`)}${q.flags.length ? ` ${yellow(q.flags.join(' '))}` : ''}`);
+      break;
+    }
+    const open = openDecisions(model, items);
+    if (flag('json')) { json({ format: 'anaxi/1', open }); break; }
+    if (!open.length) { console.log('Nothing open.'); break; }
+    const person = open.filter((q) => q.decideBy === 'person');
+    console.log(`⚑ ${person.length} for a person · ${open.length - person.length} anyone's`);
+    for (const q of open) console.log(`\n${q.decideBy === 'person' ? '⚑' : '·'} ${bold(`${q.item} #${q.n}`)} ${q.level || ''} ${q.text}${q.proposal ? `\n    ${dim(`→ proposed: ${q.proposal}`)}` : ''}${q.unblocks.length ? `\n    ${dim(`unblocks ${q.unblocks.join(', ')}`)}` : ''}`);
+    if (person.length) console.log(cyan(`\n→ Answer: anaxi-check decide @id N "your answer" (or --accept the proposal)${process.env.CLAUDECODE ? '; in Claude Code, type it after ! so it runs as you' : ''}.`));
+    break;
+  }
+
+  case 'decide': { // the person's command: the edit hook refuses it from an agent (@decided)
+    const it = find(positional[0]);
+    try {
+      const r = decide(model, it, positional[1], { answer: positional[2] || null, accept: flag('accept'), who: opt('as') || gitName(cfg.root), dryRun: flag('dry-run') });
+      console.log(`${r.file}:${r.line}\n- ${r.before.trim()}\n+ ${r.after.trim()}`);
+      if (!flag('dry-run')) console.log(dim('\nRegenerate the index: anaxi-check index (the pre-commit hook does it too)'));
+    } catch (e) { die(e.message, e.code ?? 2); }
+    break;
+  }
+
   default:
-    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new, context, supersede, retire, archive, restore, delete`);
+    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new, context, file, outline, gate-files, decisions, decide, supersede, retire, archive, restore, delete`);
 }

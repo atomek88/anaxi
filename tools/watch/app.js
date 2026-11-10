@@ -1,5 +1,5 @@
 // anaxi watch · the reader (served by tools/anaxi-watch.mjs). Read-only, no dependencies.
-// Routes: #/ overview · #/topic/<t> · #/item/<key>?at=2 · #/map[?topic=<t>]
+// Routes: #/ overview · #/topic/<t> · #/item/<key>?at=2 · #/map[?topic=<t>] · #/board (board.js)
 (() => {
   const app = document.getElementById('app');
   let M = null; // the model from /api/model
@@ -107,7 +107,7 @@
     const groups = ORDER.map((s) => [s, feats.filter((it) => it.status === s)]).filter(([, l]) => l.length);
     const first = reading()[0];
     const main = `<h1>${esc(M.root)}</h1>
-      <div class="badges"><span class="b">${esc(M.settings.profile)} profile</span><span class="b">stage: ${esc(M.settings.stage)}</span><span class="b">${M.items.length} items · ${M.items.filter((i) => i.status === 'enough').length} enough · ${M.items.filter((i) => i.status === 'blocked').length} blocked</span>${M.inactive.length + M.deleted.length ? `<span class="b">${M.inactive.length + M.deleted.length} in history</span>` : ''}</div>
+      <div class="badges"><span class="b">${esc(M.settings.profile)} profile</span><span class="b">stage: ${esc(M.settings.stage)}</span><span class="b">${M.items.length} items · ${M.items.filter((i) => i.status === 'enough').length} enough · ${M.items.filter((i) => i.status === 'blocked').length} blocked</span>${M.stages ? `<button class="b" ${go('#/board')}>runway ${M.stages.runway}${M.stages.person ? ` · ⚑ ${M.stages.person} for a person` : ''}${M.stages.complex ? ` · ◆ ${M.stages.complex} complex` : ''} · board →</button>` : ''}${M.inactive.length + M.deleted.length ? `<span class="b">${M.inactive.length + M.deleted.length} in history</span>` : ''}</div>
       ${M.errors.length ? `<p class="err">${M.errors.length} error(s): ${M.errors.slice(0, 3).map(esc).join(' · ')}</p>` : ''}
       ${groups.map(([s, l]) => `<div class="group">${ICON[s]} ${WORD[s]} · ${l.length}</div>${l.map(row).join('')}`).join('')}
       ${base.length ? `<div class="group">🧱 shared: what the features build on · ${base.length}</div>${base.map(row).join('')}` : ''}
@@ -365,6 +365,7 @@
     if (parts[0] === 'item') { const it = byKey(parts.slice(1).join('/')); out = it ? itemPage(it, q) : `<p class="err">No item ${esc(parts[1])}. It may have been renamed: <button ${go('#/')}>overview</button></p>`; document.title = it ? `${name(it)} · Anaxi` : 'Anaxi'; }
     else if (parts[0] === 'topic') { out = topicPage(parts[1]); document.title = `${parts[1]} · Anaxi`; }
     else if (parts[0] === 'map') { out = mapPage(q); document.title = 'Map · Anaxi'; }
+    else if (parts[0] === 'board' && window.anaxiBoard) { out = window.anaxiBoard(M, { esc, go, itemHash, name, bars, builtTag, crumbs, icon: (it) => ICON[it.status] }); document.title = 'Board · Anaxi'; }
     else { out = overview(); document.title = `${M.root} · Anaxi`; }
     app.innerHTML = out;
   }

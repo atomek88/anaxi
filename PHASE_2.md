@@ -45,23 +45,40 @@ the source of truth. Phase 1's record and the smaller follow-ups are in [ROADMAP
 | [@cross-repo](docs/design/phase-2/cross-repo.md) | uses across repos, and a portfolio | later |
 | [@hub](docs/design/phase-2/hub.md) | the loop from building back to design, and the ideas it holds | later |
 
-Already decided and built (0.11): **shared code isn't frozen by the gate.** An existing file that a built item maps
-is never held, and an unready item's plans on it are a note; a new file is held while the items that plan it
-aren't ready, and open to any of them that is (@hard-gate).
+## Built (0.11, 2026-11-09)
 
-## Where it stands (2026-11-09)
+- **@stages:** every item has a stage derived from its marks (idea, designing, ready, building, built, drifting,
+  parked, superseded, retired). The stage line opens `status` and `INDEX.md` (`4 designing · 6 ready · 14 built ·
+  runway 6 · ◆ 3 complex`). The reader has a board (`#/board`), MCP has `anaxi_board`, and N28 fires when the runway
+  is 0 while items are designing.
+- **@decided:** questions say who decides them (`(decide: person)`, or `decideBy`, D0–D1 a person's by default), and
+  answers say who gave them (`→ decided: name day: …`). `anaxi-check decide` is the person's command and
+  `anaxi-check decisions` lists what waits on whom (⚑). On an item the gate holds, the Claude Code hook refuses an
+  agent ticking a person's question or running `decide`; everywhere else, an agent's answer is called out (N29,
+  `decisions --who`).
+- **@gate-everywhere:** `anaxi-check gate-files --staged` runs from the pre-commit hook for every tool. It's silent
+  unless a staged file is held, and then it **warns by default**; `"gate": { "commit": "block" }` makes it stop the
+  commit. Spike branches skip it. It takes about 0.3 s for 200 items.
+- **A drift fix:** N23 counts only a part's own section of a shared file, so editing SPEC.md no longer flags every
+  item with a part there. (Two-way drift, @drift-both, stays opt-in and unbuilt.)
+- Earlier in 0.11: **shared code isn't frozen by the gate.** An existing file that a built item maps is never held,
+  and an unready item's plans on it are a note. A new file is held while the items that plan it aren't ready, and is
+  open to any of them that is (@hard-gate).
 
-Every phase 2 question is answered: yours from 2026-11-07, the rest on 2026-11-09, the technical ones by the agent
-(D2 and deeper are anyone's) and the remaining why/what ones delegated to the agent's proposals, each recorded as such
-on its line. **Ready to build (🎯, gate open):** @gate-everywhere and @decided (D3, contracts written), @drift-both (D3, opt-in),
-@stages and @reverify (D2 is their target). The rest wait on depth, not on people: @time-machine, @progress and
-@decide-reader need their D3 contracts, written when they're picked up; @adopt needs D2 and D3; @project-kinds,
-@cross-repo and @hub stay parked at D1 until their triggers.
+Nothing here makes editing harder while building:
+- docs stay writable, except an agent ticking a held item's person question;
+- code a built item maps stays writable;
+- commits only warn;
+- nothing touches pull requests.
+
+Every phase 2 question is answered and recorded on its line. Still unbuilt:
+- ready, built when the pilot asks for them: @reverify and @drift-both (opt-in);
+- waiting on depth, not on people: @time-machine, @progress, @decide-reader and @adopt;
+- parked until their triggers: @project-kinds, @cross-repo and @hub.
 
 ## Order
 
-1. **Now, before the pilot:** @gate-everywhere, @decided and @stages: answer their questions, write their
-   contracts, build them in that order (each gate says when).
+1. **Now, before the pilot:** @gate-everywhere, @decided and @stages: built in 0.11.
 2. **The pilot**, on a project where the design runs ahead of the build ([PILOT.md](PILOT.md)).
 3. **After it, by what it shows:** @drift-both if the pilot's docs go stale unseen; @adopt early (the pilot is a real project, so mapping it in is the first job);
    @reverify and @time-machine for living docs; @hub's first ideas with @decide-reader

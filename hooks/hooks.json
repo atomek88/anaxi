@@ -1,11 +1,12 @@
 {
-  "description": "Anaxi: show the design-depth status when a session starts in a project with anaxi.json, refuse to build code for an item that isn't designed enough (the hard gate), say which design items a code file belongs to when Claude edits it, and (opt-in) the nudges for a doc after Claude edits it.",
+  "description": "Anaxi: show the design-depth status when a session starts in a project with anaxi.json, refuse to build code for an item that isn't designed enough (the hard gate) or to answer a person's decision for them, say which design items a code file belongs to when Claude edits it, and (opt-in) the nudges for a doc after Claude edits it.",
   "hooks": {
     "SessionStart": [
       { "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"", "timeout": 10 } ] }
     ],
     "PreToolUse": [
-      { "matcher": "Write|Edit|MultiEdit|NotebookEdit", "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/before-edit.mjs\"", "timeout": 10 } ] }
+      { "matcher": "Write|Edit|MultiEdit|NotebookEdit", "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/before-edit.mjs\"", "timeout": 10 } ] },
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/before-bash.mjs\"", "timeout": 10 } ] }
     ],
     "PostToolUse": [
       { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/after-edit.mjs\"", "timeout": 10 } ] }

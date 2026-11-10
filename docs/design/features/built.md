@@ -4,7 +4,7 @@ depth: D3
 risk: 2·1·1·1
 about: [format, engine]
 uses: ["@format", "@engine"]
-caveats: drift is per file: an edit anywhere in a doc that holds several items counts for all of them
+caveats: drift is per file, except a part (or section item) with an anchor, which counts only its own section; drift is one way (design after code) unless @drift-both is built and on
 later: per-section drift with `git log -L` (when shared docs make the file-level check noisy)
 built: yes (2026-10-30)
 code: [../../../tools/lib/engine.mjs, ../../../tools/lib/parse.mjs, ../../../tools/watch/app.js]

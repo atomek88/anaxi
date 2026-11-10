@@ -1,14 +1,20 @@
 #!/bin/sh
-# Anaxi pre-commit hook: on commits that touch markdown, check the docs and regenerate INDEX.md.
+# Anaxi pre-commit hook. On commits that touch markdown: check the docs and regenerate INDEX.md. On every commit: the
+# gate for staged code files (@gate-everywhere), silent unless a file is held. By default it only warns
+# ("gate": { "commit": "warn" } in anaxi.json); "block" stops the commit, "off" skips it.
 # Install: anaxi-init (or /anaxi:init) does it; by hand, cp <anaxi>/tools/hooks/pre-commit .git/hooks/
 # Finds Anaxi at, first match wins: $ANAXI_HOME, a vendored tools/anaxi, the Claude Code plugin (~/.anaxi/home).
-git diff --cached --name-only | grep -q '\.md$' || exit 0
+md=0; git diff --cached --name-only | grep -q '\.md$' && md=1
+code=0; git diff --cached --name-only | grep -qv '\.md$' && code=1
+[ "$md" = 0 ] && [ "$code" = 0 ] && exit 0
 root="$(git rev-parse --show-toplevel)"
 home="${ANAXI_HOME:-}"
 [ -z "$home" ] && [ -d "$root/tools/anaxi" ] && home="$root/tools/anaxi"
 [ -z "$home" ] && [ -f "$HOME/.anaxi/home" ] && home="$(cat "$HOME/.anaxi/home")"
 if [ -z "$home" ] || [ ! -x "$home/tools/anaxi-ci.sh" ]; then
-  echo "anaxi: checker not found (set ANAXI_HOME, vendor tools/anaxi, or start Claude Code once with the plugin); skipping" >&2
+  [ "$md" = 1 ] && echo "anaxi: checker not found (set ANAXI_HOME, vendor tools/anaxi, or start Claude Code once with the plugin); skipping" >&2
   exit 0
 fi
-exec "$home/tools/anaxi-ci.sh" --fix --dir "$root"
+if [ "$md" = 1 ]; then "$home/tools/anaxi-ci.sh" --fix --dir "$root" || exit $?; fi
+if [ "$code" = 1 ]; then node "$home/tools/anaxi-check.mjs" gate-files --staged --dir "$root" || exit $?; fi
+exit 0

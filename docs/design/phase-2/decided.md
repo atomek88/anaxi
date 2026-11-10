@@ -5,8 +5,8 @@ risk: 2·1·1·1
 about: [decisions, enforcement]
 uses: ["@questions", "@hard-gate", "@format"]
 focus: now
-built: no
-code: [../../../tools/lib/decisions.mjs, ../../../tools/lib/parse.mjs, ../../../hooks/before-edit.mjs, ../../../tools/anaxi-check.mjs]
+built: yes (2026-11-09)
+code: [../../../tools/lib/decisions.mjs, ../../../tools/lib/parse.mjs, ../../../tools/lib/config.mjs, ../../../hooks/before-edit.mjs, ../../../hooks/before-bash.mjs, ../../../hooks/hooks.json, ../../../tools/anaxi-check.mjs]
 ---
 # Who decided
 
@@ -25,7 +25,7 @@ both. Out of scope: proving identity; an agent outside every hook, writing a per
 fake it, and git history shows it.
 
 **Shape.** The parser reads `(decide: …)` on a question and `→ decided: name day` on its answer; the defaults come
-from `questions.decideBy` in `anaxi.json`. `tools/lib/decisions.mjs` holds the list (open, proposed, decided, by whom)
+from `decideBy` in `anaxi.json`. `tools/lib/decisions.mjs` holds the list (open, proposed, decided, by whom)
 and the edit `decide(item, question, answer, who)` that `anaxi-check decide`, the reader and later MCP share. The
 hook's markdown branch gains one check, beside the built and `code:` checks it already has. Chosen over signed
 answers (heavy, and nobody would use them) and over trusting the skill (tested, didn't hold).
@@ -38,13 +38,13 @@ question on an item the gate holds, because that would open the gate. Everything
 **Contract.** *Syntax (FORMAT.md §5).* `- [ ] Dn · [(decide: person|anyone)] question [→ proposed: text]`. An answer:
 `- [x] Dn · [(decide: …)] question → decided: <name> <YYYY-MM-DD>[ (note)]: answer`. A name ending in `(agent)` is an
 agent's answer. A ticked line with no `decided:` stays valid (older docs) and counts as "unrecorded". Who decides is
-the marker if one is given, else `questions.decideBy` (default `{ "D0": "person", "D1": "person" }`; other levels
+the marker if one is given, else `decideBy` (default `{ "D0": "person", "D1": "person" }`; other levels
 are anyone's), else anyone.
 *The hook* (`hooks/before-edit.mjs`):
 - Markdown branch: for each item in the file that the gate holds, the edit is refused when it turns a person's
   question from unchecked to checked, adds a checked one, or removes or changes its `(decide: person)` marker or its
   level.
-- `anaxi.json`: refused when it lowers `questions.decideBy` while a held item has an open person question.
+- `anaxi.json`: refused when it lowers `decideBy` while a held item has an open person question.
 - Bash: the hook gains a `Bash` matcher and refuses a command matching `anaxi-check(\.mjs)?\s+decide\b`. A person's
   own `! command` isn't seen by the hook.
 - The refusal text: `Anaxi's gate: @recurring is held, and question 2 ("Weekly on which day?", D1) is a person's to
@@ -57,7 +57,7 @@ are anyone's), else anyone.
   proposed: …` → `→ decided: <name> <today>: answer`. The name is `--as`, else `git config user.name`. It prints the
   line before and after. Exit codes: 0 when written; 1 when there's no such question, or it's already answered;
   2 when there's no name.
-- `anaxi-check decisions [@id | --all] [--open | --who] [--since REF] [--json]`.
+- `anaxi-check decisions [@id | --all] [--open | --who] [--json]`.
   - `--open`, the default: open questions, each with who decides, its proposal, and `unblocks: @a @b` (held items
     whose gate it's in), sorted by how many it unblocks.
   - `--who`: answered questions, each with the recorded name and day, the blame commit and its author, and flags:
@@ -69,16 +69,16 @@ The agent trailers are a `Co-Authored-By:` matching `/claude|codex|cursor|copilo
 `decisions.agentTrailers`. *JSON.* `open` entries gain `decideBy: "person" | "anyone"` and, once answered,
 `decided: { by, day, agent }`; `decisions --json` has `{ format, open: [...], decided: [...], flags: [...] }`.
 *Call-outs.*
-- `status` adds a `⚑ 2` column (open person questions) and a summary line: `⚑ 6 decisions wait on a person; first
-  @recurring #2 (unblocks 2)`.
-- The session-start hook shows that summary line.
-- the pre-commit hook prints an `agent-ticked` warning when the staged docs tick a person's question and
-  `CLAUDECODE` or another agent's variable is set; it never fails the commit.
-- N29 (info) on an item with an agent-ticked person question.
+- `status` adds a summary line: `⚑ 6 decisions wait on a person; first @recurring #2 (unblocks 2)`, and the stage line
+  counts them (`⚑ 6 for a person`, @stages); the session-start hook shows both. Open entries in JSON carry `decideBy`.
+- N29 (info) on an item with a person's question answered by a name ending in `(agent)`.
+- `decisions --who` adds `agent-recorded`: a person's name written in a commit with an agent's trailer, so someone
+  checks they really said it. (A pre-commit warning was dropped on 2026-11-09: commits stay quiet, and `--who` shows
+  the same thing from git when anyone asks.)
 
 ## Open questions
 
-- [x] D1 · (decide: person) Are why and what (D0–D1) a person's to decide by default, and shape and contract (D2+) anyone's? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes, as `questions.decideBy`; a question's own `(decide: …)` overrides it
+- [x] D1 · (decide: person) Are why and what (D0–D1) a person's to decide by default, and shape and contract (D2+) anyone's? → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): yes, as `decideBy`; a question's own `(decide: …)` overrides it
 - [x] D1 · (decide: person) When you give the agent an answer in the chat, may it tick the box? Options: (a) strict, you always tick; (b) the agent ticks and records `decided: <you> (in session)`, flagged for review; (c) the hook checks the session transcript for your words. → decided: Tomasz Michalik 2026-11-07 (in session, recorded by the agent): (a): you always tick, made easy: `! anaxi-check decide @id <n> "answer"` in the session (the hook never sees a command you run yourself), or the reader
 - [x] D2 · Only on items the gate holds, or on every item? → decided: Claude (agent) 2026-11-09: refused only on items the gate holds; everywhere else it's a call-out (`decisions --who`, N29), following your rule that Anaxi calls out rather than blocks
 - [x] D2 · Where does the name come from? → decided: Claude (agent) 2026-11-09: `--as`, else `git config user.name`, through `decide` or the reader; by hand, what the person writes; if blank, the blame commit's author, flagged `unrecorded`

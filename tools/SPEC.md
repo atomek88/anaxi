@@ -33,6 +33,9 @@ node anaxi-check.mjs retire    @id --why W [--date YYYY-MM-DD]                # 
 node anaxi-check.mjs archive   @id [--why W]                                  # whole-file items only; moves to `archive`, rewrites links both ways
 node anaxi-check.mjs restore   @id                                            # removes the marks (both sides) and moves back to archived-from
 node anaxi-check.mjs delete    @id [--force]                                  # archived and committed only; appends a row to <archive>/RETIRED.md
+node anaxi-check.mjs gate-files [--staged | FILE…] [--json]                   # the gate for files: exit 1 when held (--staged: per gate.commit)
+node anaxi-check.mjs decisions [@id | --all] [--who] [--json]                 # open questions by who decides and what each unblocks; --who: who answered
+node anaxi-check.mjs decide    @id N ("answer" | --accept) [--as NAME] [--dry-run]  # record a person's answer: exit 1 none/answered · 2 no name
 ```
 
 Human output is coloured on a terminal and wrapped to its width; `NO_COLOR=1` or a pipe turns colour off. Each
@@ -47,6 +50,16 @@ item ends with a `→ Next:` line, the first one or two actions in nudge order. 
   a file's other text except relative links to a moved file.
 - `index --check` exits 1 if the file on disk differs from what would be generated; `index --path` prints where
   the index goes (used by the pre-commit hook).
+- `status` prints the stage line under the header (`2 designing · 4 ready · 1 parked · runway 4 · ⚑ 1 for a
+  person · ◆ 1 complex`) and, when any open question is a person's, `⚑ N decisions wait on a person; first @id #n`.
+- `gate-files` asks `gateFor` for each file (markdown and `anaxi.json` are left out) and prints held files with their
+  items and reasons, and `note:` lines for shared code an unready item plans. `--staged` takes the staged files, reads
+  the docs from the index, counts a staged new file as new, skips branches matching `gate.spikeBranches` (default
+  `spike/*`), and follows `gate.commit`: `warn` (default) prints and exits 0, `block` exits 1, `off` says nothing.
+  Explicit files exit 1 when any is held. No `anaxi.json`: exit 0, silent.
+- `decide` rewrites one question line, `- [ ]` → `- [x]` and `→ proposed: …` → `→ decided: <name> <today>: <answer>`;
+  the name is `--as`, else `git config user.name`. Questions are numbered from 1 in the order the item writes them,
+  as `decisions @id` lists them.
 
 ## 1.1 `anaxi-ci.sh`
 
@@ -161,7 +174,11 @@ how to mark it (a sub-item still leans on its parent). `nudges.levelWords: 0` tu
 | N04 | current = effective, nothing open, no N02. Says "for now" when effective < target |
 | N06 | max(current, deepest) > effective (canvas and history never count) |
 | N22 | shown > claimed: info, content past the claim |
-| N23 | `built:` partly or yes, `code:` set, inside git: the last change (uncommitted = now, else the last commit) to the item's file and part files is newer than the last change to its code paths, and its local day is after the `built:` date if one is given |
+| who decides | a question's `(decide: person\|anyone)`, else `decideBy[level]` (default D0 and D1 person), else anyone; open entries carry `decideBy` |
+| N28 | info, no item: the runway (items at stage ready) is 0 while any item is designing |
+| N29 | info: a checked question a person decides, answered by a name ending in `(agent)` |
+| stage | derived, never set: superseded or retired (not current); `built: yes` → drifting with N23, else built; `built: partly` → building; `focus: later` below the full target → parked; below D1 or unmarked → idea; gate ready → ready; else designing. `highlights`: `person` (open person questions), `complex` (risk sum ≥ 6, or the top level as target), `drift` |
+| N23 | `built:` partly or yes, `code:` set, inside git: the last change (uncommitted = now, else the last commit) to the item's file and part files (for a part with an anchor, or a section item, only its heading's lines, up to the next heading at its level or above, through `git log -L`) is newer than the last change to its code paths, and its local day is after the `built:` date if one is given |
 | N24 | `built:` partly or yes, and current < the full target |
 | N25 | `built:` partly or yes, and a `code:` entry (relative to the item's file) matches nothing: a path that doesn't exist, or a glob with no file |
 | code map | a file belongs to an item when one of its `code:` entries equals it, is a folder above it, or is a glob (`*`, `**`, `?`) matching it; many items can cover one file. Drift for a glob uses git's `:(glob)` pathspec |
@@ -206,6 +223,7 @@ how to mark it (a sub-item still leans on its parent). `nudges.levelWords: 0` tu
 }
 ```
 
+Items also carry `stage` and `highlights`, and `status --json` has `stages: { counts, runway, debt, person, complex }`.
 The format is versioned. Add fields; don't rename them.
 
 ## 6. Exit codes
@@ -218,13 +236,14 @@ The format is versioned. Add fields; don't rename them.
 
 ## 7. Plugin hooks
 
-`hooks/hooks.json` wires three Node scripts. Both read Claude Code's hook JSON on stdin, import `tools/lib/`
+`hooks/hooks.json` wires four Node scripts. Both read Claude Code's hook JSON on stdin, import `tools/lib/`
 directly, and exit 0 whatever happens: a hook never fails a session or an edit.
 
 | Hook | Script | Does |
 |---|---|---|
 | `SessionStart` | `hooks/session-start.mjs` | when `anaxi.json` is found upward from `cwd` and `hooks.sessionStart` isn't `false`: prints the status table (no colour, at most 40 lines) and the commands; stdout becomes session context. Also writes the plugin's folder to `~/.anaxi/home` for the git hook |
-| `PreToolUse` (`Write\|Edit\|MultiEdit\|NotebookEdit`) | `hooks/before-edit.mjs` | **the hard gate** (`hooks.gate`, default on): a non-markdown file that a current item maps in `code:`, where the item isn't `built: partly`/`yes` and its gate isn't ready (`gateFor` in `lib/engine.mjs`), and it isn't an existing file a built item also maps (shared code is never held), is refused: `permissionDecision: "deny"` with each blocking item, its depth, target and gate reasons, and what to do instead. Finds the project from the file, else `cwd`. Any error allows the edit |
+| `PreToolUse` (`Write\|Edit\|MultiEdit\|NotebookEdit`) | `hooks/before-edit.mjs` | **the hard gate** (`hooks.gate`, default on): a non-markdown file that a current item maps in `code:`, where the item isn't `built: partly`/`yes` and its gate isn't ready (`gateFor` in `lib/engine.mjs`), and it isn't an existing file a built item also maps (shared code is never held), is refused: `permissionDecision: "deny"` with each blocking item, its depth, target and gate reasons, and what to do instead. On an item it holds, a doc edit that ticks a person's question, adds one already ticked, makes one anyone's, or removes one so the gate would open, is refused and pointed to `→ proposed:`; so is an `anaxi.json` edit that makes held person decisions anyone's, or stops `gate.commit: block` blocking (@decided). Finds the project from the file, else `cwd`. Any error allows the edit |
+| `PreToolUse` (`Bash`) | `hooks/before-bash.mjs` | refuses a command running `anaxi-check decide` (a person's answer; the person types it after `!`, which no hook sees) in a project with the gate on |
 | `PostToolUse` (`Edit\|Write\|MultiEdit`) | `hooks/after-edit.mjs` | finds the project from the edited file, else from `cwd` (the design folder needn't be above the code). **A code or config file** that items cover in `code:` (`hooks.codeMap`, default on): once per file per session (`$TMPDIR/anaxi-codemap-<session>.txt`), the items it belongs to with depth, built state, drift, readiness, their doc and contract links (relative to `cwd`), and a request to check the change against them. **A markdown file** (`hooks.afterEdit: true`, default off): the errors for that file and the nudges (except N04) of the items it holds or is a part of. Both as `additionalContext` |
 
 `anaxi-init.sh --plugin` (run by `/anaxi:init`) is `--no-vendor --no-skill` with plugin wording.

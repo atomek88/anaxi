@@ -5,8 +5,8 @@ risk: 1·0·1·1
 about: [visibility]
 uses: ["@built", "@engine", "@reader", "@mcp"]
 focus: now
-built: no
-code: [../../../tools/lib/engine.mjs, ../../../tools/anaxi-check.mjs, ../../../tools/anaxi-mcp.mjs, ../../../tools/watch/app.js, ../../../tools/watch/board.js]
+built: yes (2026-11-09)
+code: [../../../tools/lib/engine.mjs, ../../../tools/anaxi-check.mjs, ../../../tools/anaxi-mcp.mjs, ../../../tools/anaxi-watch.mjs, ../../../tools/watch/app.js, ../../../tools/watch/board.js, ../../../tools/watch/index.html]
 ---
 # Lifecycle stages, a board, and the design runway
 

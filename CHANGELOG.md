@@ -5,6 +5,18 @@ Newest first. Format: `date · area · change · why`.
 
 ## 0.11 · unreleased
 
+- plugin · **Stages, a board and the runway** (@stages): every item's stage, derived from its marks, never set; the
+  stage line in `status` and `INDEX.md`; `#/board` in the reader; `anaxi_board`; N28 when nothing is ready while
+  items are designing · seeing where the design is against the work, at a glance.
+- plugin · **Who decides** (@decided): `(decide: person|anyone)` and `→ decided: name day: answer` on questions;
+  `decideBy` defaults (D0–D1 a person's); `anaxi-check decide` and `decisions [--who]`; the hook refuses an agent
+  ticking a person's question on a held item, or running `decide`; N29 calls out an agent's answer elsewhere ·
+  an agent could open a gate by ticking the user's decisions.
+- plugin · **The gate at commit** (@gate-everywhere): `anaxi-check gate-files [--staged | FILE…]`; the pre-commit hook
+  runs it on every commit with code, silent unless a file is held, warning by default (`gate.commit`: `warn`,
+  `block`, `off`); spike branches skip it · the gate only existed inside Claude Code.
+- engine · N23 counts a part's own section of a shared file, not the whole file · it fired falsely four times on
+  Anaxi's own docs.
 - plugin · `anaxi-check file` and the code-map hook agree with the gate: where a ready item opens a path, an unready
   item planning it is a note, not a block · it said "blocks" for a file the hook allowed.
 - design · Phase 2 ready: every question answered; D3 contracts for @drift-both, @gate-everywhere and @decided; new
