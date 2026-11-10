@@ -3,7 +3,7 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
-## 0.11 · unreleased
+## 0.11 · 2026-11-09
 
 - plugin · **Stages, a board and the runway** (@stages): every item's stage, derived from its marks, never set; the
   stage line in `status` and `INDEX.md`; `#/board` in the reader; `anaxi_board`; N28 when nothing is ready while

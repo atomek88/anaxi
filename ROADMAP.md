@@ -35,18 +35,18 @@ copying anything into it. Without Claude Code, `tools/anaxi-init.sh` copies the 
 - **One engine.** `tools/lib/` is the only place rules live; the CLI, CI, watcher, viewer and MCP server all
   call it, so they can't disagree.
 
-## Left now · as of 0.10.0 (2026-10-31)
+## Left now · as of 0.11.0 (2026-11-09)
 
-0.10.0 is released and published at github.com/atomek88/anaxi; Anaxi's own design is 🎯 throughout, with no drift.
-Two things remain before anything below:
+0.11.0 is released at github.com/atomek88/anaxi. It includes PHASE_2's "now" items: stages and a board (@stages), who
+decides (@decided), the gate at commit, warning by default (@gate-everywhere), and per-part drift. Two things
+remain before anything below:
 
 - [ ] **Reserve `anaxi` on npm** with a placeholder 0.0.x package (step 1). Needs the owner's npm login.
 - [ ] **The pilot on a real project** ([PILOT.md](PILOT.md)): `/anaxi:init`, design one or two features through it,
   and watch whether the gate holds, gaps surface onto items, and the docs stay current while it's built.
 
-Before the pilot, PHASE_2's first items close the holes found reviewing 0.10 (@drift-both, @gate-everywhere,
-@decided; the shared-file freeze is fixed in 0.11) and @stages adds stages and a board, so the
-pilot can be read at a glance. The pilot decides the rest.
+The pilot decides the rest of [PHASE_2.md](PHASE_2.md). Projects set up before 0.11 keep their old pre-commit hook;
+copy `tools/hooks/pre-commit` again to get the commit check.
 
 ## Phase 1, step by step
 
