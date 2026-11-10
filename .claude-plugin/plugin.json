@@ -1,6 +1,6 @@
 {
   "name": "anaxi",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Depth-aware design docs: mark how deep each TDD, feature or component is designed (D0 Why → D4 Build), see what's missing, and know when to stop.",
   "author": {
     "name": "Tomasz Michalik"
