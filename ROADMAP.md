@@ -35,11 +35,11 @@ copying anything into it. Without Claude Code, `tools/anaxi-init.sh` copies the 
 - **One engine.** `tools/lib/` is the only place rules live; the CLI, CI, watcher, viewer and MCP server all
   call it, so they can't disagree.
 
-## Left now · as of 0.11.0 (2026-11-09)
+## Left now · as of 0.12.0 (2026-11-12)
 
-0.11.0 is released at github.com/atomek88/anaxi. It includes PHASE_2's "now" items: stages and a board (@stages), who
-decides (@decided), the gate at commit, warning by default (@gate-everywhere), and per-part drift. Two things
-remain before anything below:
+0.12.0 is released at github.com/atomek88/anaxi. It includes PHASE_2's "now" items: stages and a board (@stages), who
+decides (@decided), the gate at commit, warning by default (@gate-everywhere), per-part drift (0.11), and build plans
+beside the design, `/anaxi:plan` (@plan, 0.12). Two things remain before anything below:
 
 - [ ] **Reserve `anaxi` on npm** with a placeholder 0.0.x package (step 1). Needs the owner's npm login.
 - [ ] **The pilot on a real project** ([PILOT.md](PILOT.md)): `/anaxi:init`, design one or two features through it,

@@ -50,6 +50,8 @@ export const DEFAULTS = {
   // who decides a question by default, per level (@decided); a question's own `(decide: …)` wins; unlisted: anyone
   decideBy: { D0: 'person', D1: 'person' },
   decisions: { agentTrailers: [] }, // extra regexes for agent Co-Authored-By trailers
+  // build plans (@plan): the work, beside the design; gates name the checks breakpoints run ({ "unit": "npm test" })
+  plan: { dir: 'plans', gates: {} },
 };
 
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
@@ -159,12 +161,13 @@ export function docFiles(cfg) {
   const ign = list(cfg.ignore).map(globRe);
   const exclude = new Set([cfg.questions, cfg.index, retiredFile(cfg)].filter(Boolean).map((p) => path.normalize(p)));
   const inArchive = (r) => cfg.archive && (r + '/').startsWith(`${path.normalize(cfg.archive)}/`);
+  const plans = path.normalize(cfg.plan?.dir || 'plans'); // build plans (@plan) aren't design
   const out = [];
   const walk = (rel) => {
     for (const e of fs.readdirSync(path.join(cfg.root, rel), { withFileTypes: true })) {
       const r = rel ? `${rel}/${e.name}` : e.name;
       if (e.isDirectory()) {
-        if (SKIP_DIRS.has(e.name) || path.normalize(r) === path.normalize(cfg.out) || ign.some((x) => x.test(r) || x.test(`${r}/`))) continue;
+        if (SKIP_DIRS.has(e.name) || path.normalize(r) === path.normalize(cfg.out) || path.normalize(r) === plans || ign.some((x) => x.test(r) || x.test(`${r}/`))) continue;
         if (fs.existsSync(path.join(cfg.root, r, 'anaxi.json'))) continue;
         walk(r);
       } else if (r.endsWith('.md') && !exclude.has(path.normalize(r)) && (res.some((x) => x.test(r)) || inArchive(r)) && !ign.some((x) => x.test(r))) out.push(r);

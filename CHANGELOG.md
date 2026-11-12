@@ -3,6 +3,19 @@
 How the method changes, and why. One line per change to the ladder, the question bank, nudges or profiles.
 Newest first. Format: `date · area · change · why`.
 
+## 0.12 · 2026-11-12
+
+- plugin · **Build plans** (@plan): `/anaxi:plan`, a self-contained skill with its own method and template
+  (`skills/plan/PLAN.md`), turns ready items into a sequenced plan in `plans/` beside the design; `anaxi-check plan
+  new @a @b` writes the skeleton from the docs (order, critical path, Slice 0, criteria as test-first tasks, files,
+  difficulty, gate breakpoints) and `anaxi-check plan` lists plans with their ticks · the design docs said what but
+  not in what order, and tasks in them would bloat them; the plan is the tracker, kept as history
+- checker · `▤ n/m` per item and a plan line in `status`, INDEX.md, the board and the reader; `plan` in item JSON and
+  `plans` in `status --json`, the reader's API and `anaxi_board`; N30 (a finished plan, an item not built) and N31 (an
+  item's design changed since the plan was made); `plan.dir` and `plan.gates` in `anaxi.json` · progress from the
+  plan, never written into the design
+- checker · `decisions` listed an item twice under `unblocks` through a `uses:` cycle · fixed
+
 ## 0.11 · 2026-11-09
 
 - plugin · **Stages, a board and the runway** (@stages): every item's stage, derived from its marks, never set; the

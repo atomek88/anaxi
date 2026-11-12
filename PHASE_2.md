@@ -37,13 +37,25 @@ the source of truth. Phase 1's record and the smaller follow-ups are in [ROADMAP
 | [@decided](docs/design/phase-2/decided.md) | questions say who decides; an agent can't tick a person's decision | now |
 | [@stages](docs/design/phase-2/stages.md) | a derived lifecycle stage per item, a board, the design runway | now |
 | [@time-machine](docs/design/phase-2/time-machine.md) | the project as of any date; what changed since; timelines and burn-up | next |
-| [@progress](docs/design/phase-2/progress.md) | acceptance criteria with evidence in the docs; the work in a tracker | next |
+| [@plan](docs/design/phase-2/plan.md) | build plans beside the design: the order, slices, tasks and gate breakpoints, ticked as the code lands | built (0.12) |
+| [@progress](docs/design/phase-2/progress.md) | acceptance criteria with evidence in the docs; the work in a plan (or a tracker) | next |
 | [@reverify](docs/design/phase-2/reverify.md) | one bounded call that settles drift, or leaves proposals | next |
 | [@adopt](docs/design/phase-2/adopt.md) | an agent maps a project's code, tests and tracker into its docs, as proposals | next |
 | [@decide-reader](docs/design/phase-2/decide-reader.md) | the reader can answer a decision, and nothing else | next |
 | [@project-kinds](docs/design/phase-2/project-kinds.md) | kinds of project and stages of a project's life; work that isn't software | later |
 | [@cross-repo](docs/design/phase-2/cross-repo.md) | uses across repos, and a portfolio | later |
 | [@hub](docs/design/phase-2/hub.md) | the loop from building back to design, and the ideas it holds | later |
+
+## Built (0.12, 2026-11-12)
+
+- **@plan:** a build plan is a markdown file in `plans/` beside the design, and it is the tracker. `/anaxi:plan`
+  decides whether one is worth it (about a week of work or more), and `anaxi-check plan new @a @b` writes the
+  skeleton from the docs: the order and critical path, Slice 0, and per item its criteria as test-first tasks, its
+  files, its difficulty and a gate. The agent fills the tasks and ticks them in the same commit as the code.
+  Breakpoints are sparse gates (test, verification, e2e, deploy; named in `plan.gates`), instructions to the agent,
+  never commit stops. Progress shows as `▤ 6/8` in status, the board and INDEX.md; N30 when a plan is finished and an
+  item isn't built, N31 when an item's design changed since the plan was made. The design docs never hold tasks, and
+  plans never open the gate. The complex-project-planner skill stays separate and isn't used.
 
 ## Built (0.11, 2026-11-09)
 
@@ -78,7 +90,7 @@ Every phase 2 question is answered and recorded on its line. Still unbuilt:
 
 ## Order
 
-1. **Now, before the pilot:** @gate-everywhere, @decided and @stages: built in 0.11.
+1. **Now, before the pilot:** @gate-everywhere, @decided and @stages: built in 0.11; @plan: built in 0.12.
 2. **The pilot**, on a project where the design runs ahead of the build ([PILOT.md](PILOT.md)).
 3. **After it, by what it shows:** @drift-both if the pilot's docs go stale unseen; @adopt early (the pilot is a real project, so mapping it in is the first job);
    @reverify and @time-machine for living docs; @hub's first ideas with @decide-reader

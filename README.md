@@ -15,6 +15,8 @@ method for reading them ([TOOLING.md](TOOLING.md)).
 **Using Claude Code?** This repo is a plugin: `claude plugin marketplace add atomek88/anaxi`, then
 `claude plugin install anaxi@anaxi`, then `/anaxi:init` in any project ([TOOLING.md §5](TOOLING.md#5-installing)).
 `/anaxi:watch` opens the docs as linked pages you can read at any depth, and agents get `anaxi_context` (MCP).
+When it's time to build something sizeable, `/anaxi:plan` turns ready items into a sequenced build plan beside the
+docs (slices, test-first tasks, gate breakpoints) that agents tick as the code lands.
 
 ## The whole method in one screen
 

@@ -196,6 +196,7 @@ Then, in any project, `/anaxi:init [--profile P] [--stage S] [--docs DIR]`. The 
 | `/anaxi:status` | the status table |
 | `/anaxi:assess <file or @id>` | checker nudges plus the skill's read of the content: what's missing, or "enough" |
 | `/anaxi:gate @id` | ready to build or not, and why |
+| `/anaxi:plan [@id …]` | a build plan for ready items, beside the design: the order, slices, test-first tasks and gate breakpoints, ticked as the code lands (`anaxi-check plan new` writes the skeleton). Claude also uses it on its own when asked to plan or break down work |
 | `/anaxi:init` | `anaxi-init.sh --plugin`: settings, questions, `@stack`, the git hook; nothing vendored |
 | `/anaxi:watch` | the reader (§4.3), in the background; prints its URL |
 | MCP server `anaxi` | `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_uses`, `anaxi_related`, `anaxi_for_file`, `anaxi_index` for any agent in the session |

@@ -19,16 +19,19 @@
 //   anaxi-check gate-files [--staged | FILE…] [--json]             the gate for files (pre-commit): exit 1 when held
 //   anaxi-check decisions [@id] [--who] [--json]                    what waits on whom, or who answered what
 //   anaxi-check decide    @id N "answer" | --accept [--as NAME]     record a person's answer (the person runs it)
+//   anaxi-check plan      [--all] [--json]                          build plans and their progress (@plan)
+//   anaxi-check plan new  @a [@b …] [--name NAME] [--dry-run]       write a plan's skeleton from the design
 //
 // Every command takes --dir DIR (default: the current folder); anaxi.json is found by searching upward.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { loadConfig, globRe, LV, lv, top as topLevel, METHOD_DIR } from './lib/config.mjs';
-import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt, fileReport, gateFor, itemsForFile, stageLine } from './lib/engine.mjs';
+import { evaluate, gate, dependents, icon, targetText, renderIndex, lifeText, builtText, usesBuilt, fileReport, gateFor, itemsForFile, stageLine, planLine } from './lib/engine.mjs';
 import { openDecisions, decidedReport, decide, gitName } from './lib/decisions.mjs';
 import { transition } from './lib/lifecycle.mjs';
 import { context, outline } from './lib/read.mjs';
+import { skeleton, planDir } from './lib/plan.mjs';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0] && !argv[0].startsWith('--') ? argv.shift() : 'status';
@@ -64,10 +67,12 @@ const itemJson = (it) => ({
   skip: it.skip, sections: it.sections, lifecycle: it.lifecycle,
   supersededBy: it.supersededBy, supersedes: it.supersedes, retired: it.retired, successor: it.successor?.key || null,
   ...(it.built ? { built: it.built } : {}), ...(it.builtChecked ? { builtChecked: it.builtChecked } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.drift ? { drift: it.drift } : {}),
-  ...(it.stage ? { stage: it.stage, highlights: it.highlights } : {}),
+  ...(it.stage ? { stage: it.stage, highlights: it.highlights } : {}), ...(it.plan ? { plan: { name: it.plan.name, done: it.plan.done, total: it.plan.total } } : {}),
 });
 // "D1 (D4?)": the text shows D1 of a claimed D4 (N05)
 const depthText = (it) => (!it.depth ? '—' : it.depthN < it.claimedN ? `${it.depthN < 0 ? '—' : LV(it.depthN)} (${it.depth}?)` : it.depth);
+const planJson = (p) => ({ name: p.name, file: p.file, status: p.status, made: p.made, items: p.items,
+  slices: p.slices.map((s) => ({ title: s.title, item: s.item, done: s.done, total: s.total, gates: s.gates })), done: p.done, total: p.total, gates: p.gates });
 const header = () => `${cfg.profile} profile · stage: ${cfg.stage} · ${model.items.length} items · ${cfg.file ? path.relative(process.cwd(), cfg.file) || 'anaxi.json' : 'no anaxi.json (defaults)'}`;
 
 // Human output: colour on a terminal (off with NO_COLOR or when piped), wrapped to the window.
@@ -138,7 +143,7 @@ function nudgesAt(base) {
   const prefix = execFileSync('git', ['-C', cfg.root, 'rev-parse', '--show-prefix'], { encoding: 'utf8' }).trim();
   const res = (Array.isArray(cfg.docs) ? cfg.docs : [cfg.docs]).map(globRe);
   const files = execFileSync('git', ['-C', cfg.root, 'ls-tree', '-r', '--name-only', base, '--', '.'], { encoding: 'utf8' })
-    .split('\n').filter((f) => f.endsWith('.md') && res.some((r) => r.test(f)) && f !== cfg.index && f !== cfg.questions);
+    .split('\n').filter((f) => f.endsWith('.md') && res.some((r) => r.test(f)) && f !== cfg.index && f !== cfg.questions && !f.startsWith(`${planDir(cfg)}/`));
   const read = (rel) => execFileSync('git', ['-C', cfg.root, 'show', `${base}:${prefix}${rel}`], { encoding: 'utf8' });
   return evaluate(cfg, { read, files }).nudges;
 }
@@ -149,17 +154,18 @@ switch (cmd) {
     if (opt('focus')) items = items.filter((it) => (it.focus || 'now') === opt('focus'));
     if (opt('about')) items = items.filter((it) => it.about.includes(opt('about')));
     if (flag('json')) {
-      json({ format: 'anaxi/1', settings: { profile: cfg.profile, stage: cfg.stage }, stages: model.stages, items: items.map(itemJson), nudges: model.nudges,
+      json({ format: 'anaxi/1', settings: { profile: cfg.profile, stage: cfg.stage }, stages: model.stages, plans: model.plans.map(planJson), items: items.map(itemJson), nudges: model.nudges,
         inactive: model.inactive.map(itemJson), deleted: [...model.retired].map(([id, r]) => ({ id, ...r })) });
       break;
     }
     console.log(header());
     console.log(stageLine(model));
+    if (planLine(model)) console.log(planLine(model));
     const B = usesBuilt(model.all);
     console.log(`\n   ${pad('Item', 34)} ${pad('Depth', 8)} ${pad('Target', 12)} ${B ? `${pad('Built', 6)} ` : ''}${pad('Open', 5)} Uses`);
     for (const it of items) {
       const title = `${it.parent ? '↳ ' : ''}${it.id ? it.id + ' ' : ''}${it.title}`;
-      console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(depthText(it), 8)} ${pad(targetText(it), 12)} ${B ? `${pad(builtText(it) || '—', 6)} ` : ''}${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}`);
+      console.log(`${pad(icon(it.status), 3)}${pad(title.slice(0, 33), 34)} ${pad(depthText(it), 8)} ${pad(targetText(it), 12)} ${B ? `${pad(builtText(it) || '—', 6)} ` : ''}${pad(it.openList.length, 5)} ${it.uses.map((u) => (u.item ? name(u.item) : u.raw)).join(' ')}${it.plan && it.plan.status === 'active' ? `  ▤ ${it.plan.done}/${it.plan.total}` : ''}`);
     }
     if (items.some((it) => it.depthN < it.claimedN)) console.log(dim('\nD1 (D4?): the text shows D1 of the D4 it claims; levels count only up to the first one with nothing written (N05)'));
     if (items.some((it) => it.unmarked && it.depthN < it.claimedN)) console.log(dim('— (D3?): no text in it is marked with a level, so nothing counts yet (N05)'));
@@ -418,6 +424,34 @@ ${' '.repeat(23)}${dim(`by ${q.by || '?'}${q.day ? ` ${q.day}` : ''}${q.commit ?
     break;
   }
 
+  case 'plan': { // build plans (@plan): the work beside the design
+    if (positional[0] === 'new') {
+      const ids = positional.slice(1);
+      if (!ids.length) die('plan new needs items: anaxi-check plan new @a [@b …]');
+      const items = [...new Set(ids.map((q) => { const it = model.byId.get(q.startsWith('@') ? q : `@${q}`) || model.all.find((x) => x.title.toLowerCase() === q.toLowerCase());
+        if (!it) die(`no item "${q}"`, 1); return it; }))];
+      if (opt('name') && !/^[a-z0-9][a-z0-9-]*$/.test(opt('name'))) die('--name: lower-case-with-dashes');
+      const sk = skeleton(model, items, { name: opt('name'), gate: (it) => gate(model, it) });
+      const file = path.join(cfg.root, sk.rel);
+      if (flag('dry-run')) { console.log(`${sk.rel} (dry run)\n\n${sk.text}`); break; }
+      if (fs.existsSync(file)) die(`${sk.rel} already exists; pass --name to make another`, 1);
+      try { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, sk.text); } catch (e) { die(`can't write ${sk.rel}: ${e.message}`); }
+      const waiting = items.filter((it) => !gate(model, it).ready);
+      console.log(`created ${path.relative(process.cwd(), file)} (${items.length} item${items.length > 1 ? 's' : ''}${sk.made ? `, design at ${sk.made}` : ''})`);
+      if (waiting.length) console.log(yellow(`not ready yet: ${waiting.map(name).join(', ')} (marked ⏳ in the plan; the gate still holds their code)`));
+      console.log(dim('\nNext: break each slice into tasks from the item\'s contract (/anaxi:plan does it), then tick tasks in the same commit as their code.'));
+      break;
+    }
+    const list = model.plans.filter((p) => flag('all') || p.status === 'active');
+    if (flag('json')) { json({ format: 'anaxi/1', plans: list.map(planJson) }); break; }
+    if (!list.length) { console.log(model.plans.length ? `No active plans (${model.plans.length} in ${planDir(cfg)}/; --all lists them).` : `No plans yet. Make one: anaxi-check plan new @a @b (or /anaxi:plan).`); break; }
+    for (const p of list) {
+      console.log(`▤ ${bold(p.name)} · ${p.status} · ${p.done} of ${p.total} tasks · gates ${p.gates.done}/${p.gates.total} ${dim(`· ${p.file}${p.made ? ` · design at ${p.made}` : ''}`)}`);
+      for (const s of p.slices.filter((x) => x.total)) console.log(`    ${pad(s.title.slice(0, 50), 51)} ${pad(`${s.done}/${s.total}`, 6)}${s.gates.total ? dim(` gates ${s.gates.done}/${s.gates.total}`) : ''}`);
+    }
+    break;
+  }
+
   default:
-    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new, context, file, outline, gate-files, decisions, decide, supersede, retire, archive, restore, delete`);
+    die(`unknown command "${cmd}". Commands: status, nudges, gate, questions, uses, index, check, new, context, file, outline, gate-files, decisions, decide, plan, supersede, retire, archive, restore, delete`);
 }

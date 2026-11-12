@@ -141,7 +141,9 @@ its level, link, size and first sentence. Read only the section that answers it,
 item, `anaxi_related` says what else the change touches. To build, read an item through `anaxi_context` (MCP) or
 `anaxi-check context @id [--at Dn]`, not file by file: it returns the
 item to the depth needed plus each thing it uses, once each, at the level needed, and the gate, and it follows a
-superseded item to its successor. When the user wants to see the design, offer `/anaxi:watch`.
+superseded item to its successor. When the user wants to see the design, offer `/anaxi:watch`. For work of about a
+week or more (several items, a `uses:` chain, a ◆ item), build from a plan: `/anaxi:plan` cuts one beside the design
+and you tick it as the code lands; never write tasks into the items.
 
 ### 6. Gate (before implementing, always)
 

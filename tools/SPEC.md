@@ -36,6 +36,8 @@ node anaxi-check.mjs delete    @id [--force]                                  # 
 node anaxi-check.mjs gate-files [--staged | FILE…] [--json]                   # the gate for files: exit 1 when held (--staged: per gate.commit)
 node anaxi-check.mjs decisions [@id | --all] [--who] [--json]                 # open questions by who decides and what each unblocks; --who: who answered
 node anaxi-check.mjs decide    @id N ("answer" | --accept) [--as NAME] [--dry-run]  # record a person's answer: exit 1 none/answered · 2 no name
+node anaxi-check.mjs plan      [--all] [--json]                               # build plans (@plan) and their ticks
+node anaxi-check.mjs plan new  @a [@b …] [--name NAME] [--dry-run]            # a plan's skeleton from the design: exit 1 unknown item or file exists · 2 can't write
 ```
 
 Human output is coloured on a terminal and wrapped to its width; `NO_COLOR=1` or a pipe turns colour off. Each
@@ -60,6 +62,22 @@ item ends with a `→ Next:` line, the first one or two actions in nudge order. 
 - `decide` rewrites one question line, `- [ ]` → `- [x]` and `→ proposed: …` → `→ decided: <name> <today>: <answer>`;
   the name is `--as`, else `git config user.name`. Questions are numbered from 1 in the order the item writes them,
   as `decisions @id` lists them.
+- `plan` lists plans in `plan.dir` (default `plans`, under the docs root; never read as design): name, status, ticks
+  per slice and gates. `plan new` writes `<dir>/<YYYY-MM-DD>-<name>.md` (name: `--name`, else the first item's id)
+  and never overwrites. The skeleton: front matter (`plan`, `items`, `status: active`, `made`: the short HEAD, or
+  empty without git); `## Order` (waves by `uses:` among the chosen items, the critical path, parallel lanes);
+  `## Slice 0 · Foundation` holding chosen items in `shared`; then `## Slice N · @id Title · <difficulty>` per item in
+  order, each with a `>` line (criteria ids, `code:` paths from the repo root, the design doc), `⏳ not ready: <why>`
+  when the gate holds it, a step per risk factor scored 2, a contract-first step per chosen item it uses, a
+  `Write test:` task per criterion and a `🛑` gate (`plan.gates.unit`, else the criteria's `checks:`, else a
+  placeholder); `## Finish` with the other configured gates (or a placeholder) and a `built: yes` task per item;
+  `## Found on the way`. Criteria: an item's D1 bullets that don't start with an item reference, and its
+  `Acceptance:` and `Done when …` sentences; `{#id}` and `→ checks: <path>` are read from them. Difficulty: the risk
+  sum 0–8 as ①①②②③③④⑤⑤.
+- A plan file: a slice is a `## Slice …` heading and belongs to the first `@id` in it; a task is any `- [ ]`/`- [x]`
+  line outside code fences, at any indent; a breakpoint is a task starting `🛑`. `status` adds `▤ N plan(s) active:
+  name done of total` under the stage line and `▤ done/total` on each item in one; INDEX.md adds the same line with
+  links.
 
 ## 1.1 `anaxi-ci.sh`
 
@@ -177,6 +195,9 @@ how to mark it (a sub-item still leans on its parent). `nudges.levelWords: 0` tu
 | who decides | a question's `(decide: person\|anyone)`, else `decideBy[level]` (default D0 and D1 person), else anyone; open entries carry `decideBy` |
 | N28 | info, no item: the runway (items at stage ready) is 0 while any item is designing |
 | N29 | info: a checked question a person decides, answered by a name ending in `(agent)` |
+| N30 | info: a plan that isn't dropped is `status: done` or has every task ticked, and an item in it (front matter `items:` or a slice) isn't `built: yes` |
+| N31 | info: an item in an active plan with `made:` has commits to its file or part files in `made..HEAD` (inside git only) |
+| plan | per item, from the newest active plan that has a slice for it (else the newest done one; dropped plans never count): `plan: { name, file, status, done, total }`, the ticks of its slices |
 | stage | derived, never set: superseded or retired (not current); `built: yes` → drifting with N23, else built; `built: partly` → building; `focus: later` below the full target → parked; below D1 or unmarked → idea; gate ready → ready; else designing. `highlights`: `person` (open person questions), `complex` (risk sum ≥ 6, or the top level as target), `drift` |
 | N23 | `built:` partly or yes, `code:` set, inside git: the last change (uncommitted = now, else the last commit) to the item's file and part files (for a part with an anchor, or a section item, only its heading's lines, up to the next heading at its level or above, through `git log -L`) is newer than the last change to its code paths, and its local day is after the `built:` date if one is given |
 | N24 | `built:` partly or yes, and current < the full target |
@@ -224,6 +245,8 @@ how to mark it (a sub-item still leans on its parent). `nudges.levelWords: 0` tu
 ```
 
 Items also carry `stage` and `highlights`, and `status --json` has `stages: { counts, runway, debt, person, complex }`.
+Items in a plan carry `plan: { name, done, total }`; `status --json` and `plan --json` have `plans: [{ name, file,
+status, made, items, slices: [{ title, item, done, total, gates: { done, total } }], done, total, gates }]`.
 The format is versioned. Add fields; don't rename them.
 
 ## 6. Exit codes
@@ -287,7 +310,7 @@ nothing current) · `GET /events` server-sent `change` after a save
 
 MCP over stdio (JSON-RPC 2.0, one message per line): `initialize`, `tools/list`, `tools/call`,
 `ping`. The project is `--dir`, else `$CLAUDE_PROJECT_DIR`, else the working folder, or a tool's `dir` argument.
-Tools: `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_related`,
+`anaxi_board` includes the active plans, and an item's brief its `plan`. Tools: `anaxi_status`, `anaxi_nudges`, `anaxi_gate`, `anaxi_questions`, `anaxi_context`, `anaxi_outline`, `anaxi_related`,
 `anaxi_uses`, `anaxi_for_file`, `anaxi_index`. Every call re-reads the docs. Errors (no `anaxi.json`, unknown id) come back as tool results with `isError`. `anaxi_related` returns the
 same list as the reader (`related` in `lib/engine.mjs`), each entry with the other item's id, title, file, depth, shown
 depth and status, sorted by kind, plus the item's `role`. Only

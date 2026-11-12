@@ -43,7 +43,7 @@ function find(model, q) {
   return it;
 }
 const brief = (it) => ({ id: it.id, title: it.title, file: it.file, line: it.line, depth: it.depth, shown: LV(it.depthN), target: LV(it.targetN), effective: LV(it.effectiveN),
-  status: it.status, ...(it.stage ? { stage: it.stage, highlights: it.highlights } : {}), ...(it.built ? { built: it.built } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.drift ? { drift: it.drift } : {}), open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
+  status: it.status, ...(it.stage ? { stage: it.stage, highlights: it.highlights } : {}), ...(it.plan ? { plan: it.plan } : {}), ...(it.built ? { built: it.built } : {}), ...(it.builtParts ? { builtParts: it.builtParts } : {}), ...(it.code?.length ? { code: it.codePaths } : {}), ...(it.drift ? { drift: it.drift } : {}), open: it.openList?.map((q) => (q.level ? `${q.level} · ${q.text}` : q.text)) || [], uses: it.uses.map((u) => u.item?.id || u.raw),
   ...(it.lifecycle && it.lifecycle !== 'current' ? { lifecycle: it.lifecycle, successor: it.successor?.id || null } : {}) });
 
 // a closed gate is the first thing an agent reads, not a field it can skim past (@hard-gate)
@@ -76,7 +76,7 @@ const CALLS = {
   anaxi_for_file: (a) => { const m = load(a.dir); const abs = path.resolve(projectDir(a.dir), a.path), rel = path.relative(m.cfg.root, abs).split(path.sep).join('/');
     const items = fileReport(m, rel, projectDir(a.dir));
     return { file: path.relative(projectDir(a.dir), abs) || a.path, items, ...(items.length ? {} : { note: 'no item lists this file in code:; if it belongs to a feature, add it there' }) }; },
-  anaxi_board: (a) => { const m = load(a.dir); return { ...m.stages, stages: Object.fromEntries(STAGES.map((s) => [s, m.items.filter((it) => it.stage === s).map((it) => ({ id: it.id || it.title, title: it.title, depth: LV(it.depthN), target: LV(it.targetN), highlights: it.highlights, ...(it.highlights.includes('person') ? { person: it.openList.filter((q) => q.decideBy === 'person').map((q) => `${q.level || ''} · ${q.text}`) } : {}) }))])) }; },
+  anaxi_board: (a) => { const m = load(a.dir); return { ...m.stages, plans: m.plans.filter((p) => p.status === 'active').map(({ name, file, items, done, total, gates }) => ({ name, file, items, done, total, gates })), stages: Object.fromEntries(STAGES.map((s) => [s, m.items.filter((it) => it.stage === s).map((it) => ({ id: it.id || it.title, title: it.title, depth: LV(it.depthN), target: LV(it.targetN), highlights: it.highlights, ...(it.highlights.includes('person') ? { person: it.openList.filter((q) => q.decideBy === 'person').map((q) => `${q.level || ''} · ${q.text}`) } : {}) }))])) }; },
   anaxi_uses: (a) => { const m = load(a.dir); const it = find(m, a.id); return { item: it.id, uses: it.uses.map((u) => ({ id: u.item?.id || u.raw, depth: u.item?.depth || null })),
     usedBy: dependents(m, it).map((d) => ({ id: d.item.id || d.item.title, hop: d.hop, depth: d.item.depth })) }; },
 };

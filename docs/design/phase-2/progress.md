@@ -21,8 +21,8 @@ criterion may name what shows it (`→ checks: tests/recurring.spec.ts "four occ
 criterion nothing shows. When every criterion is shown, Anaxi suggests `built: yes`. Issues and commits link
 to items by `@id` (a label, the title, or a trailer `Anaxi: @recurring`); the baseline reads only git, and tracker
 adapters (GitHub Issues, Linear) are optional and read-only. `anaxi-check export-tasks @id --to github` turns an
-item's criteria into issues once, after which the tracker owns them. A planner for projects without a tracker would
-be a separate tool on the same engine, not core Anaxi. Done when the example's @recurring shows criteria with
+item's criteria into issues once, after which the tracker owns them. The work itself can
+live in the plan docs (@plan), which are Anaxi's own tracker; an external tracker is optional. Done when the example's @recurring shows criteria with
 evidence and the progress line, from git alone.
 
 **Progress as a whole.** Decided on 2026-11-09: progress is read across the whole project, not item by item. One

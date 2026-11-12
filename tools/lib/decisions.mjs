@@ -22,7 +22,7 @@ export function openDecisions(model, items = model.items) {
   const notReady = (x) => !isBuilt(x) && !gate(model, x).ready;
   const out = [];
   for (const it of items) {
-    const unblocks = [it, ...dependents(model, it).map((d) => d.item)].filter(notReady).map((x) => x.id || x.title);
+    const unblocks = [...new Set([it, ...dependents(model, it).map((d) => d.item)].filter(notReady).map((x) => x.id || x.title))];
     for (const q of questionsOf(model, it)) if (!q.checked) out.push({ ...q, unblocks: notReady(it) ? unblocks : [] });
   }
   return out.sort((a, b) => b.unblocks.length - a.unblocks.length || (a.decideBy === 'person' ? -1 : 0) - (b.decideBy === 'person' ? -1 : 0));

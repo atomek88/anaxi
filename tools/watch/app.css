@@ -133,5 +133,5 @@ li.check { list-style: none; margin-left: -20px; } li.check.open { color: var(--
 .card .cd { color: var(--ink3); font-size: 11.5px; }
 .card .ch { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 .hl { font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; color: var(--ink2); }
-.hl.person { border-color: var(--accent); color: var(--accent); } .hl.complex { border-color: var(--trim); color: var(--trim); } .hl.drift { border-color: var(--bad); color: var(--bad); }
+.hl.person { border-color: var(--accent); color: var(--accent); } .hl.complex { border-color: var(--trim); color: var(--trim); } .hl.drift { border-color: var(--bad); color: var(--bad); } .hl.plan { border-color: var(--ok); color: var(--ok); }
 .board .folded { margin-top: 18px; color: var(--ink3); }
